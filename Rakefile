@@ -103,7 +103,7 @@ namespace :db do
 
     Camera.create(
       name: "Evercam Devcam",
-      exid: "evercam-remembrance-camera-0",
+      exid: "evercam-remembrance-camera",
       owner_id: user.id,
       is_public: true,
       config: {
