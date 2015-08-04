@@ -19,7 +19,7 @@ module Evercam
       camera = Camera.by_exid!(camera_id)
       if Snapshot.where(camera: camera, created_at: Time.at(timestamp)).blank?
         Snapshot.create(
-          camera: camera,
+          camera_id: camera_id,
           created_at: Time.at(timestamp),
           data: 'S3',
           notes: 'Evercam Proxy'

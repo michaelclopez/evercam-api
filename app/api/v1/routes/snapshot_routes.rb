@@ -139,6 +139,7 @@ module Evercam
     include WebErrors
     before do
       authorize!
+      Snapshot.db = Sequel.connect(Evercam::Config[:snaps_database])
     end
 
     DEFAULT_LIMIT_WITH_DATA = 10
@@ -189,7 +190,6 @@ module Evercam
           count = query.count
           total_pages = count / limit
           total_pages += 1 unless count % limit == 0
-
           snapshots = query.limit(limit).offset(offset).all
 
           present(snapshots, with: Presenters::Snapshot).merge!({
@@ -208,13 +208,14 @@ module Evercam
         end
         get 'recordings/snapshots/latest' do
           camera = get_cam(params[:id])
-          snapshot = camera.snapshots.order(:created_at).last
+          snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+
           if snapshot
             rights = requester_rights_for(camera)
             raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
-            present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data])
+            present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           else
-            present([], with: Presenters::Snapshot, with_data: params[:with_data])
+            present([], with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           end
         end
 
@@ -241,7 +242,7 @@ module Evercam
             from = Time.new(params[:year], params[:month], day, 0, 0, 0, off_set).utc.to_s
             to = Time.new(params[:year], params[:month], day, 23, 59, 59, off_set).utc.to_s
 
-            if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+            if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
               days << day
             end
           end
@@ -276,7 +277,7 @@ module Evercam
             from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, off_set).utc.to_s
             to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, off_set).utc.to_s
 
-            if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+            if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
               hours << hour
             end
           end
@@ -303,11 +304,12 @@ module Evercam
           else
             timestamp = ActiveSupport::TimeZone.new('UTC').parse(params[:timestamp])
           end
-          snapshot = camera.snapshot_by_ts!(timestamp, params[:range].to_i)
+          snapshot = Snapshot.snapshot_by_ts!(camera.id, timestamp, params[:range].to_i)
           rights   = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          present Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data]
+          present(Array(snapshot), with: Presenters::Snapshot,
+                  with_data: params[:with_data], exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
@@ -349,7 +351,6 @@ module Evercam
           token << cipher.final
 
           url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/recordings/snapshots?notes=#{params[:notes]}&with_data=#{params[:with_data]}&token=#{Base64.urlsafe_encode64(token)}"
-
           conn = Faraday.new(url: url) do |faraday|
             faraday.adapter Faraday.default_adapter
             faraday.options.timeout = 10
@@ -390,7 +391,8 @@ module Evercam
             ip: request.ip
           )
 
-          present Array(outcome.result), with: Presenters::Snapshot, with_data: params[:with_data]
+          present(Array(outcome.result), with: Presenters::Snapshot,
+                  with_data: params[:with_data], exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
@@ -414,7 +416,7 @@ module Evercam
             ip: request.ip
           )
 
-          camera.snapshot_by_ts!(Time.at(params[:timestamp].to_i)).destroy
+          Snapshot.snapshot_by_ts!(camera.id, Time.at(params[:timestamp].to_i)).destroy
           {}
         end
       end

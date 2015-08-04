@@ -24,7 +24,7 @@ module Evercam
       end
 
       def validate
-        if ::Camera.by_exid!(id).snapshot_by_ts(Time.at(timestamp.to_i))
+        if Snapshot.snapshot_by_ts(Camera.by_exid(id).id, Time.at(timestamp.to_i))
           add_error(:snapshot, :exists, 'Snapshot for this timestamp already exists')
         end
       end
@@ -38,7 +38,7 @@ module Evercam
         Services::snapshot_bucket.objects.create(filepath, inputs[:data]['tempfile'].read)
 
         Snapshot.create(
-          camera: camera,
+          camera_id: camera.id,
           created_at: Time.at(timestamp),
           data: 'S3',
           notes: notes

@@ -66,7 +66,7 @@ module Evercam
             thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
 
             Snapshot.create(
-              camera: camera,
+              camera_id: camera_id,
               created_at: instant,
               data: 'S3',
               notes: 'Evercam System'

@@ -10,6 +10,7 @@ before_fork do |server, worker|
   end
 
   Sequel::Model.db.disconnect if defined?(Sequel::Model.db)
+  Snapshot.db.disconnect if defined?(Snapshot.db)
 end
 
 after_fork do |server, worker|
@@ -17,5 +18,6 @@ after_fork do |server, worker|
     puts 'Unicorn worker intercepting TERM and doing nothing. Wait for master to send QUIT'
   end
 
-  Sequel::Model.db = Sequel.connect(Evercam::Config[:database], max_connections: 20)
+  Sequel::Model.db = Sequel.connect(Evercam::Config[:database])
+  Snapshot.db = Sequel.connect(Evercam::Config[:snaps_database], max_connections: 20)
 end
