@@ -117,8 +117,10 @@ module Evercam
             updates = snap_request(camera, updates, instant)
             unless updates[:is_online]
               CameraActivity.create(
-                camera: camera,
+                camera_id: camera.id,
+                camera_exid: camera.exid,
                 access_token: nil,
+                name: nil,
                 action: 'offline',
                 done_at: Time.now,
                 ip: nil
@@ -127,8 +129,10 @@ module Evercam
           end
           if not camera.is_online and updates[:is_online]
             CameraActivity.create(
-              camera: camera,
+              camera_id: camera.id,
+              camera_exid: camera.exid,
               access_token: nil,
+              name: nil,
               action: 'online',
               done_at: Time.now,
               ip: nil

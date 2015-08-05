@@ -82,8 +82,10 @@ module Evercam
       end
 
       CameraActivity.create(
-        camera: camera,
-        access_token: access_token,
+        camera_id: camera.id,
+        camera_exid: camera.exid,
+        access_token_id: (access_token.nil? ? nil : access_token.id),
+        name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
         action: 'accessed',
         done_at: Time.now,
         ip: request.ip
@@ -280,8 +282,10 @@ module Evercam
           end
 
           CameraActivity.create(
-            camera: camera,
-            access_token: access_token,
+            camera_id: camera.id,
+            camera_exid: camera.exid,
+            access_token_id: (access_token.nil? ? nil : access_token.id),
+            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
             action: 'edited',
             done_at: Time.now,
             ip: request.ip

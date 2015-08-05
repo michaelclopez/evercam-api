@@ -34,10 +34,10 @@ module Evercam
       page = 0 if page < 0
       limit = DEFAULT_LIMIT if limit < 1
       types = params[:types].split(',').map(&:strip)
-      results = camera.activities.filter(:done_at => (from..to)).reverse_order(:done_at)
+      results = CameraActivity.where(camera_id: camera.id).filter(:done_at => (from..to)).reverse_order(:done_at)
       results = results.where(:action => types) unless types.blank?
       total_pages = results.count / limit
-      results = results.limit(limit, page*limit).eager(:camera, :access_token=>:user).all
+      results = results.limit(limit, page*limit).all
 
       if params[:objects]
         present(Array(results), with: Presenters::Log).merge!({

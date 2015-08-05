@@ -88,12 +88,14 @@ module Evercam
         end
 
         CameraActivity.create(
-          camera: camera,
-          access_token: caller.token,
+          camera_id: camera.id,
+          camera_exid: camera.exid,
+          access_token_id: caller.token.id,
+          name: caller.fullname,
           action: 'shared',
           done_at: Time.now,
           ip: request.ip,
-          extra: {:with => params[:email]}
+          extra: {with: params[:email]}
         )
 
         IntercomEventsWorker.perform_async('shared-camera', caller.email)

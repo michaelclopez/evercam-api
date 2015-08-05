@@ -11,12 +11,10 @@ module Evercam
         desc: 'Username or Client name ',
         required: true
       } do |c,o|
-        if c.access_token.nil?
+        if c.name.nil?
           "Anonymous"
-        elsif c.access_token.user.present?
-          c.access_token.user.fullname
-        elsif c.access_token.client.present?
-          c.access_token.client.name
+        else
+          c.name
         end
       end
 

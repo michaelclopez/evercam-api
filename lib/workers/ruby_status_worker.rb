@@ -21,8 +21,10 @@ module Evercam
         camera.save
 
         CameraActivity.create(
-          camera: camera,
+          camera_id: camera.id,
+          camera_exid: camera.exid,
           access_token: nil,
+          name: nil,
           action: status,
           done_at: Time.at(timestamp).utc,
           ip: nil

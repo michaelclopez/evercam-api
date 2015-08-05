@@ -11,6 +11,7 @@ before_fork do |server, worker|
 
   Sequel::Model.db.disconnect if defined?(Sequel::Model.db)
   Snapshot.db.disconnect if defined?(Snapshot.db)
+  CameraActivity.db.disconnect if defined?(CameraActivity.db)
 end
 
 after_fork do |server, worker|
@@ -20,4 +21,5 @@ after_fork do |server, worker|
 
   Sequel::Model.db = Sequel.connect(Evercam::Config[:database])
   Snapshot.db = Sequel.connect(Evercam::Config[:snaps_database], max_connections: 20)
+  CameraActivity.db = Sequel.connect(Evercam::Config[:snaps_database], max_connections: 20)
 end
