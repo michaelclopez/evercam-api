@@ -936,7 +936,7 @@ SELECT pg_catalog.setval('camera_shares_id_seq', 1, false);
 --
 
 COPY cameras (id, created_at, updated_at, exid, owner_id, is_public, config, name, last_polled_at, is_online, timezone, last_online_at, location, mac_address, model_id, discoverable, preview, thumbnail_url) FROM stdin;
-1	2015-07-29 09:19:16.415265+00	2015-07-29 09:19:16.415268+00	evercam-remembrance-camera	1	t	{"snapshots":{"jpg":"/Streaming/channels/1/picture"},"auth":{"basic":{"username":"admin","password":"12345"}}}	Evercam Remembrance Camera	\N	\N	Europe/Dublin	\N	\N	8c:e7:48:bd:bd:f5	\N	f	\N	\N
+1   2015-07-29 09:19:16.415265+00   2015-07-29 09:19:16.415268+00   evercam-remembrance-camera  1   t   {"snapshots":{"jpg":"/Streaming/channels/1/picture"},"auth":{"basic":{"username":"admin","password":"12345"}}}  Evercam Remembrance Camera  \N  \N  Europe/Dublin   \N  \N  8c:e7:48:bd:bd:f5   \N  f   \N  \N
 \.
 
 
@@ -953,7 +953,7 @@ COPY clients (id, created_at, updated_at, api_id, callback_uris, api_key, name, 
 --
 
 COPY countries (id, created_at, updated_at, iso3166_a2, name) FROM stdin;
-1	2015-07-29 09:18:21.990984+00	2015-07-29 09:18:21.990984+00	ie	Ireland
+1   2015-07-29 09:18:21.990984+00   2015-07-29 09:18:21.990984+00   ie  Ireland
 \.
 
 
@@ -1114,7 +1114,7 @@ SELECT pg_catalog.setval('sq_vendors', 1, false);
 --
 
 COPY users (id, created_at, updated_at, firstname, lastname, username, password, country_id, confirmed_at, email, reset_token, token_expires_at, api_id, api_key, is_admin, billing_id, stripe_customer_id) FROM stdin;
-1	2015-07-29 09:19:16.409397+00	2015-07-29 09:19:16.409399+00	Evercam	Admin	evercam	$2a$10$aBOPvVDuCIEDvROx0oXF7uTtZR035d8xDEAm3.GA72f1wGc.vLj4W	1	2015-07-29 09:19:16.409395+00	howrya@evercam.io	\N	\N	\N	\N	f	\N	\N
+1   2015-07-29 09:19:16.409397+00   2015-07-29 09:19:16.409399+00   Evercam Admin   evercam $2a$10$aBOPvVDuCIEDvROx0oXF7uTtZR035d8xDEAm3.GA72f1wGc.vLj4W    1   2015-07-29 09:19:16.409395+00   howrya@evercam.io   \N  \N  \N  \N  f   \N  \N
 \.
 
 
@@ -1711,4 +1711,3 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
-
