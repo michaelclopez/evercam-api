@@ -6,9 +6,6 @@ module Evercam
         string :id
         string :name
         string :vendor_id
-      end
-
-      optional do
         string :jpg_url
         string :mjpg_url
         string :mpeg4_url
@@ -53,8 +50,6 @@ module Evercam
             jpg_url: jpg_url,
             h264_url: h264_url,
             mjpg_url: mjpg_url,
-            default_username: default_username,
-            default_password: default_password,
             shape: shape,
             resolution: resolution,
             official_url: official_url,
