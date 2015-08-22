@@ -45,30 +45,6 @@ module Evercam
     end
 
     #---------------------------------------------------------------------------
-    # PATCH /v1/cameras/:id/apps/cloud_recording
-    #---------------------------------------------------------------------------
-    desc '', {
-      entity: Evercam::Presenters::CloudRecording
-    }
-    params do
-      requires :id, type: String, desc: "Camera Id."
-      optional :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
-      optional :storage_duration, type: Integer, desc: "Storage Duration"
-      optional :schedule, type: String, desc: "Schedule"
-    end
-    patch '/cameras/:id/apps/cloud-recording' do
-      camera = get_cam(params[:id])
-      rights = requester_rights_for(camera)
-      raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
-
-      outcome = Actors::CloudRecordingUpdate.run(params)
-      unless outcome.success?
-        raise OutcomeError, outcome.to_json
-      end
-      present Array(outcome.result), with: Presenters::CloudRecording
-    end
-
-    #---------------------------------------------------------------------------
     # DELETE /v1/cameras/:id/apps/cloud_recording
     #---------------------------------------------------------------------------
     desc '', {
