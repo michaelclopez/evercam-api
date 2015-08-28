@@ -2,7 +2,10 @@ module Evercam
   class V1PTZRoutes < Grape::API
     CAMERAS_URI = "#{Evercam::Config[:snapshots][:url]}v1/cameras"
 
-    def self.ptz_get_endpoint(url)
+    def self.ptz_get_endpoint(url, params)
+      query = params.except(:id, :route_info).to_query
+      url = "#{url}?#{query}"
+
       conn = Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.options.timeout = 10
@@ -13,7 +16,10 @@ module Evercam
       JSON.parse response.body
     end
 
-    def self.ptz_post_endpoint(url)
+    def self.ptz_post_endpoint(url, params)
+      query = params.except(:id, :route_info).to_query
+      url = "#{url}?#{query}"
+
       conn = Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.options.timeout = 10
@@ -41,7 +47,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/status"
-      Evercam::V1PTZRoutes.ptz_get_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_get_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -57,7 +63,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/presets"
-      Evercam::V1PTZRoutes.ptz_get_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_get_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -73,7 +79,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/home"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -89,7 +95,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/home/set"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -106,7 +112,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/presets/#{params[:preset_token]}"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -123,7 +129,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/presets/create/#{params[:preset_name]}"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -140,7 +146,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/presets/go/#{params[:preset_token]}"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -157,7 +163,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/continuous/start/#{params[:direction]}"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -174,7 +180,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/continuous/zoom/#{params[:mode]}"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -190,7 +196,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/continuous/stop"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -206,7 +212,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
       url = "#{CAMERAS_URI}/#{camera[:exid]}/ptz/relative"
-      Evercam::V1PTZRoutes.ptz_post_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_post_endpoint(url, params)
     end
 
     #---------------------------------------------------------------------------
@@ -222,7 +228,7 @@ module Evercam
       raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
 
       url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera[:exid]}/macaddr"
-      Evercam::V1PTZRoutes.ptz_get_endpoint(url)
+      Evercam::V1PTZRoutes.ptz_get_endpoint(url, params)
     end
   end
 end
