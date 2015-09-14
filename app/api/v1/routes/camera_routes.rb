@@ -14,93 +14,93 @@ module Evercam
     include WebErrors
     include Evercam::CacheHelper
 
-    #---------------------------------------------------------------------------
-    # POST /v1/cameras/test
-    #---------------------------------------------------------------------------
-    desc 'Tests if given camera parameters are correct'
-    params do
-      requires :external_url, type: String, desc: "External camera url."
-      requires :jpg_url, type: String, desc: "Snapshot url."
-      optional :cam_username, type: String, desc: "Camera username."
-      optional :cam_password, type: String, desc: "Camera password."
-      optional :vendor_id, type: String, desc: "Vendor Id"
-    end
-    post '/cameras/test' do
-      require 'openssl'
-      require 'base64'
-
-      vendor_exid = params[:vendor_id]
-      cam_auth = "#{params[:cam_username]}:#{params[:cam_password]}"
-
-      api_id = params.fetch('api_id', '')
-      api_key = params.fetch('api_key', '')
-      credentials = "#{api_id}:#{api_key}"
-
-      cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-      cipher.encrypt
-      cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-      cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-      cipher.padding = 0
-
-      message = params[:external_url]
-      message << "/#{params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')}"
-      message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-      message << ' ' until message.length % 16 == 0
-      token = cipher.update(message)
-      token << cipher.final
-
-      url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/test?token=#{Base64.urlsafe_encode64(token)}&vendor_exid=#{vendor_exid}"
-
-      conn = Faraday.new(url: url) do |faraday|
-        faraday.adapter Faraday.default_adapter
-        faraday.options.timeout = 10
-        faraday.options.open_timeout = 10
-      end
-
-      response = conn.post
-      status response.status
-      JSON.parse response.body
-    end
-
-    #---------------------------------------------------------------------------
-    # GET /v1/cameras/:id
-    #---------------------------------------------------------------------------
-    desc 'Returns all data for a given camera', {
-      entity: Evercam::Presenters::Camera
-    }
-    params do
-      requires :id, type: String, desc: "Camera Id."
-      optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view or null if it's not available."
-    end
-    get '/cameras/:id' do
-      camera = get_cam(params[:id])
-      rights = requester_rights_for(camera)
-      unless rights.allow?(AccessRight::LIST)
-        raise AuthorizationError.new if camera.is_public?
-        if !rights.allow?(AccessRight::VIEW) && !camera.is_public?
-          raise NotFoundError.new
-        end
-      end
-
-      CameraActivity.create(
-        camera: camera,
-        access_token: access_token,
-        action: 'accessed',
-        done_at: Time.now,
-        ip: request.ip
-      )
-
-      options = {
-        minimal: !rights.allow?(AccessRight::VIEW),
-        with: Presenters::Camera,
-        thumbnail: params[:thumbnail]
-      }
-      options[:user] = rights.requester unless rights.requester.nil?
-      present([camera], options)
-    end
-
-
     resource :cameras do
+
+      #---------------------------------------------------------------------------
+      # POST /v1/cameras/test
+      #---------------------------------------------------------------------------
+      desc 'Tests if given camera parameters are correct'
+      params do
+        requires :external_url, type: String, desc: "External camera url."
+        requires :jpg_url, type: String, desc: "Snapshot url."
+        optional :cam_username, type: String, desc: "Camera username."
+        optional :cam_password, type: String, desc: "Camera password."
+        optional :vendor_id, type: String, desc: "Vendor Id"
+      end
+      post '/test' do
+        require 'openssl'
+        require 'base64'
+
+        vendor_exid = params[:vendor_id]
+        cam_auth = "#{params[:cam_username]}:#{params[:cam_password]}"
+
+        api_id = params.fetch('api_id', '')
+        api_key = params.fetch('api_key', '')
+        credentials = "#{api_id}:#{api_key}"
+
+        cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+        cipher.encrypt
+        cipher.key = "#{Evercam::Config[:snapshots][:key]}"
+        cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
+        cipher.padding = 0
+
+        message = params[:external_url]
+        message << "/#{params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')}"
+        message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
+        message << ' ' until message.length % 16 == 0
+        token = cipher.update(message)
+        token << cipher.final
+
+        url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/test?token=#{Base64.urlsafe_encode64(token)}&vendor_exid=#{vendor_exid}"
+
+        conn = Faraday.new(url: url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.options.timeout = 10
+          faraday.options.open_timeout = 10
+        end
+
+        response = conn.post
+        status response.status
+        JSON.parse response.body
+      end
+
+      #---------------------------------------------------------------------------
+      # GET /v1/cameras/:id
+      #---------------------------------------------------------------------------
+      desc 'Returns all data for a given camera', {
+        entity: Evercam::Presenters::Camera
+      }
+      params do
+        requires :id, type: String, desc: "Camera Id."
+        optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view or null if it's not available."
+      end
+      get '/:id' do
+        camera = get_cam(params[:id])
+        rights = requester_rights_for(camera)
+        unless rights.allow?(AccessRight::LIST)
+          raise AuthorizationError.new if camera.is_public?
+          if !rights.allow?(AccessRight::VIEW) && !camera.is_public?
+            raise NotFoundError.new
+          end
+        end
+
+        CameraActivity.create(
+          camera: camera,
+          access_token: access_token,
+          action: 'accessed',
+          done_at: Time.now,
+          ip: request.ip
+        )
+
+        options = {
+          minimal: !rights.allow?(AccessRight::VIEW),
+          with: Presenters::Camera,
+          thumbnail: params[:thumbnail]
+        }
+        options[:user] = rights.requester unless rights.requester.nil?
+        present([camera], options)
+      end
+
       before do
         authorize!
       end
