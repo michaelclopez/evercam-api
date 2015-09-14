@@ -184,7 +184,7 @@ GEM
       activesupport
     nenv (0.2.0)
     net-http-digest_auth (1.4)
-    newrelic-grape (1.4.1)
+    newrelic-grape (2.0.0)
       grape
       newrelic_rpm
     newrelic_rpm (3.13.0.299)
