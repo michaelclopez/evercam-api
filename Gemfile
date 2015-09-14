@@ -24,7 +24,7 @@ gem 'curb'
 
 gem 'grape'
 gem 'grape-entity'
-gem 'grape-swagger', '= 0.7.2'
+gem 'grape-swagger', '= 0.10.2'
 
 gem 'georuby', '~> 2.3.0'
 
