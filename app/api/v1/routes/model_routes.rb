@@ -13,8 +13,8 @@ module Evercam
       # GET /v1/models
       #---------------------------------------------------------------------------
       desc 'Returns set of known models for a supported camera vendor', {
-          entity: Evercam::Presenters::Model
-        }
+        entity: Evercam::Presenters::Model
+      }
       params do
         optional :name, type: String, desc: "Name of the model (partial search)"
         optional :vendor_id, type: String, desc: "Unique identifier for the vendor"
@@ -39,7 +39,7 @@ module Evercam
         models = models.where(exid: params[:id]) unless params.fetch(:id, nil).nil?
         total_pages = models.count / limit
         count = models.count
-        models = models.limit(limit, page*limit)
+        models = models.limit(limit, page * limit)
         present(Array(models.all), with: Presenters::Model).merge!(pages: total_pages, records: count)
       end
 
@@ -47,8 +47,8 @@ module Evercam
       # GET /v1/models/:id
       #---------------------------------------------------------------------------
       desc 'Returns available information for the specified model', {
-          entity: Evercam::Presenters::Model
-        }
+        entity: Evercam::Presenters::Model
+      }
       params do
         requires :id, type: String, desc: "Unique identifier for the model"
       end

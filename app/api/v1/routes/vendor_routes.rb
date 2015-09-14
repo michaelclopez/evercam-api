@@ -11,8 +11,8 @@ module Evercam
       # GET /v1/vendors
       #---------------------------------------------------------------------------
       desc 'Returns all known IP hardware vendors', {
-                                                    entity: Evercam::Presenters::Vendor
-                                                  }
+        entity: Evercam::Presenters::Vendor
+      }
       params do
         optional :name, type: String, desc: "Name of the vendor (partial search)"
         optional :mac, type: String, desc: "Mac address of camera"
@@ -29,8 +29,8 @@ module Evercam
       # GET /v1/vendors/:id
       #---------------------------------------------------------------------------
       desc 'Returns available information for the specified vendor', {
-                                                                     entity: Evercam::Presenters::Vendor
-                                                                   }
+        entity: Evercam::Presenters::Vendor
+      }
       params do
         requires :id, type: String, desc: "Unique identifier for the vendor"
       end
@@ -49,8 +49,8 @@ module Evercam
       # POST /v1/vendors
       #---------------------------------------------------------------------------
       desc 'Create a new vendor', {
-          entity: Evercam::Presenters::Vendor
-        }
+        entity: Evercam::Presenters::Vendor
+      }
       params do
         requires :id, type: String, desc: "Unique identifier for the vendor"
         requires :name, type: String, desc: "vendor name"
@@ -80,8 +80,8 @@ module Evercam
       # PATCH /v1/vendors/:id
       #---------------------------------------------------------------------------
       desc 'Updates full or partial data on your existing vendor', {
-          entity: Evercam::Presenters::Vendor
-        }
+        entity: Evercam::Presenters::Vendor
+      }
       params do
         requires :id, type: String, desc: "Unique identifier for the vendor"
         optional :name, type: String, desc: "vendor name"
