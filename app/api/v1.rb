@@ -49,6 +49,7 @@ module Evercam
     mount V1SnapshotRoutes
     mount V1SnapshotJpgRoutes
     mount V1ModelRoutes
+    mount V1VendorRoutes
     mount V1AuthRoutes
     mount V1ClientRoutes
     mount V1PublicRoutes

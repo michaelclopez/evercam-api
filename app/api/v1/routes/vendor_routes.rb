@@ -1,7 +1,7 @@
 require_relative '../presenters/vendor_presenter'
 
 module Evercam
-  class V1ModelRoutes < Grape::API
+  class V1VendorRoutes < Grape::API
 
     include WebErrors
 
