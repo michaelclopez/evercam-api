@@ -22,7 +22,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    3scale_client (2.3.4)
+    3scale_client (2.4.2)
       nokogiri
     activesupport (4.2.4)
       i18n (~> 0.7)
@@ -130,7 +130,7 @@ GEM
     evercam_misc (0.0.10)
       3scale_client (~> 2.3)
       dotenv (~> 2.0.1)
-    evercam_models (0.3.31)
+    evercam_models (0.3.32)
       activesupport (~> 4.2)
       bcrypt (~> 3.1)
       dotenv (~> 2.0)
@@ -140,7 +140,7 @@ GEM
       hashie (~> 3.4)
       nokogiri (~> 1.6)
       pg (~> 0.18.2)
-      sequel (= 4.23.0)
+      sequel (= 4.26.0)
       timezone (~> 0.3)
       typhoeus (~> 0.7.1)
     factory_girl (4.5.0)
@@ -152,8 +152,8 @@ GEM
       multipart-post (>= 1.2, < 3)
     ffi (1.9.10)
     formatador (0.2.5)
-    geocoder (1.2.9)
-    georuby (2.3.0)
+    geocoder (1.2.11)
+    georuby (2.5.2)
     grape (0.13.0)
       activesupport
       builder
@@ -232,7 +232,7 @@ GEM
     notiffany (0.0.7)
       nenv (~> 0.1)
       shellany (~> 0.0)
-    pg (0.18.2)
+    pg (0.18.3)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
@@ -290,7 +290,7 @@ GEM
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
     safe_yaml (1.0.4)
-    sequel (4.23.0)
+    sequel (4.26.0)
     shellany (0.0.1)
     sidekiq (3.5.0)
       celluloid (~> 0.17.0)
@@ -333,8 +333,8 @@ GEM
     tilt (2.0.1)
     timers (4.1.1)
       hitimes
-    timezone (0.3.11)
-    typhoeus (0.7.2)
+    timezone (0.4.1)
+    typhoeus (0.7.3)
       ethon (>= 0.7.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
@@ -365,11 +365,11 @@ DEPENDENCIES
   database_cleaner
   em-http-request
   evercam_misc (~> 0.0.10)
-  evercam_models (~> 0.3.30)
+  evercam_models (~> 0.3.32)
   factory_girl
   fakes3
   faraday-digestauth (~> 0.1.0)!
-  georuby (~> 2.3.0)
+  georuby
   grape
   grape-entity
   grape-swagger (= 0.10.2)

@@ -5,6 +5,7 @@ require 'faraday/digestauth'
 require 'typhoeus/adapters/faraday'
 
 require 'uri'
+require 'pry'
 
 module Evercam
   class V1CameraRoutes < Grape::API
@@ -150,6 +151,7 @@ module Evercam
           key = "cameras|#{user.username}|#{include_shared}|#{params[:thumbnail]}"
           cameras = Evercam::Services.dalli_cache.get(key) unless thumbnail_requested || requested_by_client
 
+          pry.binding
           if cameras.blank?
             cameras = []
             query = Camera.where(owner: user)
