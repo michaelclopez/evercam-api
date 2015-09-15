@@ -50,7 +50,6 @@ Pusher.secret = ENV['PUSHER_SECRET']
 Pusher.encrypted = true
 
 map '/v1' do
-
   # setup ssl requirements
   use Rack::SslEnforcer,
     Evercam::Config[:api][:ssl]
@@ -76,7 +75,6 @@ map '/v1' do
   use Rack::Deflater
 
   run Evercam::APIv1
-
 end
 
 map '/' do
