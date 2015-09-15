@@ -1,6 +1,5 @@
 module Evercam
   class WebRouter < Sinatra::Base
-
     include WebErrors
 
     set :raise_errors, false
@@ -14,7 +13,7 @@ module Evercam
 
     configure :development do
       require 'sinatra/reloader'
-      
+
       register Sinatra::Reloader
     end
 
@@ -70,6 +69,5 @@ module Evercam
 
     helpers Sinatra::Cookies
     helpers Sinatra::ContentFor
-    
-  end  
+  end
 end
