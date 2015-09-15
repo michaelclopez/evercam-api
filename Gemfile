@@ -26,7 +26,7 @@ gem 'grape'
 gem 'grape-entity'
 gem 'grape-swagger', '= 0.10.2'
 
-gem 'georuby', '~> 2.3.0'
+gem 'georuby'
 
 gem 'activesupport-json_encoder',
   github: 'rails/activesupport-json_encoder'
@@ -55,7 +55,7 @@ gem 'sinatra-partial',
   require: 'sinatra/partial'
 
 gem 'evercam_misc', '~> 0.0.10'
-gem 'evercam_models', '~> 0.3.30'
+gem 'evercam_models', '~> 0.3.32'
 
 gem 'airbrake'
 
