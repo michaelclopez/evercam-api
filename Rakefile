@@ -799,3 +799,27 @@ task :send_camera_data_to_elixir_server, [:total, :paid_only] do |t, args|
     log.warn(e)
   end
 end
+
+task :add_geolocation do
+  Sequel.connect(Evercam::Config[:database])
+
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'evercam_models'
+  require "resolv"
+
+  Geocoder.configure(:timeout => 5, :ip_lookup => :telize)
+
+  cameras = Camera.where(location: nil)
+  cameras.each do |camera|
+    begin
+      puts camera.exid
+      if camera.config["external_host"] =~ Resolv::IPv4::Regex
+        camera.location = Geocoder.coordinates(camera.config["external_host"])
+        camera.save
+      end
+    rescue => e
+      log.warn(e)
+    end
+  end
+end
