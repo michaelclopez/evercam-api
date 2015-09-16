@@ -800,6 +800,52 @@ task :send_camera_data_to_elixir_server, [:total, :paid_only] do |t, args|
   end
 end
 
+task :add_mac_addresses do
+  Sequel.connect(Evercam::Config[:database])
+
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'evercam_models'
+
+  no_onvif_support = 0
+
+  File.open("temp/cameras_no_onvif", 'a') { |f| f.write("") }
+
+  cameras = Camera.where(mac_address: nil)
+  cameras.each do |camera|
+    begin
+      camera_url = camera.external_url.to_s
+      camera_url << camera.res_url('jpg').to_s
+      already_checked = File.foreach("temp/cameras_no_onvif").any? { |line| line.chomp == camera.exid }
+      if camera_url.present? && !already_checked
+        puts camera.exid
+        mac_address_url = "https://media.evercam.io/v1/cameras/#{camera.exid}/macaddr"
+        puts mac_address_url
+        conn = Faraday.new(url: mac_address_url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.options.timeout = 10
+          faraday.options.open_timeout = 10
+        end
+
+        response = conn.get.body
+        if response == "Server internal error - 500"
+          no_onvif_support += 1
+          File.open("temp/cameras_no_onvif", 'a') { |f| f.write("#{camera.exid}\n") }
+        else
+          response = JSON.parse(response)
+          camera.mac_address = response["mac_address"]
+          camera.save
+        end
+        puts
+      end
+    rescue => e
+      log.warn(e)
+    end
+  end
+
+  puts "cameras without onvif support: #{no_onvif_support}"
+end
+
 task :add_geolocation do
   Sequel.connect(Evercam::Config[:database])
 
