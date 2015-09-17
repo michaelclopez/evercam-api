@@ -248,6 +248,7 @@ GEM
     pry-stack_explorer (0.4.9.2)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
+    puma (2.13.4)
     pusher (0.14.5)
       httpclient (~> 2.5)
       multi_json (~> 1.0)
@@ -266,7 +267,6 @@ GEM
     racksh (1.0.0)
       rack (>= 1.0)
       rack-test (>= 0.5)
-    raindrops (0.13.0)
     rake (10.4.2)
     rb-fsevent (0.9.6)
     rb-inotify (0.9.5)
@@ -338,10 +338,6 @@ GEM
       ethon (>= 0.7.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (4.9.0)
-      kgio (~> 2.6)
-      rack
-      raindrops (~> 0.7)
     virtus (1.0.5)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
@@ -390,6 +386,7 @@ DEPENDENCIES
   pry-byebug
   pry-rescue
   pry-stack_explorer
+  puma
   pusher
   rack
   rack-cors
@@ -408,8 +405,7 @@ DEPENDENCIES
   smarter_csv
   stringex
   thin
-  unicorn
   webmock (~> 1.21.0)
 
 BUNDLED WITH
-   1.10.4
+   1.10.6
