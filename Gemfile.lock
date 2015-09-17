@@ -124,7 +124,6 @@ GEM
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     curb (0.8.8)
-    daemons (1.2.2)
     dalli (2.7.4)
     database_cleaner (1.5.0)
     debug_inspector (0.0.2)
@@ -329,10 +328,6 @@ GEM
     spoon (0.0.4)
       ffi
     stringex (2.5.2)
-    thin (1.6.3)
-      daemons (~> 1.0, >= 1.0.9)
-      eventmachine (~> 1.0)
-      rack (~> 1.0)
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.1)
@@ -409,7 +404,6 @@ DEPENDENCIES
   sinatra-partial
   smarter_csv
   stringex
-  thin
   webmock (~> 1.21.0)
 
 BUNDLED WITH

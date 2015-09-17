@@ -67,7 +67,6 @@ gem 'em-http-request'
 
 group :development do
   gem 'fakes3'
-  gem 'thin'
   gem 'pry-rescue'
   gem 'pry-stack_explorer'
   gem 'pry-byebug'
