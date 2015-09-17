@@ -8,7 +8,7 @@ require 'sidekiq/web'
 require 'newrelic_rpm'
 
 # Establish a connection to the database.
-Sequel.connect(Evercam::Config[:database])
+Sequel::Model.db = Sequel.connect(Evercam::Config[:database], max_connections: 50)
 
 Bundler.require(:default)
 
