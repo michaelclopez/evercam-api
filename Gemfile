@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.2.2'
 
-gem 'unicorn'
+gem 'puma'
 gem 'rack'
 gem 'rack-rewrite'
 gem 'rack-ssl-enforcer',
