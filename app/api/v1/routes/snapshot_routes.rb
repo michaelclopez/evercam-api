@@ -235,18 +235,24 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
-          days = []
-          (1..Date.new(params[:year], params[:month], -1).day).each do |day|
-            from = Time.new(params[:year], params[:month], day, 0, 0, 0, off_set).utc.to_s
-            to = Time.new(params[:year], params[:month], day, 23, 59, 59, off_set).utc.to_s
+          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
 
-            if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
-              days << day
+          cache_key = "snapshots|days|#{params.slice(:id, :year, :month).flatten.join('|')}"
+          days = Evercam::Services.dalli_cache.get(cache_key)
+          if days.nil?
+            days = []
+            (1..Date.new(params[:year], params[:month], -1).day).each do |day|
+              from = Time.new(params[:year], params[:month], day, 0, 0, 0, offset).utc.to_s
+              to = Time.new(params[:year], params[:month], day, 23, 59, 59, offset).utc.to_s
+
+              if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+                days << day
+              end
             end
+            Evercam::Services.dalli_cache.set(cache_key, days)
           end
 
-          { :days => days}
+          { :days => days }
         end
 
         #-------------------------------------------------------------------
@@ -270,18 +276,23 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
-          hours = []
-          (0..23).each do |hour|
-            from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, off_set).utc.to_s
-            to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, off_set).utc.to_s
+          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
 
-            if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
-              hours << hour
+          cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
+          hours = Evercam::Services.dalli_cache.get(cache_key)
+          if hours.nil?
+            hours = []
+            (0..23).each do |hour|
+              from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc.to_s
+              to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc.to_s
+
+              if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+                hours << hour
+              end
             end
           end
 
-          { :hours => hours}
+          { :hours => hours }
         end
 
         #-------------------------------------------------------------------
