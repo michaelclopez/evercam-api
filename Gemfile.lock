@@ -1,8 +1,8 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: c5cb94dd3ed107785a1dab16fd5338ba348ce58a
+  revision: 9a09ee752aeb3179df9296a0a3e5a62d29daa17a
   specs:
-    evercam_models (0.3.33)
+    evercam_models (0.3.34)
       activesupport (~> 4.2)
       bcrypt (~> 3.1)
       dotenv (~> 2.0)
@@ -217,7 +217,7 @@ GEM
     mime-types (2.6.1)
     mini_magick (4.3.3)
     mini_portile (0.6.2)
-    minitest (5.8.0)
+    minitest (5.8.1)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
     multi_json (1.11.2)
