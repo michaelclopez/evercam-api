@@ -414,9 +414,9 @@ module Evercam
                 grants << "#{AccessRight::GRANT}~#{right}"
               end
             else
-              options[:token] = AccessToken.where(user_id: options[:user].id).last if options[:token].nil?
+              options[:tokens] = AccessToken.where(user_id: options[:user].id).all if options[:tokens].nil?
               rights = AccessRight.where(
-                token_id: options[:token].id,
+                token: options[:tokens],
                 camera_id: camera.id,
                 status: AccessRight::ACTIVE
               ).select(:right).all
@@ -424,6 +424,7 @@ module Evercam
                 list = ["snapshot,list"]
                 grants = []
               else
+                rights = rights.map { |right| right.to_s.gsub("::", "") }
                 rights.each do |right|
                   list << right
                   grants << "#{AccessRight::GRANT}~#{right}"

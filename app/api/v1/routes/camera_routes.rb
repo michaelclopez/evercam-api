@@ -170,7 +170,7 @@ module Evercam
             end
 
             unless requested_by_client
-              token = AccessToken.where(user_id: user.id).last
+              tokens = AccessToken.where(user_id: user.id).all
             end
 
             query.order(:name).eager(:owner, :vendor_model => :vendor).all.select do |camera|
@@ -181,7 +181,7 @@ module Evercam
                 cameras << presenter.as_json(
                   minimal: !rights.allow?(AccessRight::VIEW),
                   user: caller,
-                  token: token,
+                  tokens: tokens,
                   thumbnail: params[:thumbnail]
                 )
               end
