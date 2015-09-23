@@ -407,10 +407,35 @@ module Evercam
         if rights_string.nil?
           list   = []
           grants = []
-          rights = AccessRightSet.for(camera, options[:user])
-          AccessRight::BASE_RIGHTS.each do |right|
-            list << right if rights.allow?(right)
-            grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+          if options[:user].respond_to?('username')
+            if options[:user] == camera.owner
+              AccessRight::BASE_RIGHTS.each do |right|
+                list << right
+                grants << "#{AccessRight::GRANT}~#{right}"
+              end
+            else
+              options[:token] = AccessToken.where(user_id: options[:user].id).last if options[:token].nil?
+              rights = AccessRight.where(
+                token_id: options[:token].id,
+                camera_id: camera.id,
+                status: AccessRight::ACTIVE
+              ).select(:right).all
+              if rights.blank?
+                list = ["snapshot,list"]
+                grants = []
+              else
+                rights.each do |right|
+                  list << right
+                  grants << "#{AccessRight::GRANT}~#{right}"
+                end
+              end
+            end
+          else
+            rights = AccessRightSet.for(camera, options[:user])
+            AccessRight::BASE_RIGHTS.each do |right|
+              list << right if rights.allow?(right)
+              grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+            end
           end
           list.concat(grants) unless grants.empty?
           rights_string = list.join(",")

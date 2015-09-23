@@ -169,6 +169,10 @@ module Evercam
               )
             end
 
+            unless requested_by_client
+              token = AccessToken.where(user_id: user.id).last
+            end
+
             query.order(:name).eager(:owner, :vendor_model => :vendor).all.select do |camera|
               rights = requester_rights_for(camera)
               rights = CameraRightSet.new(camera, rights.token.grantor) if rights.type == :client
@@ -177,6 +181,7 @@ module Evercam
                 cameras << presenter.as_json(
                   minimal: !rights.allow?(AccessRight::VIEW),
                   user: caller,
+                  token: token,
                   thumbnail: params[:thumbnail]
                 )
               end
