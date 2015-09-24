@@ -421,9 +421,28 @@ module Evercam
   end
 
   class V1SnapshotJpgRoutes < Grape::API
-    format :json
+    content_type :img, "image/jpg"
+    format :img
 
     namespace :cameras do
+      params do
+        requires :id, type: String, desc: "Camera Id."
+      end
+      route_param :id do
+        desc 'Returns jpg from the camera'
+        get 'recordings/snapshots/latest/jpg' do
+          camera = ::Camera.by_exid!(params[:id])
+
+          rights = requester_rights_for(camera)
+          raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
+
+          snapshot = camera.snapshots.order(:created_at).last
+          raise NotFoundError.new if snapshot.nil?
+
+          filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          Evercam::Services.snapshot_bucket.objects[filepath].read
+        end
+      end
     end
   end
 end
