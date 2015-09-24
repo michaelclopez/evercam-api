@@ -2,140 +2,7 @@ require 'typhoeus'
 require_relative '../presenters/snapshot_presenter'
 
 module Evercam
-
-  class V1SnapshotJpgRoutes < Grape::API
-    format :json
-
-    namespace :cameras do
-      #-------------------------------------------------------------------
-      # GET /v1/cameras/:id/live/snapshot
-      #-------------------------------------------------------------------
-      params do
-        requires :id, type: String, desc: "Camera Id."
-      end
-      route_param :id do
-        desc 'Returns jpg from the camera'
-        get '/live/snapshot' do
-          camera = get_cam(params[:id])
-
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new unless rights.allow?(AccessRight::SNAPSHOT)
-
-          unless camera.external_url.nil?
-            require 'openssl'
-            require 'base64'
-            cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
-            cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
-            cam_auth = "#{cam_username}:#{cam_password}"
-
-            api_id = params.fetch('api_id', '')
-            api_key = params.fetch('api_key', '')
-            credentials = "#{api_id}:#{api_key}"
-
-            cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-            cipher.encrypt
-            cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-            cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-            cipher.padding = 0
-
-            message = camera.external_url
-            message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
-            message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-            message << ' ' until message.length % 16 == 0
-            token = cipher.update(message)
-            token << cipher.final
-
-            CameraActivity.create(
-              camera: camera,
-              access_token: access_token,
-              action: 'viewed',
-              done_at: Time.now,
-              ip: request.ip
-            )
-
-            redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/live/snapshot?token=#{Base64.urlsafe_encode64(token)}"
-          end
-        end
-      end
-    end
-
-    namespace :public do
-        #-------------------------------------------------------------------
-        # GET /v1/public/cameras/nearest/snapshot
-        #-------------------------------------------------------------------
-        desc "Returns jpg from nearest publicly discoverable camera from within the Evercam system."\
-             "If location isn't provided requester's IP address is used.", {
-        }
-        params do
-          optional :near_to, type: String, desc: "Specify an address or latitude longitude points."
-        end
-        get 'cameras/nearest/snapshot' do
-          begin
-            if params[:near_to]
-              location = {
-                latitude: Geocoding.as_point(params[:near_to]).y,
-                longitude: Geocoding.as_point(params[:near_to]).x
-              }
-            else
-              location = {
-                latitude: request.location.latitude,
-                longitude: request.location.longitude
-              }
-            end
-          rescue Exception => ex
-            raise_error(400, 400, ex.message)
-          end
-
-          if params[:near_to] or request.location
-            camera = Camera.nearest(location).limit(1).first
-          else
-            raise_error(400, 400, "Location is missing")
-          end
-
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new unless rights.allow?(AccessRight::SNAPSHOT)
-
-          unless camera.external_url.nil?
-            require 'openssl'
-            require 'base64'
-            cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
-            cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
-            cam_auth = "#{cam_username}:#{cam_password}"
-
-            api_id = params.fetch('api_id', '')
-            api_key = params.fetch('api_key', '')
-            credentials = "#{api_id}:#{api_key}"
-
-            cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-            cipher.encrypt
-            cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-            cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-            cipher.padding = 0
-
-            message = camera.external_url
-            message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
-            message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-            message << ' ' until message.length % 16 == 0
-            token = cipher.update(message)
-            token << cipher.final
-
-            CameraActivity.create(
-              camera: camera,
-              access_token: access_token,
-              action: 'viewed',
-              done_at: Time.now,
-              ip: request.ip
-            )
-
-            redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/live/snapshot?token=#{Base64.urlsafe_encode64(token)}"
-          end
-        end
-      end
-
-  end
-
   class V1SnapshotRoutes < Grape::API
-
     include WebErrors
     before do
       authorize!
@@ -150,7 +17,6 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       route_param :id do
-
         #-------------------------------------------------------------------
         # GET /v1/cameras/:id/recordings/snapshots
         #-------------------------------------------------------------------
@@ -192,9 +58,7 @@ module Evercam
 
           snapshots = query.limit(limit).offset(offset).all
 
-          present(snapshots, with: Presenters::Snapshot).merge!({
-              pages: total_pages
-            })
+          present(snapshots, with: Presenters::Snapshot).merge!(pages: total_pages)
         end
 
         #-------------------------------------------------------------------
@@ -427,6 +291,156 @@ module Evercam
 
           camera.snapshot_by_ts!(Time.at(params[:timestamp].to_i)).destroy
           {}
+        end
+      end
+
+      #-------------------------------------------------------------------
+      # GET /v1/cameras/:id/live/snapshot
+      #-------------------------------------------------------------------
+      params do
+        requires :id, type: String, desc: "Camera Id."
+      end
+      route_param :id do
+        desc 'Returns jpg from the camera'
+        get '/live/snapshot' do
+          camera = get_cam(params[:id])
+
+          rights = requester_rights_for(camera)
+          raise AuthorizationError.new unless rights.allow?(AccessRight::SNAPSHOT)
+
+          unless camera.external_url.nil?
+            require 'openssl'
+            require 'base64'
+            cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
+            cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
+            cam_auth = "#{cam_username}:#{cam_password}"
+
+            api_id = params.fetch('api_id', '')
+            api_key = params.fetch('api_key', '')
+            credentials = "#{api_id}:#{api_key}"
+
+            cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+            cipher.encrypt
+            cipher.key = "#{Evercam::Config[:snapshots][:key]}"
+            cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
+            cipher.padding = 0
+
+            message = camera.external_url
+            message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
+            message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
+            message << ' ' until message.length % 16 == 0
+            token = cipher.update(message)
+            token << cipher.final
+
+            CameraActivity.create(
+              camera: camera,
+              access_token: access_token,
+              action: 'viewed',
+              done_at: Time.now,
+              ip: request.ip
+            )
+
+            redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/live/snapshot?token=#{Base64.urlsafe_encode64(token)}"
+          end
+        end
+      end
+    end
+
+    namespace :public do
+      #-------------------------------------------------------------------
+      # GET /v1/public/cameras/nearest/snapshot
+      #-------------------------------------------------------------------
+      desc "Returns jpg from nearest publicly discoverable camera from within the Evercam system."\
+        "If location isn't provided requester's IP address is used.", {
+      }
+      params do
+        optional :near_to, type: String, desc: "Specify an address or latitude longitude points."
+      end
+      get 'cameras/nearest/snapshot' do
+        begin
+          if params[:near_to]
+            location = {
+              latitude: Geocoding.as_point(params[:near_to]).y,
+              longitude: Geocoding.as_point(params[:near_to]).x
+            }
+          else
+            location = {
+              latitude: request.location.latitude,
+              longitude: request.location.longitude
+            }
+          end
+        rescue => error
+          raise_error(400, 400, error.message)
+        end
+
+        if params[:near_to] || request.location
+          camera = Camera.nearest(location).limit(1).first
+        else
+          raise_error(400, 400, "Location is missing")
+        end
+
+        rights = requester_rights_for(camera)
+        raise AuthorizationError.new unless rights.allow?(AccessRight::SNAPSHOT)
+
+        unless camera.external_url.nil?
+          require 'openssl'
+          require 'base64'
+          cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
+          cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
+          cam_auth = "#{cam_username}:#{cam_password}"
+
+          api_id = params.fetch('api_id', '')
+          api_key = params.fetch('api_key', '')
+          credentials = "#{api_id}:#{api_key}"
+
+          cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+          cipher.encrypt
+          cipher.key = "#{Evercam::Config[:snapshots][:key]}"
+          cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
+          cipher.padding = 0
+
+          message = camera.external_url
+          message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
+          message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
+          message << ' ' until message.length % 16 == 0
+          token = cipher.update(message)
+          token << cipher.final
+
+          CameraActivity.create(
+            camera: camera,
+            access_token: access_token,
+            action: 'viewed',
+            done_at: Time.now,
+            ip: request.ip
+          )
+
+          redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/live/snapshot?token=#{Base64.urlsafe_encode64(token)}"
+        end
+      end
+    end
+  end
+
+  class V1SnapshotJpgRoutes < Grape::API
+    content_type :img, "image/jpg"
+    format :img
+
+    namespace :cameras do
+      params do
+        requires :id, type: String, desc: "Camera Id."
+      end
+      route_param :id do
+        desc 'Returns jpg from the camera'
+        get 'recordings/snapshots/latest/jpg' do
+          camera = ::Camera.by_exid!(params[:id])
+
+          rights = requester_rights_for(camera)
+          raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
+
+          snapshot = camera.snapshots.order(:created_at).last
+          raise NotFoundError.new if snapshot.nil?
+
+          filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          Evercam::Services.snapshot_bucket.objects[filepath].read
         end
       end
     end
