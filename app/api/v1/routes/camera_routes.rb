@@ -147,7 +147,7 @@ module Evercam
             user = ::User.where(api_id: params[:api_id], api_key: params[:api_key]).first
           end
 
-          key = "cameras|#{user.username}|#{include_shared}|#{params[:thumbnail]}"
+          key = "cameras|#{user.username}|#{include_shared}"
           cameras = Evercam::Services.dalli_cache.get(key) unless thumbnail_requested || requested_by_client
 
           if cameras.blank?
