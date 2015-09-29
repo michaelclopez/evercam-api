@@ -1,5 +1,3 @@
-# Copyright (c) 2014, Evercam.io
-
 require 'aws-sdk'
 require 'sidekiq'
 require 'sidekiq/api'

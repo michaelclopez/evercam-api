@@ -1,5 +1,3 @@
-# Copyright (c) 2014, Evercam.ip
-
 require "active_support/all"
 require "faraday"
 require "logjam"
