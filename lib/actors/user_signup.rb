@@ -4,8 +4,6 @@ require 'digest/sha1'
 module Evercam
   module Actors
     class UserSignup < Mutations::Command
-      include ThreeScaleHelper
-
       required do
         string :firstname
         string :lastname
@@ -65,9 +63,10 @@ module Evercam
         end
 
         User.db.transaction do
+          user.api_id  = SecureRandom.hex(4)
+          user.api_key = SecureRandom.hex
           user.save
           share_remembrance_camera(user)
-          threescale_signup(user, password)
           if share_request_key.blank?
             code = Digest::SHA1.hexdigest(user.username + user.created_at.to_s)
             Mailers::UserMailer.confirm(user: user, code: code)
@@ -115,7 +114,6 @@ module Evercam
           end
         end
       end
-
     end
   end
 end

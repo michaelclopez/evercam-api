@@ -40,17 +40,6 @@ describe 'API routes/users' do
   let(:other_user) { create(:user) }
   let(:alt_keys) { {api_id: other_user.api_id, api_key: other_user.api_key} }
 
-  before(:each) do
-    body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"\
-      "<status>\n"\
-      "  <authorized>true</authorized>\n"\
-      "  <plan>Pay As You Go ($20 for 10,000 hits)</plan>\n"\
-      "</status>"
-    stub_request(:post, 'https://evercam-admin.3scale.net/admin/api/signup.xml').to_return(status: 200,
-                                                                                           body: body,
-                                                                                           headers: {})
-  end
-
   describe 'GET /testusername' do
 
     let!(:user0) { create(:user, username: 'xxxx', email: 'xxxx@gmail.com') }

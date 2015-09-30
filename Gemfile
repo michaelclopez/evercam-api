@@ -54,7 +54,7 @@ gem 'sinatra-contrib',
 gem 'sinatra-partial',
   require: 'sinatra/partial'
 
-gem 'evercam_misc', '~> 0.0.10'
+gem 'evercam_misc', '~> 0.0.11'
 gem 'evercam_models',
   github: 'evercam/evercam-models'
 

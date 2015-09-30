@@ -22,7 +22,6 @@ module Evercam
         optional :page, type: Integer, desc: "Page number, starting from 0"
       end
       get do
-        authreport!('models/vendor/get')
         limit = params[:limit] || DEFAULT_LIMIT
         page = params[:page] || 0
         page = 0 if page < 0
