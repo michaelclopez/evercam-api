@@ -63,7 +63,7 @@ module Evercam
         end
 
         User.db.transaction do
-          user.api_id  = SecureRandom.hex(4)
+          user.api_id = SecureRandom.hex(4)
           user.api_key = SecureRandom.hex
           user.save
           share_remembrance_camera(user)

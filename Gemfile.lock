@@ -1,12 +1,12 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: 5d29c27d41db96abb4c61dfe22ae5ab545573825
+  revision: ae0f597529b59c9c7a30f756f2b7724a91af174a
   specs:
     evercam_models (0.3.35)
       activesupport (~> 4.2)
       bcrypt (~> 3.1)
       dotenv (~> 2.0)
-      evercam_misc (~> 0.0.10)
+      evercam_misc (~> 0.0.11)
       geocoder (~> 1.2)
       georuby (~> 2.3)
       hashie (~> 3.4)
