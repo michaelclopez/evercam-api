@@ -1,11 +1,8 @@
-# Copyright (c) 2014, Evercam.ip
-
 require "active_support/all"
 require "faraday"
 require "logjam"
 require "mutations"
 require "pony"
-require "3scale_client"
 require "evercam_misc"
 require "evercam_models"
 require_relative "actors/camera_create"

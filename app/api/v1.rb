@@ -6,9 +6,6 @@ require_relative '../../lib/services'
 
 module Evercam
   class APIv1 < Grape::API
-
-    formatter :m3u8, lambda { |object, env| object }
-
     content_type :json, "application/json"
 
     # use JSON if accept header empty
@@ -25,7 +22,6 @@ module Evercam
       include ErrorsHelper
       include LoggingHelper
       include SessionHelper
-      include ThreeScaleHelper
       include ParameterMapper
       include Services
       include Utils
@@ -51,7 +47,6 @@ module Evercam
     mount V1ModelRoutes
     mount V1VendorRoutes
     mount V1AuthRoutes
-    mount V1ClientRoutes
     mount V1PublicRoutes
     mount V1ShareRoutes
     mount V1LogRoutes
