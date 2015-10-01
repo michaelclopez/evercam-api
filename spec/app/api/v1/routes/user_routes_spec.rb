@@ -254,7 +254,6 @@ describe 'API routes/users' do
              'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
              'timezone', 'is_public', 'is_online', 'discoverable', 'location',
              'external', 'internal','dyndns', 'proxy_url', 'rights')
-            expect(c).to not_have_keys('thumbnail')
           }
         end
       end
@@ -274,39 +273,6 @@ describe 'API routes/users' do
           }
         end
       end
-
-      context 'when thumbnail is set to true' do
-        before(:each) {
-          get("/cameras?user_id=#{user0.username}",
-              { thumbnail: true }.merge(api_keys))
-        }
-
-        it 'returns cameras for the user with thumbnails' do
-          cameras = last_response.json['cameras']
-          cameras.each {|c|
-            expect(c).to have_keys('thumbnail')
-          }
-        end
-      end
-      context 'when thumbnail and include_shared is set to true' do
-        before(:each) {
-          camera1.update(preview: 'aaa')
-          get("/cameras?user_id=#{user0.username}",
-              { thumbnail: true, include_shared: true }.merge(api_keys))
-        }
-
-        it 'returns cameras for the user with thumbnails' do
-          cameras = last_response.json['cameras']
-          cameras.each {|c|
-            expect(c).to have_keys('thumbnail')
-            if c['id'] == camera1.exid
-              expect(c['thumbnail']).to_not be_nil
-              expect(c['thumbnail']).to start_with('data:image/jpeg;base64,')
-            end
-          }
-        end
-      end
-
     end
   end
 
