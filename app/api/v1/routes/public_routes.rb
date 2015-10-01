@@ -27,20 +27,15 @@ module Evercam
           optional :id_contains, type: String, desc: "Search for cameras whose id contains the given value."
           optional :is_near_to, type: String, desc: "Search for cameras within #{DEFAULT_DISTANCE} meters of a given address or latitude longitude point."
           optional :within_distance, type: Float, desc: "Search for cameras within a specific range, in meters, of the is_near_to point."
-          optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view or null if it's not available."
         end
         get do
-          query_result = nil
-          total_pages = nil
-          count = nil
-          unless params.include?(:thumbnail) || params[:thumbnail]
-            params_copy = params.clone
-            params_copy.delete(:route_info)
-            cache_key = "public|#{params_copy.flatten.join('|')}"
-            query_result = Evercam::Services.dalli_cache.get(cache_key)
-            total_pages = Evercam::Services.dalli_cache.get("#{cache_key}|pages")
-            count = Evercam::Services.dalli_cache.get("#{cache_key}|records")
-          end
+          params_copy = params.clone
+          params_copy.delete(:route_info)
+          cache_key = "public|#{params_copy.flatten.join('|')}"
+          query_result = Evercam::Services.dalli_cache.get(cache_key)
+          total_pages = Evercam::Services.dalli_cache.get("#{cache_key}|pages")
+          count = Evercam::Services.dalli_cache.get("#{cache_key}|records")
+
           if query_result.nil? || total_pages.nil? || count.nil?
             query = Camera.where(is_public: true, discoverable: true)
             unless params[:thumbnail]
@@ -76,11 +71,9 @@ module Evercam
             offset = (params[:offset] && params[:offset] >= 0) ? params[:offset] : DEFAULT_OFFSET
             query = query.offset(offset).limit(limit)
             query_result = query.eager(:owner).eager(:vendor_model => :vendor).all.to_a
-            unless params.include?(:thumbnail) || params[:thumbnail]
-              Evercam::Services.dalli_cache.set(cache_key, query_result)
-              Evercam::Services.dalli_cache.set("#{cache_key}|pages", total_pages)
-              Evercam::Services.dalli_cache.set("#{cache_key}|records", count)
-            end
+            Evercam::Services.dalli_cache.set(cache_key, query_result)
+            Evercam::Services.dalli_cache.set("#{cache_key}|pages", total_pages)
+            Evercam::Services.dalli_cache.set("#{cache_key}|records", count)
           end
           present(query_result, with: Presenters::Camera, minimal: true, thumbnail: params[:thumbnail]).merge!(pages: total_pages, records: count)
         end

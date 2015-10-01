@@ -445,15 +445,6 @@ module Evercam
         rights_string
       end
 
-      expose :thumbnail, if: lambda {|instance, options| options[:thumbnail]},
-             documentation: {
-               type: 'Image',
-               desc: '150x150 preview of camera view'
-             } do |camera, _options|
-        data = Base64.encode64(camera.preview).gsub("\n", '') unless camera.preview.nil?
-        camera.preview.nil? ? "" : "data:image/jpeg;base64,#{data}"
-      end
-
       expose :thumbnail_url, documentation: {
                type: 'String',
                desc: 'Latest recorded snapshot url'
@@ -463,4 +454,3 @@ module Evercam
     end
   end
 end
-

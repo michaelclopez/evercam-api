@@ -72,7 +72,6 @@ module Evercam
       }
       params do
         requires :id, type: String, desc: "Camera Id."
-        optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view or null if it's not available."
       end
       get '/:id' do
         camera = get_cam(params[:id])
@@ -94,8 +93,7 @@ module Evercam
 
         options = {
           minimal: !rights.allow?(AccessRight::VIEW),
-          with: Presenters::Camera,
-          thumbnail: params[:thumbnail]
+          with: Presenters::Camera
         }
         options[:user] = rights.requester unless rights.requester.nil?
         present([camera], options)
@@ -115,14 +113,12 @@ module Evercam
         optional :ids, type: String, desc: "Comma separated list of camera identifiers for the cameras being queried."
         optional :user_id, type: String, desc: "The Evercam user name or email address for the new camera owner."
         optional :exclude_shared, type: 'Boolean', desc: "Set to true to exclude cameras shared with the user in the fetch."
-        optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view for each camera or null if it's not available."
       end
       get do
         include_shared = true
         include_shared = false if params.include?(:exclude_shared) && params[:exclude_shared]
         include_shared = false if params.include?(:include_shared) && params[:include_shared] == "false"
 
-        thumbnail_requested = params.include?(:thumbnail) && params[:thumbnail]
         requested_by_client = caller.kind_of?(Client)
         if params.include?(:ids) && params[:ids]
           cameras = []
@@ -148,7 +144,7 @@ module Evercam
           end
 
           key = "cameras|#{user.username}|#{include_shared}"
-          cameras = Evercam::Services.dalli_cache.get(key) unless thumbnail_requested || requested_by_client
+          cameras = Evercam::Services.dalli_cache.get(key) unless requested_by_client
 
           if cameras.blank?
             cameras = []
@@ -181,12 +177,11 @@ module Evercam
                 cameras << presenter.as_json(
                   minimal: !rights.allow?(AccessRight::VIEW),
                   user: caller,
-                  tokens: tokens,
-                  thumbnail: params[:thumbnail]
+                  tokens: tokens
                 )
               end
             end
-            Evercam::Services.dalli_cache.set(key, cameras) unless thumbnail_requested
+            Evercam::Services.dalli_cache.set(key, cameras) unless requested_by_client
           end
         end
         {cameras: cameras}
