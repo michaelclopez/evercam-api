@@ -369,13 +369,6 @@ module Evercam
       end
 
       expose :proxy_url do
-        expose :jpg, documentation: {
-          type: 'String',
-          desc: 'Short snapshot url using evr.cm url shortener and proxy'
-        } do |c,o|
-          "http://evr.cm/#{c.exid}.jpg"
-        end
-
         expose :hls, documentation: {
           type: 'String',
           desc: 'HLS url'

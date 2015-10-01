@@ -30,7 +30,7 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'proxy_url', 'rights')
+            'rights')
           expect(json).to not_have_keys('external', 'internal', 'snapshots',
                                         'auth', 'mac_address', 'dyndns')
         end
@@ -49,7 +49,7 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'external', 'internal','dyndns', 'proxy_url', 'rights')
+            'external', 'internal', 'dyndns', 'rights')
         end
 
         it 'indicates that the owner has full rights' do
@@ -75,7 +75,7 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'proxy_url', 'rights')
+            'rights')
           expect(json).to not_have_keys('external', 'internal', 'snapshots',
                                         'auth', 'mac_address', 'dyndns')
         end
@@ -289,11 +289,10 @@ describe 'API routes/cameras' do
         response = get("/cameras/#{camera.exid}", api_keys)
         data     = response.json['cameras'][0]
         expect(data['external']['http']['jpg']).to eq("")
-        expect(data['proxy_url']['jpg']).to eq("http://evr.cm/#{camera.exid}.jpg")
         expect(data['dyndns']['rtsp']['h264']).to eq("rtsp://#{camera.exid}.evr.cm/h264")
         expect(data['internal']['rtsp']['h264']).to eq('rtsp://1.1.1.1/h264')
         expect(data['internal']['rtsp']['port']).to eq("")
-        # expect(data['proxy_url']['hls']).to eq("")
+        expect(data['proxy_url']['hls']).to eq("")
         expect(data['proxy_url']['rtmp']).to eq("")
       end
 
@@ -304,7 +303,6 @@ describe 'API routes/cameras' do
         response = get("/cameras/#{camera.exid}", api_keys)
         data     = response.json['cameras'][0]
         expect(data['external']['http']['jpg']).to eq("")
-        expect(data['proxy_url']['jpg']).to eq("http://evr.cm/#{camera.exid}.jpg")
         expect(data['dyndns']['rtsp']['h264']).to eq("")
         expect(data['internal']['rtsp']['h264']).to eq("")
         expect(data['internal']['rtsp']['port']).to eq("")
