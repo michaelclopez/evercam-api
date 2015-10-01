@@ -230,8 +230,7 @@ describe 'API routes/users' do
           expect(c).to have_keys(
            'id', 'name', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
            'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
-           'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-           'proxy_url')
+           'timezone', 'is_public', 'is_online', 'discoverable', 'location')
           expect(c).to not_have_keys('owned', 'external', 'internal', 'snapshots',
                                      'auth', 'mac_address', 'dyndns', 'rights')
         end
@@ -253,7 +252,7 @@ describe 'API routes/users' do
              'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
              'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
              'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-             'external', 'internal','dyndns', 'proxy_url', 'rights')
+             'external', 'internal','dyndns', 'rights')
             expect(c).to not_have_keys('thumbnail')
           }
         end
