@@ -252,7 +252,7 @@ describe 'API routes/users' do
              'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
              'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
              'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-             'external', 'internal','dyndns', 'rights')
+             'external', 'internal', 'rights')
           }
         end
       end
