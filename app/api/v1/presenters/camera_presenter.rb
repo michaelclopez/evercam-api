@@ -309,65 +309,6 @@ module Evercam
         end
       end
 
-      expose :dyndns, if: lambda {|instance, options| !options[:minimal]} do
-
-        expose :host, documentation: {
-            type: 'String',
-            desc: 'Internal host of the camera'
-        } do |c,o|
-          "http://#{c.exid}.evr.cm"
-        end
-
-        expose :http do
-
-          expose :jpg, documentation: {
-              type: 'String',
-              desc: 'Snapshot url using evr.cm dynamic DNS'
-          } do |c,o|
-            host = c.dyndns_url
-            (c.res_url('jpg').blank? or host.blank?) ? "" : host << c.res_url('jpg')
-          end
-
-          expose :mjpg, documentation: {
-              type: 'String',
-              desc: 'Mjpg url using evr.cm dynamic DNS'
-          } do |c,o|
-            host = c.dyndns_url
-            (c.res_url('mjpg').blank? or host.blank?) ? "" : host << c.res_url('mjpg')
-          end
-
-        end
-
-        expose :rtsp do
-
-          expose :mpeg, documentation: {
-              type: 'String',
-              desc: 'Dynamic DNS mpeg url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('mpeg').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('mpeg')
-          end
-
-          expose :audio, documentation: {
-              type: 'String',
-              desc: 'Dynamic DNS audio url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('audio').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('audio')
-          end
-
-          expose :h264, documentation: {
-              type: 'String',
-              desc: 'Dynamis DNS h264 url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('h264').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('h264')
-          end
-
-        end
-
-      end
-
       expose :proxy_url do
         expose :hls, documentation: {
           type: 'String',
