@@ -9,6 +9,7 @@ end
 
 namespace :db do
   require 'sequel'
+  Sequel.connect(Evercam::Config[:database])
   Sequel.extension :migration, :pg_json, :pg_array
 
   task :migrate do
@@ -40,6 +41,8 @@ namespace :db do
   end
 
   task :seed do
+    require 'evercam_models'
+
     country = Country.create(iso3166_a2: "ad", name: "Andorra")
 
     user = User.create(
