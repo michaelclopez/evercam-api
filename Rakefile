@@ -1,5 +1,6 @@
 require 'rake'
 require 'evercam_misc'
+require 'active_support/core_ext/numeric/time'
 
 if :development == Evercam::Config.env
   require 'rspec/core/rake_task'
