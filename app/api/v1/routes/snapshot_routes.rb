@@ -4,15 +4,16 @@ require_relative '../presenters/snapshot_presenter'
 module Evercam
   class V1SnapshotRoutes < Grape::API
     include WebErrors
-    before do
-      authorize!
-    end
 
     DEFAULT_LIMIT_WITH_DATA = 10
     DEFAULT_LIMIT_NO_DATA = 100
     MAXIMUM_LIMIT = 10000
 
     namespace :cameras do
+      before do
+        authorize!
+      end
+
       params do
         requires :id, type: String, desc: "Camera Id."
       end
@@ -83,7 +84,7 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # GET /v1/cameras/:id/snapshots/:year/:month/day
+        # GET /v1/cameras/:id/recordings/snapshots/:year/:month/day
         #-------------------------------------------------------------------
         desc 'Returns list of specific days in a given month which contains any snapshots'
         params do
@@ -160,7 +161,7 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # GET /v1/cameras/:id/snapshots/:timestamp
+        # GET /v1/cameras/:id/recordings/snapshots/:timestamp
         #-------------------------------------------------------------------
         desc 'Returns the snapshot stored for this camera closest to the given timestamp', {
           entity: Evercam::Presenters::Snapshot
@@ -293,7 +294,12 @@ module Evercam
           {}
         end
       end
+    end
 
+    namespace :cameras do
+      params do
+        requires :id, type: String, desc: "Camera Id."
+      end
       #-------------------------------------------------------------------
       # GET /v1/cameras/:id/live/snapshot
       #-------------------------------------------------------------------
