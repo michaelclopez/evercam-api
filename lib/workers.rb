@@ -12,8 +12,6 @@ Sidekiq.configure_client do |c|
   c.redis = Evercam::Config[:redis]
 end
 
-require_relative "zone_manager"
-require_relative "workers/dns_upsert_worker"
 require_relative "workers/intercom_events_worker"
 require_relative "workers/cache_invalidation_worker"
 require_relative "workers/email_worker"

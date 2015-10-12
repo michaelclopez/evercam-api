@@ -232,7 +232,7 @@ describe 'API routes/users' do
            'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
            'timezone', 'is_public', 'is_online', 'discoverable', 'location')
           expect(c).to not_have_keys('owned', 'external', 'internal', 'snapshots',
-                                     'auth', 'mac_address', 'dyndns', 'rights')
+                                     'auth', 'mac_address', 'rights')
         end
       end
 

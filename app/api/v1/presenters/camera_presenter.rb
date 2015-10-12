@@ -265,7 +265,7 @@ module Evercam
 
           expose :mjpg, documentation: {
               type: 'String',
-              desc: 'Mjpg url using evr.cm dynamic DNS'
+              desc: 'Internal mjpg url.'
           } do |c,o|
             host = c.internal_url
             (c.res_url('mjpg').blank? or host.blank?) ? "" : host << c.res_url('mjpg')
