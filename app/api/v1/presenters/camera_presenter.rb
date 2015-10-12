@@ -361,7 +361,7 @@ module Evercam
                 rights = rights.map { |right| right.to_s.gsub("::", "") }
                 rights.each do |right|
                   list << right
-                  grants << "#{AccessRight::GRANT}~#{right}"
+                  grants << right
                 end
               end
             end
