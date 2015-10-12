@@ -22,7 +22,7 @@ echo "Creating db schema dump from live database\n"
 pg_dump $DATABASE_URL -v -s -O -x -Fc > $SCHEMA_DUMP
 
 echo "Creating db data dump excluding unwanted tables"
-pg_dump $DATABASE_URL -v -Fc -T snapshots -T camera_activities -T access_tokens > $DATA_DUMP
+pg_dump $DATABASE_URL -v -Fc -T snapshots -T camera_activities > $DATA_DUMP
 
 echo "Restoring db schema"
 pg_restore -v -x -O -d evercam_live < migrations/live_schema.dump
