@@ -238,18 +238,6 @@ module Evercam
 
       end
 
-      context 'when it creates a camera' do
-        it 'fires off a dns upsert worker' do
-          params = valid
-
-          Evercam::DNSUpsertWorker.expects(:perform_async).
-            with(valid[:id], valid[:external_host])
-
-          outcome = subject.run(params)
-          expect(outcome).to be_success
-        end
-      end
-
       it 'allows creation with only external host' do
         valid.delete(:internal_host)
         outcome = subject.run(valid)

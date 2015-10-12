@@ -191,18 +191,6 @@ module Evercam
 
       end
 
-      context 'when it updates a camera' do
-        it 'fires off a dns upsert worker' do
-          params = valid
-
-          Evercam::DNSUpsertWorker.expects(:perform_async).
-            with(camera.exid, valid[:external_host])
-
-          outcome = subject.run(params)
-          expect(outcome).to be_success
-        end
-      end
-
       describe 'updating the discoverable attribute' do
         let(:parameters) {
           {id: camera.exid, discoverable: true}
