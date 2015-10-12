@@ -11,25 +11,18 @@ fi
 dropdb evercam_live --if-exists
 createdb evercam_live
 
-# Store the password on .pgpass file
-heroku pg:parse_db_url HEROKU_POSTGRESQL_CRIMSON_URL -a evercam-api --format=pgpass > ~/.pgpass
-chmod 600 ~/.pgpass
-
-# Set the variables needed for backup
-HOST=host
-DB=databasename
-PORT=port
-USER=username
+# Fetch the database url
+DATABASE_URL=`heroku config --app evercam-api | grep DATABASE_URL | awk '{print $2}'`
 
 # Set the location of the db schema dump and data
 SCHEMA_DUMP="./migrations/live_schema.dump"
 DATA_DUMP="./migrations/live_data.dump"
 
 echo "Creating db schema dump from live database\n"
-pg_dump -v -s -O -x -Fc -h $HOST -d $DB -U $USER  > $SCHEMA_DUMP
+pg_dump $DATABASE_URL -v -s -O -x -Fc > $SCHEMA_DUMP
 
 echo "Creating db data dump excluding unwanted tables"
-pg_dump -v -Fc -T snapshots -T camera_activities -T access_tokens -h $HOST -d $DB -U $USER > $DATA_DUMP
+pg_dump $DATABASE_URL -v -Fc -T snapshots -T camera_activities -T access_tokens > $DATA_DUMP
 
 echo "Restoring db schema"
 pg_restore -v -x -O -d evercam_live < migrations/live_schema.dump
