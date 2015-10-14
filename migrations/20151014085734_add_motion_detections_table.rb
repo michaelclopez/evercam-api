@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    create_table(:motion_detection) do
+    create_table(:motion_detections) do
       primary_key :id
       foreign_key :camera_id, :cameras, null: false
       column :frequency, :integer, null: false
@@ -12,6 +12,6 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:motion_detection)
+    drop_table(:motion_detections)
   end
 end
