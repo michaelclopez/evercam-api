@@ -1,7 +1,6 @@
 module Evercam
   module Actors
     class MotionDetectionCreate < Mutations::Command
-
       required do
         string :id
       end

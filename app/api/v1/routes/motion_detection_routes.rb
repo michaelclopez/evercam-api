@@ -1,13 +1,11 @@
 module Evercam
   class V1MotionDetectionRoutes < Grape::API
-
     resource :cameras do
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Return motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
       end
@@ -24,9 +22,8 @@ module Evercam
       #---------------------------------------------------------------------------
       # POST /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Create motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
         requires :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
@@ -51,9 +48,8 @@ module Evercam
       #---------------------------------------------------------------------------
       # DELETE /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Delete motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
       end
