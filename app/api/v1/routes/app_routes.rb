@@ -18,10 +18,12 @@ module Evercam
 
         cloud_recording = CloudRecording.where(camera_id: camera.id).first.present?
 
+        motion_detection = MotionDetection.where(camera_id: camera.id).first.present?
+
         apps = OpenStruct.new
         apps.local_recording = false
         apps.cloud_recording = cloud_recording
-        apps.motion_detection = false
+        apps.motion_detection = motion_detection
         apps.watermark = false
 
         present Array(apps), with: Presenters::App
