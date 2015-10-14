@@ -1,6 +1,5 @@
 module Evercam
   class V1MotionDetectionRoutes < Grape::API
-
     resource :cameras do
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id/apps/motion_detection
