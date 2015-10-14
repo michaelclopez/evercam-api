@@ -4,9 +4,8 @@ module Evercam
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc 'Return motion detection settings for specified camera', {
+      desc 'Return motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
       end
@@ -23,9 +22,8 @@ module Evercam
       #---------------------------------------------------------------------------
       # POST /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc 'Create motion detection settings for specified camera', {
+      desc 'Create motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
         requires :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
@@ -50,9 +48,8 @@ module Evercam
       #---------------------------------------------------------------------------
       # DELETE /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc 'Delete motion detection settings for specified camera', {
+      desc 'Delete motion detection settings for specified camera',
         entity: Evercam::Presenters::MotionDetection
-      }
       params do
         requires :id, type: String, desc: "Camera Id."
       end

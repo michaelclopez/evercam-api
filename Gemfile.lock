@@ -1,8 +1,8 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: ae0f597529b59c9c7a30f756f2b7724a91af174a
+  revision: 30fb090df9477ed31eb470c38e8e10e09fe877b5
   specs:
-    evercam_models (0.3.35)
+    evercam_models (0.3.36)
       activesupport (~> 4.2)
       bcrypt (~> 3.1)
       dotenv (~> 2.0)
@@ -330,7 +330,7 @@ GEM
     tilt (2.0.1)
     timers (4.1.1)
       hitimes
-    timezone (0.4.2)
+    timezone (0.4.3)
     typhoeus (0.7.3)
       ethon (>= 0.7.4)
     tzinfo (1.2.2)
