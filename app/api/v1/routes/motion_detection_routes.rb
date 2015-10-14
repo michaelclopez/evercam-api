@@ -4,7 +4,7 @@ module Evercam
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Return motion detection settings for specified camera', {
         entity: Evercam::Presenters::MotionDetection
       }
       params do
@@ -23,7 +23,7 @@ module Evercam
       #---------------------------------------------------------------------------
       # POST /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Create motion detection settings for specified camera', {
         entity: Evercam::Presenters::MotionDetection
       }
       params do
@@ -50,7 +50,7 @@ module Evercam
       #---------------------------------------------------------------------------
       # DELETE /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
-      desc '', {
+      desc 'Delete motion detection settings for specified camera', {
         entity: Evercam::Presenters::MotionDetection
       }
       params do
