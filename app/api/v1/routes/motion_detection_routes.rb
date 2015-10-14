@@ -33,6 +33,7 @@ module Evercam
         requires :minPosition, type: Integer, desc: "Minimal Position of where to start in pixels"
         requires :step, type: Integer, desc: "Check each `step` pixel"
         requires :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
+        requires :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
         requires :schedule, type: String, desc: "Schedule"
       end
       post '/:id/apps/motion-detection' do

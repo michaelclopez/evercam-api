@@ -16,14 +16,14 @@ module Evercam
       expose :minPosition,
         documentation: {
         type: 'integer',
-        desc: 'Default is 0',
+        desc: 'Default minimal position to start pixels comparator is 0',
         required: true
       }
 
       expose :step,
         documentation: {
         type: 'integer',
-        desc: 'Default is 2',
+        desc: 'Default step for pixels to compare is 2',
         required: true
       }
 
@@ -31,7 +31,14 @@ module Evercam
       expose :min,
         documentation: {
         type: 'integer',
-        desc: 'Default is 30',
+        desc: 'Default Minimal difference between images is 30',
+        required: true
+      }
+
+      expose :threshold,
+        documentation: {
+        type: 'integer',
+        desc: 'Default Threshold is 5',
         required: true
       }
 

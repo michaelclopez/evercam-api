@@ -7,6 +7,7 @@ Sequel.migration do
       column :minPosition, :integer, null: false # see EvercamMedia.MotionDetection.Lib.compare for more details
       column :step, :integer, null: false
       column :min, :integer, null: false
+      column :threshold, :integer, null: false
       column :schedule, :json
     end
   end

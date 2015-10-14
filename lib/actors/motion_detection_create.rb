@@ -11,6 +11,7 @@ module Evercam
         integer :minPosition
         integer :step
         integer :min
+        integer :threshold
         string :schedule
       end
 
@@ -36,6 +37,7 @@ module Evercam
             minPosition: inputs["minPosition"],
             step: inputs["step"],
             min: inputs["min"],
+            threshold: inputs["threshold"],
             schedule: schedule
           )
         else
@@ -44,6 +46,7 @@ module Evercam
             minPosition: inputs["minPosition"],
             step: inputs["step"],
             min: inputs["min"],
+            threshold: inputs["threshold"],
             schedule: schedule
           )
           motion_detection
