@@ -55,6 +55,7 @@ module Evercam
     mount V1ArchiveRoutes
     mount V1AppRoutes
     mount V1CloudRecordingRoutes
+    mount V1MotionDetectionRoutes
     mount V1PTZRoutes
 
     # bring on the swagger

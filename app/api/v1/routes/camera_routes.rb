@@ -320,6 +320,7 @@ module Evercam
         invalidate_for_camera(camera.exid)
         invalidate_for_user(original_owner.username)
         CloudRecording.where(camera: camera).each(&:delete)
+        MotionDetection.where(camera: camera).each(&:delete)
 
         DeleteCameraWorker.perform_async(camera.exid)
         {}
