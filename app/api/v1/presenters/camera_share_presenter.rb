@@ -22,13 +22,20 @@ module Evercam
     	  s.camera.exid
     	end
 
-      expose :sharer_id,
-             documentation: {
-                type: 'string',
-                desc: 'The unique identifier of the user who shared the camera.',
-                required: true
-             } do |s,o|
-         s.sharer ? s.sharer.username : nil
+      expose :sharer_id, documentation: {
+        type: 'string',
+        desc: 'The unique identifier of the user who shared the camera.',
+        required: true
+      } do |s,o|
+        s.sharer ? s.sharer.username : nil
+      end
+
+      expose :sharer_name, documentation: {
+        type: 'string',
+        desc: 'Full name of the user the camera is shared with.',
+        required: true
+      } do |s, o|
+        s.sharer ? s.sharer.fullname : nil
       end
 
     	expose :user_id,
@@ -38,7 +45,23 @@ module Evercam
     	       	 required: true
     	       } do |s, o|
     	  s.user.username
-    	end
+			end
+
+			expose :fullname, documentation: {
+        type: 'string',
+        desc: 'Full name of the user the camera is shared with.',
+        required: true
+      } do |s, o|
+        s.user.fullname
+      end
+
+      expose :email, documentation: {
+        type: 'string',
+        desc: 'Email of the user the camera is shared with.',
+        required: true
+      } do |s, o|
+        s.user.email
+      end
 
       expose :kind,
              documentation: {
