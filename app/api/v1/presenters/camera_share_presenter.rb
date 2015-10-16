@@ -15,7 +15,7 @@ module Evercam
         type: 'string',
         desc: 'Unique identifier of the shared camera.',
         required: true
-      } do |s, o|
+      } do |s, _o|
         s.camera.exid
       end
 
