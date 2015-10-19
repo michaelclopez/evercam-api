@@ -33,6 +33,15 @@ module Evercam
          s.user.username
       end
 
+      expose :sharer_name,
+             documentation: {
+               type: 'string',
+               desc: 'Full name of the user who shared the camera.',
+               required: true
+             } do |s, _o|
+        s.user.fullname
+      end
+
       expose :email,
              documentation: {
                 type: 'string',
