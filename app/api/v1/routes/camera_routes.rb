@@ -346,12 +346,11 @@ module Evercam
         old_owner = camera.owner.username
         CacheInvalidationWorker.enqueue(camera.exid)
         CameraTouchWorker.perform_async(camera.exid)
-        Actors::ShareDelete.run({id: camera.id, user_id: new_owner.id, ip: request.ip})
+        Actors::ShareDelete.run({ id: camera.id, user_id: new_owner.id, ip: request.ip })
         rights = generate_rights_list("full")
-        rights.kind_of?(String) ? rights : rights.join(",")
+        rights = rights.is_a?(String) ? rights : rights.join(",")
         camera.update(owner: new_owner)
-        outcome = Actors::ShareCreate.run({id: camera.exid, email: old_owner, rights: rights.kind_of?(String) ? rights : rights.join(","),
-                                           grantor: new_owner.username })
+        Actors::ShareCreate.run({ id: camera.exid, email: old_owner, rights: rights, grantor: new_owner.username })
         Evercam::Services.dalli_cache.set(params[:id], camera)
         present Array(camera), with: Presenters::Camera, user: caller
       end
