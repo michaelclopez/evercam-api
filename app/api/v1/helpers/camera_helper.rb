@@ -73,5 +73,18 @@ module Evercam
       random_string = (0...3).map { chars[rand(chars.length)] }.join
       "#{camera_name[0..5]}-#{random_string}"
     end
+
+    def generate_rights_list(permissions)
+      rights = [AccessRight::LIST, AccessRight::SNAPSHOT]
+      if permissions == "full"
+        AccessRight::BASE_RIGHTS.each do |right|
+          if right != AccessRight::DELETE
+            rights << right if !rights.include?(right)
+            rights << "#{AccessRight::GRANT}~#{right}"
+          end
+        end
+      end
+      rights
+    end
   end
 end
