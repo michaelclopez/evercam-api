@@ -21,6 +21,14 @@ module Evercam
         required: false
       }
 
+      expose :motion_level, documentation: {
+        type: 'integer',
+        desc: 'Snapshot motion level',
+        required: false
+      } do |s,o|
+        s.motionlevel
+      end
+
       expose :data, if: { with_data: true }, documentation: {
         type: 'file',
         desc: 'Image data',
