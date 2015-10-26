@@ -35,6 +35,14 @@ module Evercam
         s.sharer ? s.sharer.fullname : nil
       end
 
+      expose :sharer_email, documentation: {
+        type: 'string',
+        desc: 'Full name of the user the camera is shared with.',
+        required: true
+      } do |s, _o|
+        s.sharer ? s.sharer.email : nil
+      end
+
       expose :user_id, documentation: {
         type: 'string',
         desc: 'Unique user id of the user the camera is shared with.',
