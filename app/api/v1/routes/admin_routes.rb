@@ -23,7 +23,7 @@ module Evercam
         if Snapshot.where(created_at: Time.at(params['timestamp'])).all.blank?
           camera = get_cam(params[:id])
           Snapshot.create(
-            camera: camera,
+            camera_id: camera_id,
             created_at: Time.at(params['timestamp']),
             data: 'S3',
             notes: 'Evercam System'

@@ -31,12 +31,13 @@ module Evercam
           end
         end
         CameraActivity.create(
-          camera: share.camera,
-          access_token: share.sharer.token,
+          camera_id: share.camera.id,
+          camera_exid: share.camera.exid,
+          access_token_id: share.sharer.token.id,
+          name: share.sharer.fullname,
           action: 'updated share',
           done_at: Time.now,
-          ip: inputs[:ip],
-          extra: {:with => share.user.email}
+          ip: inputs[:ip]
         )
         share
       end

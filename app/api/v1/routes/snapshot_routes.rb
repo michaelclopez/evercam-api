@@ -56,7 +56,6 @@ module Evercam
           count = query.count
           total_pages = count / limit
           total_pages += 1 unless count % limit == 0
-
           snapshots = query.limit(limit).offset(offset).all
 
           present(snapshots, with: Presenters::Snapshot).merge!(pages: total_pages)
@@ -73,13 +72,13 @@ module Evercam
         end
         get 'recordings/snapshots/latest' do
           camera = get_cam(params[:id])
-          snapshot = camera.snapshots.order(:created_at).last
+          snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
           if snapshot
             rights = requester_rights_for(camera)
             raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
-            present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data])
+            present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           else
-            present([], with: Presenters::Snapshot, with_data: params[:with_data])
+            present([], with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           end
         end
 
@@ -110,7 +109,7 @@ module Evercam
               from = Time.new(params[:year], params[:month], day, 0, 0, 0, offset).utc.to_s
               to = Time.new(params[:year], params[:month], day, 23, 59, 59, offset).utc.to_s
 
-              if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+              if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
                 days << day
               end
             end
@@ -151,7 +150,7 @@ module Evercam
               from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc.to_s
               to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc.to_s
 
-              if Sequel::Model.db.select(camera.snapshots.where(:created_at => (from..to)).exists).first[:exists]
+              if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
                 hours << hour
               end
             end
@@ -179,11 +178,11 @@ module Evercam
           else
             timestamp = ActiveSupport::TimeZone.new('UTC').parse(params[:timestamp])
           end
-          snapshot = camera.snapshot_by_ts!(timestamp, params[:range].to_i)
+          snapshot = Snapshot.snapshot_by_ts!(camera.id, timestamp, params[:range].to_i)
           rights   = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          present Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data]
+          present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
@@ -259,14 +258,16 @@ module Evercam
           end
 
           CameraActivity.create(
-            camera: camera,
-            access_token: access_token,
+            camera_id: camera.id,
+            camera_exid: camera.exid,
+            access_token_id: (access_token.nil? ? nil : access_token.id),
+            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
             action: 'captured',
             done_at: Time.now,
             ip: request.ip
           )
 
-          present Array(outcome.result), with: Presenters::Snapshot, with_data: params[:with_data]
+          present(Array(outcome.result), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
@@ -283,14 +284,16 @@ module Evercam
           raise AuthorizationError.new if !rights.allow?(AccessRight::DELETE)
 
           CameraActivity.create(
-            camera: camera,
-            access_token: access_token,
+            camera_id: camera.id,
+            camera_exid: camera.exid,
+            access_token_id: (access_token.nil? ? nil : access_token.id),
+            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
             action: 'deleted snapshot',
             done_at: Time.now,
             ip: request.ip
           )
 
-          camera.snapshot_by_ts!(Time.at(params[:timestamp].to_i)).destroy
+          Snapshot.snapshot_by_ts!(camera.id, Time.at(params[:timestamp].to_i)).destroy
           {}
         end
       end
@@ -339,8 +342,10 @@ module Evercam
             token << cipher.final
 
             CameraActivity.create(
-              camera: camera,
-              access_token: access_token,
+              camera_id: camera.id,
+              camera_exid: camera.exid,
+              access_token_id: (access_token.nil? ? nil : access_token.id),
+              name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
               action: 'viewed',
               done_at: Time.now,
               ip: request.ip
@@ -413,8 +418,10 @@ module Evercam
           token << cipher.final
 
           CameraActivity.create(
-            camera: camera,
-            access_token: access_token,
+            camera_id: camera.id,
+            camera_exid: camera.exid,
+            access_token_id: (access_token.nil? ? nil : access_token.id),
+            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
             action: 'viewed',
             done_at: Time.now,
             ip: request.ip
@@ -442,7 +449,7 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
 
-          snapshot = camera.snapshots.order(:created_at).last
+          snapshot = Snapshot.where(camera_id: camera.id).order(:created_at).last
           raise NotFoundError.new if snapshot.nil?
 
           filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"

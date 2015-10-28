@@ -23,12 +23,13 @@ module Evercam
             rights.revoke(*rights_list)
             share.delete
             CameraActivity.create(
-              camera: share.camera,
-              access_token: share.sharer.token,
+              camera_id: share.camera.id,
+              camera_exid: share.camera.exid,
+              access_token_id: share.sharer.token.id,
+              name: share.sharer.fullname,
               action: 'stopped sharing',
               done_at: Time.now,
-              ip: inputs[:ip],
-              extra: {:with => share.user.email}
+              ip: inputs[:ip]
             )
           end
         end

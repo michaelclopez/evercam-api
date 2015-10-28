@@ -33,9 +33,9 @@ module Evercam
         type: 'file',
         desc: 'Image data',
         required: false
-      } do |snapshot, _|
+      } do |snapshot, options|
         if snapshot.data == 'S3'
-          filepath = "#{snapshot.camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
           image = Evercam::Services.snapshot_bucket.objects[filepath].read
         else
           image = snapshot.data

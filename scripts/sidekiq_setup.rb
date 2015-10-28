@@ -3,7 +3,7 @@ require 'sequel'
 require 'pusher'
 
 Dotenv.load
-Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
 
 Pusher.app_id = ENV['PUSHER_APP']
 Pusher.key = ENV['PUSHER_KEY']
@@ -13,3 +13,4 @@ Pusher.encrypted = true
 require 'evercam_misc'
 require 'evercam_models'
 require_relative '../lib/workers'
+Snapshot.db = Sequel.connect("#{ENV['SNAPS_DATABASE_URL']}", max_connections: 25)

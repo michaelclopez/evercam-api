@@ -41,6 +41,7 @@
 :development:
   <<: *defaults
   :database: <%= ENV['DATABASE_URL'] %>
+  :snaps_database: <%= ENV['SNAPS_DATABASE_URL'] %>
   :mail:
     :from: evercam.io <support@evercam.io>
     :via: :sendmail
@@ -63,6 +64,7 @@
 :production: &production
   <<: *defaults
   :database: <%= ENV['DATABASE_URL'] %>
+  :snaps_database: <%= ENV['SNAPS_DATABASE_URL'] %>
   :api:
     :timeout: 5
     :ssl:
