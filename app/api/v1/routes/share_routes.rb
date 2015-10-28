@@ -94,8 +94,7 @@ module Evercam
           name: caller.fullname,
           action: 'shared',
           done_at: Time.now,
-          ip: request.ip,
-          extra: { with: params[:email] }
+          ip: request.ip
         )
 
         IntercomEventsWorker.perform_async('shared-camera', caller.email)

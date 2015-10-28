@@ -29,8 +29,7 @@ module Evercam
               name: share.sharer.fullname,
               action: 'stopped sharing',
               done_at: Time.now,
-              ip: inputs[:ip],
-              extra: {:with => share.user.email}
+              ip: inputs[:ip]
             )
           end
         end

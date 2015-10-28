@@ -37,8 +37,7 @@ module Evercam
           name: share.sharer.fullname,
           action: 'updated share',
           done_at: Time.now,
-          ip: inputs[:ip],
-          extra: {:with => share.user.email}
+          ip: inputs[:ip]
         )
         share
       end
