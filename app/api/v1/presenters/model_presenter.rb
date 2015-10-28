@@ -153,28 +153,7 @@ module Evercam
         required: false
       }
 
-      expose :icon_image, documentation: {
-        type: "String",
-        desc: "Model icon"
-      } do |m, _o|
-        "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/icon.jpg"
-      end
-
-      expose :thumbnail_image, documentation: {
-        type: "String",
-        desc: "Model thumbnail"
-      } do |m, _o|
-        "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/thumbnail.jpg"
-      end
-
-      expose :original_image, documentation: {
-        type: "String",
-        desc: "Model image"
-      } do |m, _o|
-        "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/original.jpg"
-      end
-
-      # temporary here, will be removed after alternate attributes 
+      # temporary here, will be removed after alternate attributes
       # will be used by other apps
       expose :defaults, documentation: {
         type: "hash",
@@ -184,28 +163,28 @@ module Evercam
         m.config
       end
 
-      # temporary here, will be removed after alternate attributes 
+      # temporary here, will be removed after alternate attributes
       # will be used by other apps
       expose :images do
         expose :icon, documentation: {
           type: "String",
           desc: "Model icon"
         } do |m, _o|
-          "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/icon.jpg"
+          "https://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/icon.jpg"
         end
 
         expose :thumbnail, documentation: {
           type: "String",
           desc: "Model thumbnail"
         } do |m, _o|
-          "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/thumbnail.jpg"
+          "https://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/thumbnail.jpg"
         end
 
         expose :original, documentation: {
           type: "String",
           desc: "Model Original"
         } do |m, _o|
-          "http://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/original.jpg"
+          "https://evercam-public-assets.s3.amazonaws.com/#{m.vendor.exid}/#{m.exid}/original.jpg"
         end
       end
     end

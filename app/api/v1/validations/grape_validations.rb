@@ -2,7 +2,7 @@
 # Add Boolean validation
 module Grape
   module Validations
-    class CoerceValidator < SingleOptionValidator
+    class CoerceValidator < Base
       alias_method :validate_param_old!, :validate_param!
 
       def to_bool(val)

@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
-ruby '2.2.0'
+ruby '2.2.2'
 
-gem 'unicorn'
+gem 'puma'
 gem 'rack'
 gem 'rack-rewrite'
 gem 'rack-ssl-enforcer',
@@ -24,9 +24,9 @@ gem 'curb'
 
 gem 'grape'
 gem 'grape-entity'
-gem 'grape-swagger', '= 0.7.2'
+gem 'grape-swagger', '= 0.10.2'
 
-gem 'georuby', '~> 2.3.0'
+gem 'georuby'
 
 gem 'activesupport-json_encoder',
   github: 'rails/activesupport-json_encoder'
@@ -54,8 +54,9 @@ gem 'sinatra-contrib',
 gem 'sinatra-partial',
   require: 'sinatra/partial'
 
-gem 'evercam_misc', '~> 0.0.10'
-gem 'evercam_models', '~> 0.3.26'
+gem 'evercam_misc', '~> 0.0.11'
+gem 'evercam_models',
+  github: 'evercam/evercam-models'
 
 gem 'airbrake'
 
@@ -66,7 +67,6 @@ gem 'em-http-request'
 
 group :development do
   gem 'fakes3'
-  gem 'thin'
   gem 'pry-rescue'
   gem 'pry-stack_explorer'
   gem 'pry-byebug'

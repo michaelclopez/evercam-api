@@ -30,9 +30,9 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'proxy_url', 'rights')
+            'rights')
           expect(json).to not_have_keys('external', 'internal', 'snapshots',
-                                        'auth', 'mac_address', 'dyndns')
+                                        'auth', 'mac_address')
         end
 
       end
@@ -49,7 +49,7 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'external', 'internal','dyndns', 'proxy_url', 'rights')
+            'external', 'internal', 'rights')
         end
 
         it 'indicates that the owner has full rights' do
@@ -75,9 +75,9 @@ describe 'API routes/cameras' do
             'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
             'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
             'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-            'proxy_url', 'rights')
+            'rights')
           expect(json).to not_have_keys('external', 'internal', 'snapshots',
-                                        'auth', 'mac_address', 'dyndns')
+                                        'auth', 'mac_address')
         end
 
         it 'indicates that the user has minimal rights' do
@@ -110,41 +110,12 @@ describe 'API routes/cameras' do
           end
         end
       end
-
-      describe "when preview" do
-        context 'is nil' do
-          it 'returns preview as empty string' do
-            camera.update(preview: nil)
-            json = get("/cameras/#{camera.exid}?thumbnail=true", api_keys).json
-            json = json['cameras'] ? json['cameras'][0] : {}
-            expect(json['thumbnail']).to eq("")
-          end
-        end
-
-        context 'is not nil' do
-          it 'returns base 64 encoded camera preview' do
-            camera.update(preview: 'aaa')
-            json = get("/cameras/#{camera.exid}?thumbnail=true", api_keys).json
-            json = json['cameras'] ? json['cameras'][0] : {}
-            expect(json['thumbnail']).to_not be_nil
-            expect(json['thumbnail']).to start_with('data:image/jpeg;base64,')
-          end
-        end
-
-        context 'is not requested' do
-          it 'returns camera object without thumbnail key' do
-            camera.update(preview: 'aaa')
-            json = get("/cameras/#{camera.exid}", api_keys).json
-            json = json['cameras'] ? json['cameras'][0] : {}
-            expect(json).to not_have_keys('thumbnail')
-          end
-        end
-      end
-
     end
   end
 
   describe 'POST /cameras/test' do
+    before {skip}
+
     let (:test_params_invalid)  do
       {
         external_url: 'http://1.1.1.1',
@@ -287,11 +258,9 @@ describe 'API routes/cameras' do
         response = get("/cameras/#{camera.exid}", api_keys)
         data     = response.json['cameras'][0]
         expect(data['external']['http']['jpg']).to eq("")
-        expect(data['proxy_url']['jpg']).to eq("http://evr.cm/#{camera.exid}.jpg")
-        expect(data['dyndns']['rtsp']['h264']).to eq("rtsp://#{camera.exid}.evr.cm/h264")
         expect(data['internal']['rtsp']['h264']).to eq('rtsp://1.1.1.1/h264')
         expect(data['internal']['rtsp']['port']).to eq("")
-        # expect(data['proxy_url']['hls']).to eq("")
+        expect(data['proxy_url']['hls']).to eq("")
         expect(data['proxy_url']['rtmp']).to eq("")
       end
 
@@ -302,8 +271,6 @@ describe 'API routes/cameras' do
         response = get("/cameras/#{camera.exid}", api_keys)
         data     = response.json['cameras'][0]
         expect(data['external']['http']['jpg']).to eq("")
-        expect(data['proxy_url']['jpg']).to eq("http://evr.cm/#{camera.exid}.jpg")
-        expect(data['dyndns']['rtsp']['h264']).to eq("")
         expect(data['internal']['rtsp']['h264']).to eq("")
         expect(data['internal']['rtsp']['port']).to eq("")
       end
@@ -359,17 +326,18 @@ describe 'API routes/cameras' do
       end
 
       it 'returns a CREATED status' do
-        pending
+        skip
         expect(last_response.status).to eq(201)
       end
 
       it 'creates a new camera in the system' do
-        expect(Camera.first.exid).
+        camera = Camera.by_exid('my-new-camera')
+        expect(camera.exid).
           to eq(params[:id])
       end
 
       it 'returns the new camera' do
-        pending
+        skip
         res = last_response.json['cameras'][0]
         expect(res['id']).to eq(Camera.first.exid)
         expect(res['name']).to eq(Camera.first.name)
@@ -421,7 +389,7 @@ describe 'API routes/cameras' do
 
     context 'when :external_url key is missing' do
       it 'returns a ok status' do
-        pending
+        skip
         post('/cameras', params.merge(external_url: nil).merge(api_keys), auth)
         expect(last_response.status).to eq(201)
       end
@@ -619,7 +587,7 @@ describe 'API routes/cameras' do
 
     context 'when params are empty' do
       it 'returns a OK status' do
-        pending
+        skip
         delete("/cameras/#{camera.exid}", api_keys)
         expect(last_response.status).to eq(200)
         expect(Camera.by_exid(camera.exid)).to eq(nil)

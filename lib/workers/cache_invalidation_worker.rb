@@ -4,7 +4,6 @@ require_relative '../../app/api/v1/helpers/cache_helper'
 
 module Evercam
   class CacheInvalidationWorker
-
     include Evercam::CacheHelper
     include Sidekiq::Worker
 

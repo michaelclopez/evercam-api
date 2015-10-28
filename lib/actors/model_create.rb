@@ -6,14 +6,14 @@ module Evercam
         string :id
         string :name
         string :vendor_id
+        string :jpg_url
+        string :mjpg_url
+        string :h264_url
       end
 
       optional do
-        string :jpg_url
-        string :mjpg_url
-        string :mpeg4_url
         string :mobile_url
-        string :h264_url
+        string :mpeg4_url
         string :lowres_url
         string :default_username
         string :default_password
@@ -53,24 +53,6 @@ module Evercam
             jpg_url: jpg_url,
             h264_url: h264_url,
             mjpg_url: mjpg_url,
-            default_username: default_username,
-            default_password: default_password,
-            shape: shape,
-            resolution: resolution,
-            official_url: official_url,
-            audio_url: audio_url,
-            more_info: more_info,
-            poe: poe,
-            wifi: wifi,
-            upnp: upnp,
-            ptz: ptz,
-            infrared: infrared,
-            varifocal: varifocal,
-            sd_card: sd_card,
-            audio_io: audio_io,
-            onvif: onvif,
-            psia: psia,
-            discontinued: discontinued,
             config: {}
         )
         [:jpg, :mjpg, :mpeg4, :mobile, :h264, :lowres].each do |resource|
@@ -83,6 +65,22 @@ module Evercam
             end
           end
         end
+        model.shape = shape if shape
+        model.resolution = resolution if resolution
+        model.official_url = official_url if official_url
+        model.audio_url = audio_url if audio_url
+        model.more_info = more_info if more_info
+        model.poe = poe if poe
+        model.wifi = wifi if wifi
+        model.upnp = upnp if upnp
+        model.ptz = ptz if ptz
+        model.infrared = infrared if infrared
+        model.varifocal = varifocal if varifocal
+        model.sd_card = sd_card if sd_card
+        model.audio_io = audio_io if audio_io
+        model.onvif = onvif if onvif
+        model.psia = psia if psia
+        model.discontinued = discontinued if discontinued
 
         if inputs[:default_username] or inputs[:default_password]
           model.values[:config].merge!({'auth' => {'basic' => {'username' => inputs[:default_username], 'password' => inputs[:default_password] }}})

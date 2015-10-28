@@ -2,7 +2,7 @@ ENV['EVERCAM_ENV'] ||= 'test'
 
 require 'evercam_misc'
 require 'sequel'
-db = Sequel.connect(Evercam::Config[:database])
+Sequel::Model.db = Sequel.connect(Evercam::Config[:database])
 
 require 'bundler'
 Bundler.require(:default, :test)
@@ -21,8 +21,7 @@ end
 require_relative "../lib/actors"
 
 LogJam.configure({
-  # turn the noise down to separate problems from messages
-  loggers: { default: true, file: 'STDOUT', level: ENV['LOG'] || 'FATAL' }
+ :loggers => [{ :default => true, :file => 'STDOUT', :level => ENV['LOG'] || 'FATAL' }]
 })
 
 RSpec.configure do |c|
@@ -41,10 +40,6 @@ RSpec.configure do |c|
     Evercam::Services::dalli_cache.flush_all
     #Stub external requests
     stub_request(:get, /.*api.intercom.io.*/).
-      to_return(:status => 200, :body => "", :headers => {})
-    stub_request(:post, /.*evercam-admin.3scale.net.*/).
-      to_return(:status => 201, :body => "", :headers => {})
-    stub_request(:get, "https://route53.amazonaws.com/2013-04-01/hostedzone/Z15MY0AN5PFWCW/rrset?name=unit-test-1234.evr.cm.&type=A").
       to_return(:status => 200, :body => "", :headers => {})
 
     WebMock.disable_net_connect!(:allow_localhost => true)

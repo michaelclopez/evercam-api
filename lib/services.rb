@@ -1,4 +1,6 @@
+require 'aws'
 require 'active_support/core_ext/module/attribute_accessors'
+require "active_support/core_ext/numeric/time"
 
 module Evercam
   module Services

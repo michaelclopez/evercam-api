@@ -40,17 +40,6 @@ describe 'API routes/users' do
   let(:other_user) { create(:user) }
   let(:alt_keys) { {api_id: other_user.api_id, api_key: other_user.api_key} }
 
-  before(:each) do
-    body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"\
-      "<status>\n"\
-      "  <authorized>true</authorized>\n"\
-      "  <plan>Pay As You Go ($20 for 10,000 hits)</plan>\n"\
-      "</status>"
-    stub_request(:post, 'https://evercam-admin.3scale.net/admin/api/signup.xml').to_return(status: 200,
-                                                                                           body: body,
-                                                                                           headers: {})
-  end
-
   describe 'GET /testusername' do
 
     let!(:user0) { create(:user, username: 'xxxx', email: 'xxxx@gmail.com') }
@@ -118,7 +107,7 @@ describe 'API routes/users' do
         post('/users', params.merge(username: 'xxxx'))
         expect(last_response.status).to eq(409)
         data = last_response.json
-        expect(data["message"]).to eq("The 'xxxx' user name is already registered.")
+        expect(data["message"]).to eq("The username 'xxxx' is already registered.")
       end
 
       it 'returns a conflict error for a duplicate email address' do
@@ -126,7 +115,7 @@ describe 'API routes/users' do
         post('/users', params.merge(email: user.email))
         expect(last_response.status).to eq(409)
         data = last_response.json
-        expect(data["message"]).to eq("The '#{user.email}' email address is already registered.")
+        expect(data["message"]).to eq("The email address '#{user.email}' is already registered.")
       end
     end
 
@@ -241,10 +230,9 @@ describe 'API routes/users' do
           expect(c).to have_keys(
            'id', 'name', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
            'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
-           'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-           'proxy_url')
+           'timezone', 'is_public', 'is_online', 'discoverable', 'location')
           expect(c).to not_have_keys('owned', 'external', 'internal', 'snapshots',
-                                     'auth', 'mac_address', 'dyndns', 'rights')
+                                     'auth', 'mac_address', 'rights')
         end
       end
 
@@ -264,8 +252,7 @@ describe 'API routes/users' do
              'id', 'name', 'owned', 'owner', 'vendor_id', 'vendor_name', 'model_id', 'model_name',
              'created_at', 'updated_at', 'last_polled_at', 'last_online_at',
              'timezone', 'is_public', 'is_online', 'discoverable', 'location',
-             'external', 'internal','dyndns', 'proxy_url', 'rights')
-            expect(c).to not_have_keys('thumbnail')
+             'external', 'internal', 'rights')
           }
         end
       end
@@ -285,39 +272,6 @@ describe 'API routes/users' do
           }
         end
       end
-
-      context 'when thumbnail is set to true' do
-        before(:each) {
-          get("/cameras?user_id=#{user0.username}",
-              { thumbnail: true }.merge(api_keys))
-        }
-
-        it 'returns cameras for the user with thumbnails' do
-          cameras = last_response.json['cameras']
-          cameras.each {|c|
-            expect(c).to have_keys('thumbnail')
-          }
-        end
-      end
-      context 'when thumbnail and include_shared is set to true' do
-        before(:each) {
-          camera1.update(preview: 'aaa')
-          get("/cameras?user_id=#{user0.username}",
-              { thumbnail: true, include_shared: true }.merge(api_keys))
-        }
-
-        it 'returns cameras for the user with thumbnails' do
-          cameras = last_response.json['cameras']
-          cameras.each {|c|
-            expect(c).to have_keys('thumbnail')
-            if c['id'] == camera1.exid
-              expect(c['thumbnail']).to_not be_nil
-              expect(c['thumbnail']).to start_with('data:image/jpeg;base64,')
-            end
-          }
-        end
-      end
-
     end
   end
 
@@ -329,7 +283,7 @@ describe 'API routes/users' do
 
     context 'when the params are valid' do
       it 'deletes the user' do
-        pending
+        skip
         delete("/users/#{user0.username}", api_keys)
 
         expect(last_response.status).to eq(200)

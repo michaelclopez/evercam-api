@@ -45,20 +45,6 @@ describe 'API routes/cameras' do
       end
     end
 
-    context "where thumbnails is true" do
-      it "returns success" do
-        get('/public/cameras', {thumbnail: true})
-        expect(last_response.status).to eq(200)
-        data = last_response.json
-        expect(data.include?("cameras")).to eq(true)
-        cameras = data["cameras"]
-        expect(cameras.size).to eq(3)
-        cameras.each do |camera|
-          expect(camera.include?('thumbnail')).to eq(true)
-        end
-      end
-    end
-
     context "where a limit is specified" do
       it "returns success and the correct number of camera entries" do
         get('/public/cameras', {limit: 2})
@@ -104,6 +90,7 @@ describe 'API routes/cameras' do
         end
 
         it "returns success and the correct camera entries" do
+          skip
           get("/public/cameras", { is_near_to: 'The North Pole' })
           expect(last_response.status).to eq(200)
           data = last_response.json
@@ -249,7 +236,6 @@ describe 'API routes/cameras' do
         cameras = data["cameras"]
         expect(cameras.size).to eq(1)
         camera = cameras.first
-        expect(camera.include?('thumbnail')).to eq(true)
         expect(data["message"]).
           to eq("Successfully Geocoded IP Address 127.0.0.1 as LAT: 0.0 LNG: 0.0")
       end
@@ -276,7 +262,6 @@ describe 'API routes/cameras' do
           cameras = data["cameras"]
           expect(cameras.size).to eq(1)
           camera = cameras.first
-          expect(camera.include?('thumbnail')).to eq(true)
           expect(data["message"]).
             to eq("Successfully Geocoded Dublin as LAT: 53.3498053 LNG: -6.2603097")
         end

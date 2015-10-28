@@ -1,4 +1,22 @@
 GIT
+  remote: git://github.com/evercam/evercam-models.git
+  revision: b1ddf74969bf52de0e8f4a2573d7dfe28a25acc3
+  specs:
+    evercam_models (0.3.37)
+      activesupport (~> 4.2)
+      bcrypt (~> 3.1)
+      dotenv (~> 2.0)
+      evercam_misc (~> 0.0.11)
+      geocoder (~> 1.2)
+      georuby (~> 2.3)
+      hashie (~> 3.4)
+      nokogiri (~> 1.6)
+      pg (~> 0.18.2)
+      sequel (= 4.26.0)
+      timezone (~> 0.3)
+      typhoeus (~> 0.7.1)
+
+GIT
   remote: git://github.com/evercam/faraday-digestauth.git
   revision: 15c79778043d45f931ab947964161f0e78a0a122
   specs:
@@ -22,16 +40,14 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    3scale_client (2.3.4)
-      nokogiri
-    activesupport (4.2.3)
+    activesupport (4.2.4)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.3.8)
-    airbrake (4.2.1)
+    airbrake (4.3.1)
       builder
       multi_json
     aws-sdk (1.59.0)
@@ -43,15 +59,30 @@ GEM
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
-    backports (3.6.4)
+    backports (3.6.6)
     bcrypt (3.1.10)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     builder (3.2.2)
-    byebug (4.0.5)
+    byebug (5.0.0)
       columnize (= 0.9.0)
-    celluloid (0.16.0)
-      timers (~> 4.0.0)
+    celluloid (0.17.2)
+      celluloid-essentials
+      celluloid-extras
+      celluloid-fsm
+      celluloid-pool
+      celluloid-supervision
+      timers (>= 4.1.1)
+    celluloid-essentials (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-extras (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-fsm (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-pool (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-supervision (0.20.5)
+      timers (>= 4.1.1)
     coderay (1.1.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
@@ -60,14 +91,15 @@ GEM
       ref (~> 1.0, >= 1.0.5)
     concurrent-ruby-ext (0.8.0)
       concurrent-ruby (~> 0.8.0)
+    configurative (0.1.0)
+      mime-types (~> 2.6)
     connection_pool (2.2.0)
     cookiejar (0.3.2)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     curb (0.8.8)
-    daemons (1.2.2)
     dalli (2.7.4)
-    database_cleaner (1.4.1)
+    database_cleaner (1.5.0)
     debug_inspector (0.0.2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -82,26 +114,12 @@ GEM
       http_parser.rb (>= 0.6.0)
     em-socksify (0.3.0)
       eventmachine (>= 1.0.0.beta.4)
-    equalizer (0.0.9)
-    ethon (0.7.4)
+    equalizer (0.0.11)
+    ethon (0.8.0)
       ffi (>= 1.3.0)
     eventmachine (1.0.7)
-    evercam_misc (0.0.10)
-      3scale_client (~> 2.3)
-      dotenv (~> 2.0.1)
-    evercam_models (0.3.26)
-      activesupport (~> 4.2)
-      bcrypt (~> 3.1)
+    evercam_misc (0.0.11)
       dotenv (~> 2.0)
-      evercam_misc (~> 0.0.10)
-      geocoder (~> 1.2)
-      georuby (~> 2.3)
-      hashie (~> 3.4)
-      nokogiri (~> 1.6)
-      pg (~> 0.18.2)
-      sequel (= 4.23.0)
-      timezone (~> 0.3)
-      typhoeus (~> 0.7.1)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     fakes3 (0.2.1)
@@ -111,9 +129,9 @@ GEM
       multipart-post (>= 1.2, < 3)
     ffi (1.9.10)
     formatador (0.2.5)
-    geocoder (1.2.9)
-    georuby (2.3.0)
-    grape (0.9.0)
+    geocoder (1.2.11)
+    georuby (2.5.2)
+    grape (0.13.0)
       activesupport
       builder
       hashie (>= 2.1.0)
@@ -123,16 +141,15 @@ GEM
       rack-accept
       rack-mount
       virtus (>= 1.0.0)
-    grape-entity (0.4.3)
+    grape-entity (0.4.8)
       activesupport
       multi_json (>= 1.3.2)
-    grape-swagger (0.7.2)
-      grape (>= 0.2.0)
-      grape-entity (>= 0.3.0)
-      kramdown (>= 1.3.1)
-    guard (2.12.6)
+    grape-swagger (0.10.2)
+      grape (>= 0.8.0)
+      grape-entity
+    guard (2.13.0)
       formatador (>= 0.2.4)
-      listen (~> 2.7)
+      listen (>= 2.7, <= 4.0)
       lumberjack (~> 1.0)
       nenv (~> 0.1)
       notiffany (~> 0.0)
@@ -144,64 +161,63 @@ GEM
       ffi
       guard (~> 2.3)
       spoon
-    guard-rspec (4.5.2)
+    guard-rspec (4.6.4)
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
-    hashie (3.4.2)
-    hitimes (1.2.2)
+    hashie (3.4.3)
+    hitimes (1.2.3)
     http_parser.rb (0.6.0)
     httpclient (2.6.0.1)
     i18n (0.7.0)
-    ice_nine (0.11.0)
+    ice_nine (0.11.1)
     interception (0.5)
-    intercom (3.0.2)
+    intercom (3.1.0)
       json (~> 1.8)
     json (1.8.3)
-    kgio (2.9.3)
-    kramdown (1.4.1)
-    listen (2.10.0)
-      celluloid (~> 0.16.0)
+    kgio (2.10.0)
+    listen (3.0.3)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
-    logjam (1.1.0)
-      json
+    logjam (1.2.2)
+      configurative (~> 0.1)
+      json (~> 1.8)
     lumberjack (1.0.9)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     metaclass (0.0.4)
     method_source (0.8.2)
     mime-types (2.6.1)
-    mini_magick (4.2.7)
+    mini_magick (4.3.3)
     mini_portile (0.6.2)
-    minitest (5.7.0)
+    minitest (5.8.2)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
-    multi_json (1.11.0)
+    multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     mutations (0.7.2)
       activesupport
     nenv (0.2.0)
     net-http-digest_auth (1.4)
-    newrelic-grape (1.4.1)
+    newrelic-grape (2.0.0)
       grape
       newrelic_rpm
-    newrelic_rpm (3.12.0.288)
+    newrelic_rpm (3.13.0.299)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
-    notiffany (0.0.6)
+    notiffany (0.0.7)
       nenv (~> 0.1)
       shellany (~> 0.0)
-    pg (0.18.2)
+    pg (0.18.3)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    pry-byebug (3.1.0)
-      byebug (~> 4.0)
+    pry-byebug (3.2.0)
+      byebug (~> 5.0)
       pry (~> 0.10)
     pry-rescue (1.4.2)
       interception (>= 0.5)
@@ -209,6 +225,7 @@ GEM
     pry-stack_explorer (0.4.9.2)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
+    puma (2.13.4)
     pusher (0.14.5)
       httpclient (~> 2.5)
       multi_json (~> 1.0)
@@ -227,9 +244,8 @@ GEM
     racksh (1.0.0)
       rack (>= 1.0)
       rack-test (>= 0.5)
-    raindrops (0.13.0)
     rake (10.4.2)
-    rb-fsevent (0.9.5)
+    rb-fsevent (0.9.6)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     redis (3.2.1)
@@ -240,24 +256,24 @@ GEM
       rspec-core (~> 3.3.0)
       rspec-expectations (~> 3.3.0)
       rspec-mocks (~> 3.3.0)
-    rspec-core (3.3.1)
+    rspec-core (3.3.2)
       rspec-support (~> 3.3.0)
-    rspec-expectations (3.3.0)
+    rspec-expectations (3.3.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
-    rspec-mocks (3.3.0)
+    rspec-mocks (3.3.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
     safe_yaml (1.0.4)
-    sequel (4.23.0)
+    sequel (4.26.0)
     shellany (0.0.1)
-    sidekiq (3.4.0)
-      celluloid (>= 0.16.0)
-      connection_pool (>= 2.1.1)
-      json
-      redis (>= 3.0.6)
-      redis-namespace (>= 1.3.1)
+    sidekiq (3.5.1)
+      celluloid (~> 0.17.2)
+      connection_pool (~> 2.2, >= 2.2.0)
+      json (~> 1.0)
+      redis (~> 3.2, >= 3.2.1)
+      redis-namespace (~> 1.5, >= 1.5.2)
     signature (0.1.8)
     simplecov (0.10.0)
       docile (~> 1.1.0)
@@ -268,7 +284,7 @@ GEM
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
-    sinatra-contrib (1.4.4)
+    sinatra-contrib (1.4.6)
       backports (>= 2.0)
       multi_json
       rack-protection
@@ -280,29 +296,21 @@ GEM
     sinatra-partial (0.4.0)
       sinatra
     slop (3.6.0)
-    smarter_csv (1.0.19)
+    smarter_csv (1.1.0)
     spoon (0.0.4)
       ffi
     stringex (2.5.2)
-    thin (1.6.3)
-      daemons (~> 1.0, >= 1.0.9)
-      eventmachine (~> 1.0)
-      rack (~> 1.0)
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.1)
-    timers (4.0.1)
+    timers (4.1.1)
       hitimes
-    timezone (0.3.11)
-    typhoeus (0.7.2)
+    timezone (0.4.3)
+    typhoeus (0.7.3)
       ethon (>= 0.7.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (4.9.0)
-      kgio (~> 2.6)
-      rack
-      raindrops (~> 0.7)
-    virtus (1.0.3)
+    virtus (1.0.5)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
       descendants_tracker (~> 0.0, >= 0.0.3)
@@ -324,15 +332,15 @@ DEPENDENCIES
   dalli
   database_cleaner
   em-http-request
-  evercam_misc (~> 0.0.10)
-  evercam_models (~> 0.3.26)
+  evercam_misc (~> 0.0.11)
+  evercam_models!
   factory_girl
   fakes3
   faraday-digestauth (~> 0.1.0)!
-  georuby (~> 2.3.0)
+  georuby
   grape
   grape-entity
-  grape-swagger (= 0.7.2)
+  grape-swagger (= 0.10.2)
   guard-rack
   guard-rspec
   intercom
@@ -350,6 +358,7 @@ DEPENDENCIES
   pry-byebug
   pry-rescue
   pry-stack_explorer
+  puma
   pusher
   rack
   rack-cors
@@ -367,6 +376,7 @@ DEPENDENCIES
   sinatra-partial
   smarter_csv
   stringex
-  thin
-  unicorn
   webmock (~> 1.21.0)
+
+BUNDLED WITH
+   1.10.6

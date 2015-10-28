@@ -1,5 +1,6 @@
 require 'rake'
 require 'evercam_misc'
+require 'active_support/core_ext/numeric/time'
 
 if :development == Evercam::Config.env
   require 'rspec/core/rake_task'
@@ -9,15 +10,17 @@ end
 
 namespace :db do
   require 'sequel'
+  Sequel.connect(Evercam::Config[:database])
   Sequel.extension :migration, :pg_json, :pg_array
 
   task :migrate do
     envs = [Evercam::Config.env]
     envs << :test if :development == envs[0]
     envs.each do |env|
-      db = Sequel.connect(Evercam::Config.settings[env][:database])
+      dbName = Evercam::Config.settings[env][:database]
+      puts "migrate: #{env} with databse name #{dbName}"
+      db = Sequel.connect(dbName)
       Sequel::Migrator.run(db, 'migrations')
-      puts "migrate: #{env}"
     end
   end
 
@@ -39,6 +42,8 @@ namespace :db do
   end
 
   task :seed do
+    require 'evercam_models'
+
     country = Country.create(iso3166_a2: "ad", name: "Andorra")
 
     user = User.create(
@@ -52,11 +57,85 @@ namespace :db do
       api_key: SecureRandom.hex
     )
 
+    hikvision_vendor = Vendor.create(
+      exid: "hikvision",
+      known_macs: ["00:0C:43", "00:40:48", "8C:E7:48", "00:3E:0B", "44:19:B7"],
+      name: "Hikvision Digital Technology"
+    )
+
+    hikvision_model = VendorModel.create(
+      vendor_id: hikvision_vendor.id,
+      name: "Default",
+      config: {
+        "auth" => {
+          "basic" => {
+            "username" => "admin",
+            "password" => "12345"
+          }
+        },
+        "snapshots" => {
+          "h264" => "h264/ch1/main/av_stream",
+          "lowres" => "",
+          "jpg" => "Streaming/Channels/1/picture",
+          "mpeg4" => "mpeg4/ch1/main/av_stream",
+          "mobile" => "",
+          "mjpg" => ""
+        }
+      },
+      exid: "hikvision_default",
+      jpg_url: "Streaming/Channels/1/picture",
+      h264_url: "h264/ch1/main/av_stream",
+      mjpg_url: "",
+      shape: "Dome",
+      resolution: "640x480",
+      official_url: "",
+      audio_url: "",
+      more_info: "",
+      poe: true,
+      wifi: false,
+      onvif: true,
+      psia: true,
+      ptz: false,
+      infrared: true,
+      varifocal: true,
+      sd_card: false,
+      upnp: false,
+      audio_io: true,
+      discontinued: false,
+      username: "admin",
+      password: "12345"
+    )
+
+    Camera.create(
+      name: "Phony Camera",
+      exid: "phony_camera",
+      owner_id: user.id,
+      is_public: true,
+      config: {
+        "internal_rtsp_port" => "",
+        "internal_http_port" => "",
+        "internal_host" => "",
+        "external_rtsp_port" => "",
+        "external_http_port" => 9000,
+        "external_host" => "127.0.0.1",
+        "snapshots" => {
+          "jpg" => "/snapshot.jpg"
+        },
+        "auth" => {
+          "basic" => {
+            "username" => "",
+            "password" => ""
+          }
+        }
+      }
+    )
+
     Camera.create(
       name: "Hikvision Devcam",
       exid: "hikvision_devcam",
       owner_id: user.id,
       is_public: false,
+      model_id: hikvision_model.id,
       config: {
         "internal_rtsp_port" => "",
         "internal_http_port" => "",
@@ -102,9 +181,10 @@ namespace :db do
 
     Camera.create(
       name: "Evercam Devcam",
-      exid: "evercam-remembrance-camera",
+      exid: "evercam-remembrance-camera-0",
       owner_id: user.id,
       is_public: true,
+      model_id: hikvision_model.id,
       config: {
         "internal_rtsp_port" => 0,
         "internal_http_port" => 0,
@@ -123,21 +203,6 @@ namespace :db do
         }
       }
     )
-  end
-end
-
-namespace :workers do
-
-  Sequel.connect(Evercam::Config[:database])
-  require 'evercam_models'
-  require_relative 'lib/workers'
-
-  task :heartbeat do
-    Evercam::HeartbeatWorker.enqueue_all
-  end
-
-  task :hb_single, [:arg1] do |t, args|
-    Evercam::HeartbeatWorker.perform_async(args.arg1)
   end
 end
 
@@ -222,12 +287,12 @@ task :import_vendor_models, [:vendorexid] do |t, args|
     SmarterCSV.process(file).each do |vm|
       next if !(vm[:vendor_id].downcase == args[:vendorexid].downcase)
       original_vm = vm.clone
-      
+
       m = VendorModel.where(:exid => vm[:model].to_s).first
-      
+
       # Next if vendor model not found
       next if m.nil?
-      
+
       puts "    M == " + m.exid + ", " + m.name
 
       shape = vm[:shape].nil? ? "" : vm[:shape]
@@ -721,5 +786,75 @@ task :send_camera_data_to_elixir_server, [:total, :paid_only] do |t, args|
     end
   rescue Exception => e
     log.warn(e)
+  end
+end
+
+task :add_mac_addresses do
+  Sequel.connect(Evercam::Config[:database])
+
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'evercam_models'
+
+  no_onvif_support = 0
+
+  File.open("temp/cameras_no_onvif", 'a') { |f| f.write("") }
+
+  cameras = Camera.where(mac_address: nil)
+  cameras.each do |camera|
+    begin
+      camera_url = camera.external_url.to_s
+      camera_url << camera.res_url('jpg').to_s
+      already_checked = File.foreach("temp/cameras_no_onvif").any? { |line| line.chomp == camera.exid }
+      if camera_url.present? && !already_checked
+        puts camera.exid
+        mac_address_url = "https://media.evercam.io/v1/cameras/#{camera.exid}/macaddr"
+        puts mac_address_url
+        conn = Faraday.new(url: mac_address_url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.options.timeout = 10
+          faraday.options.open_timeout = 10
+        end
+
+        response = conn.get.body
+        if response == "Server internal error - 500"
+          no_onvif_support += 1
+          File.open("temp/cameras_no_onvif", 'a') { |f| f.write("#{camera.exid}\n") }
+        else
+          response = JSON.parse(response)
+          camera.mac_address = response["mac_address"]
+          camera.save
+        end
+        puts
+      end
+    rescue => e
+      log.warn(e)
+    end
+  end
+
+  puts "cameras without onvif support: #{no_onvif_support}"
+end
+
+task :add_geolocation do
+  Sequel.connect(Evercam::Config[:database])
+
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'evercam_models'
+  require "resolv"
+
+  Geocoder.configure(:timeout => 5, :ip_lookup => :telize)
+
+  cameras = Camera.where(location: nil)
+  cameras.each do |camera|
+    begin
+      puts camera.exid
+      if camera.config["external_host"] =~ Resolv::IPv4::Regex
+        camera.location = Geocoder.coordinates(camera.config["external_host"])
+        camera.save
+      end
+    rescue => e
+      log.warn(e)
+    end
   end
 end

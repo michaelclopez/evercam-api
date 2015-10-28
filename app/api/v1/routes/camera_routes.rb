@@ -14,94 +14,93 @@ module Evercam
     include WebErrors
     include Evercam::CacheHelper
 
-    #---------------------------------------------------------------------------
-    # POST /v1/cameras/test
-    #---------------------------------------------------------------------------
-    desc 'Tests if given camera parameters are correct'
-    params do
-      requires :external_url, type: String, desc: "External camera url."
-      requires :jpg_url, type: String, desc: "Snapshot url."
-      optional :cam_username, type: String, desc: "Camera username."
-      optional :cam_password, type: String, desc: "Camera password."
-    end
-    post '/cameras/test' do
-      begin
-        conn = Faraday.new(:url => params[:external_url]) do |faraday|
-          faraday.request :basic_auth, params[:cam_username], params[:cam_password]
-          faraday.request :digest, params[:cam_username], params[:cam_password]
-          faraday.adapter :typhoeus
-          faraday.options.timeout = Evercam::Config[:api][:timeout]           # open/read timeout in seconds
-          faraday.options.open_timeout = Evercam::Config[:api][:timeout]      # connection open timeout in seconds
-        end
-        response  = conn.get do |req|
-          req.url params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')
-        end
-
-        if response.status == 401
-          digest_response = Curl::Easy.new("#{params[:external_url]}#{params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')}")
-          digest_response.http_auth_types = :digest
-          digest_response.username = params[:cam_username]
-          digest_response.password = params[:cam_password]
-          digest_response.perform
-
-          response = OpenStruct.new({'status' => digest_response.response_code, 'body' => digest_response.body, 'headers' => digest_response.headers })
-        end
-      rescue URI::InvalidURIError => error
-        raise BadRequestError, "Invalid URL. Cause: #{error}"
-      rescue Faraday::TimeoutError
-        raise CameraOfflineError, 'Camera offline'
-      end
-      if response.status == 200
-        data = Base64.encode64(response.body).gsub("\n", '')
-        { status: 'ok', data: "data:#{response.headers.fetch('content-type', 'image/jpg').gsub(/\s+/, '').gsub("\"", "'") };base64,#{data}"}
-      elsif response.status == 401
-        raise AuthorizationError, 'Please check camera username and password'
-      else
-        raise CameraOfflineError, 'Camera offline'
-      end
-    end
-
-    #---------------------------------------------------------------------------
-    # GET /v1/cameras/:id
-    #---------------------------------------------------------------------------
-    desc 'Returns all data for a given camera', {
-      entity: Evercam::Presenters::Camera
-    }
-    params do
-      requires :id, type: String, desc: "Camera Id."
-      optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view or null if it's not available."
-    end
-    get '/cameras/:id' do
-      camera = get_cam(params[:id])
-      rights = requester_rights_for(camera)
-      unless rights.allow?(AccessRight::LIST)
-        raise AuthorizationError.new if camera.is_public?
-        if !rights.allow?(AccessRight::VIEW) && !camera.is_public?
-          raise NotFoundError.new
-        end
-      end
-
-      CameraActivity.create(
-        camera_id: camera.id,
-        camera_exid: camera.exid,
-        access_token_id: (access_token.nil? ? nil : access_token.id),
-        name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
-        action: 'accessed',
-        done_at: Time.now,
-        ip: request.ip
-      )
-
-      options = {
-        minimal: !rights.allow?(AccessRight::VIEW),
-        with: Presenters::Camera,
-        thumbnail: params[:thumbnail]
-      }
-      options[:user] = rights.requester unless rights.requester.nil?
-      present([camera], options)
-    end
-
-
     resource :cameras do
+
+      #---------------------------------------------------------------------------
+      # POST /v1/cameras/test
+      #---------------------------------------------------------------------------
+      desc 'Tests if given camera parameters are correct'
+      params do
+        requires :external_url, type: String, desc: "External camera url."
+        requires :jpg_url, type: String, desc: "Snapshot url."
+        optional :cam_username, type: String, desc: "Camera username."
+        optional :cam_password, type: String, desc: "Camera password."
+        optional :vendor_id, type: String, desc: "Vendor Id"
+      end
+      post '/test' do
+        require 'openssl'
+        require 'base64'
+
+        vendor_exid = params[:vendor_id]
+        cam_auth = "#{params[:cam_username]}:#{params[:cam_password]}"
+
+        api_id = params.fetch('api_id', '')
+        api_key = params.fetch('api_key', '')
+        credentials = "#{api_id}:#{api_key}"
+
+        cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+        cipher.encrypt
+        cipher.key = "#{Evercam::Config[:snapshots][:key]}"
+        cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
+        cipher.padding = 0
+
+        message = params[:external_url]
+        message << "/#{params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')}"
+        message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
+        message << ' ' until message.length % 16 == 0
+        token = cipher.update(message)
+        token << cipher.final
+
+        url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/test?token=#{Base64.urlsafe_encode64(token)}&vendor_exid=#{vendor_exid}"
+
+        conn = Faraday.new(url: url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.options.timeout = 10
+          faraday.options.open_timeout = 10
+        end
+
+        response = conn.post
+        status response.status
+        JSON.parse response.body
+      end
+
+      #---------------------------------------------------------------------------
+      # GET /v1/cameras/:id
+      #---------------------------------------------------------------------------
+      desc 'Returns all data for a given camera', {
+        entity: Evercam::Presenters::Camera
+      }
+      params do
+        requires :id, type: String, desc: "Camera Id."
+      end
+      get '/:id' do
+        camera = get_cam(params[:id])
+        rights = requester_rights_for(camera)
+        unless rights.allow?(AccessRight::LIST)
+          raise AuthorizationError.new if camera.is_public?
+          if !rights.allow?(AccessRight::VIEW) && !camera.is_public?
+            raise NotFoundError.new
+          end
+        end
+
+        CameraActivity.create(
+          camera_id: camera.id,
+          camera_exid: camera.exid,
+          access_token_id: (access_token.nil? ? nil : access_token.id),
+          name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
+          action: 'accessed',
+          done_at: Time.now,
+          ip: request.ip
+        )
+
+        options = {
+          minimal: !rights.allow?(AccessRight::VIEW),
+          with: Presenters::Camera
+        }
+        options[:user] = rights.requester unless rights.requester.nil?
+        present([camera], options)
+      end
+
       before do
         authorize!
       end
@@ -116,14 +115,12 @@ module Evercam
         optional :ids, type: String, desc: "Comma separated list of camera identifiers for the cameras being queried."
         optional :user_id, type: String, desc: "The Evercam user name or email address for the new camera owner."
         optional :exclude_shared, type: 'Boolean', desc: "Set to true to exclude cameras shared with the user in the fetch."
-        optional :thumbnail, type: 'Boolean', desc: "Set to true to get base64 encoded 150x150 thumbnail with camera view for each camera or null if it's not available."
       end
       get do
         include_shared = true
         include_shared = false if params.include?(:exclude_shared) && params[:exclude_shared]
         include_shared = false if params.include?(:include_shared) && params[:include_shared] == "false"
 
-        thumbnail_requested = params.include?(:thumbnail) && params[:thumbnail]
         requested_by_client = caller.kind_of?(Client)
         if params.include?(:ids) && params[:ids]
           cameras = []
@@ -148,8 +145,8 @@ module Evercam
             user = ::User.where(api_id: params[:api_id], api_key: params[:api_key]).first
           end
 
-          key = "cameras|#{user.username}|#{include_shared}|#{params[:thumbnail]}"
-          cameras = Evercam::Services.dalli_cache.get(key) unless thumbnail_requested || requested_by_client
+          key = "cameras|#{user.username}|#{include_shared}"
+          cameras = Evercam::Services.dalli_cache.get(key) unless requested_by_client
 
           if cameras.blank?
             cameras = []
@@ -170,6 +167,10 @@ module Evercam
               )
             end
 
+            unless requested_by_client
+              tokens = AccessToken.where(user_id: user.id).all
+            end
+
             query.order(:name).eager(:owner, :vendor_model => :vendor).all.select do |camera|
               rights = requester_rights_for(camera)
               rights = CameraRightSet.new(camera, rights.token.grantor) if rights.type == :client
@@ -178,11 +179,11 @@ module Evercam
                 cameras << presenter.as_json(
                   minimal: !rights.allow?(AccessRight::VIEW),
                   user: caller,
-                  thumbnail: params[:thumbnail]
+                  tokens: tokens
                 )
               end
             end
-            Evercam::Services.dalli_cache.set(key, cameras) unless thumbnail_requested
+            Evercam::Services.dalli_cache.set(key, cameras) unless requested_by_client
           end
         end
         {cameras: cameras}
@@ -198,7 +199,7 @@ module Evercam
         optional :id, type: String, desc: "Camera Id."
         requires :name, type: String, desc: "Camera name."
         optional :vendor, type: String, desc: "Camera vendor id."
-        optional :model, type: String, desc: "Camera model name."
+        optional :model, type: String, desc: "Camera model id."
         optional :timezone, type: String, desc: "Camera timezone."
         requires :is_public, type: 'Boolean', desc: "Is camera public?"
         optional :is_online, type: 'Boolean', desc: "Is camera online? (If you leave it empty it will be automatically checked)"
@@ -234,6 +235,7 @@ module Evercam
         end
         invalidate_for_user(caller.username)
         IntercomEventsWorker.perform_async('created-camera', caller.email)
+        CameraTouchWorker.perform_async(params[:id])
         present Array(outcome.result), options, with: Presenters::Camera, user: caller
       end
 
@@ -298,11 +300,10 @@ module Evercam
         camera = ::Camera.by_exid!(params[:id])
 
         CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
         Evercam::Services.dalli_cache.set(params[:id], camera)
-        Evercam::HeartbeatWorker.enqueue('async', camera.exid)
         present Array(camera), with: Presenters::Camera, user: caller
       end
-
 
       #-------------------------------------------------------------------------
       # DELETE /v1/cameras/:id
@@ -314,6 +315,17 @@ module Evercam
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::DELETE)
+
+        original_owner = camera.owner
+        camera.owner = User.by_login("admin@evercam.io")
+        camera.discoverable = false
+        camera.is_public = false
+        camera.save
+        invalidate_for_camera(camera.exid)
+        invalidate_for_user(original_owner.username)
+        CloudRecording.where(camera: camera).each(&:delete)
+        MotionDetection.where(camera: camera).each(&:delete)
+
         DeleteCameraWorker.perform_async(camera.exid)
         {}
       end
@@ -335,8 +347,14 @@ module Evercam
 
         new_owner = User.by_login(params[:user_id])
         raise NotFoundError.new("Specified user does not exist.") if new_owner.nil?
+        old_owner = camera.owner.username
         CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
+        Actors::ShareDelete.run({ id: camera.id, user_id: new_owner.id, ip: request.ip })
+        rights = generate_rights_list("full")
+        rights = rights.is_a?(String) ? rights : rights.join(",")
         camera.update(owner: new_owner)
+        Actors::ShareCreate.run({ id: camera.exid, email: old_owner, rights: rights, grantor: new_owner.username })
         Evercam::Services.dalli_cache.set(params[:id], camera)
         present Array(camera), with: Presenters::Camera, user: caller
       end

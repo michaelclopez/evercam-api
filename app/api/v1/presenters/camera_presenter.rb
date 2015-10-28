@@ -265,7 +265,7 @@ module Evercam
 
           expose :mjpg, documentation: {
               type: 'String',
-              desc: 'Mjpg url using evr.cm dynamic DNS'
+              desc: 'Internal mjpg url.'
           } do |c,o|
             host = c.internal_url
             (c.res_url('mjpg').blank? or host.blank?) ? "" : host << c.res_url('mjpg')
@@ -309,73 +309,7 @@ module Evercam
         end
       end
 
-      expose :dyndns, if: lambda {|instance, options| !options[:minimal]} do
-
-        expose :host, documentation: {
-            type: 'String',
-            desc: 'Internal host of the camera'
-        } do |c,o|
-          "http://#{c.exid}.evr.cm"
-        end
-
-        expose :http do
-
-          expose :jpg, documentation: {
-              type: 'String',
-              desc: 'Snapshot url using evr.cm dynamic DNS'
-          } do |c,o|
-            host = c.dyndns_url
-            (c.res_url('jpg').blank? or host.blank?) ? "" : host << c.res_url('jpg')
-          end
-
-          expose :mjpg, documentation: {
-              type: 'String',
-              desc: 'Mjpg url using evr.cm dynamic DNS'
-          } do |c,o|
-            host = c.dyndns_url
-            (c.res_url('mjpg').blank? or host.blank?) ? "" : host << c.res_url('mjpg')
-          end
-
-        end
-
-        expose :rtsp do
-
-          expose :mpeg, documentation: {
-              type: 'String',
-              desc: 'Dynamic DNS mpeg url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('mpeg').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('mpeg')
-          end
-
-          expose :audio, documentation: {
-              type: 'String',
-              desc: 'Dynamic DNS audio url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('audio').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('audio')
-          end
-
-          expose :h264, documentation: {
-              type: 'String',
-              desc: 'Dynamis DNS h264 url'
-          } do |c,o|
-            host = c.dyndns_url('rtsp')
-            (c.res_url('h264').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('h264')
-          end
-
-        end
-
-      end
-
       expose :proxy_url do
-        expose :jpg, documentation: {
-          type: 'String',
-          desc: 'Short snapshot url using evr.cm url shortener and proxy'
-        } do |c,o|
-          "http://evr.cm/#{c.exid}.jpg"
-        end
-
         expose :hls, documentation: {
           type: 'String',
           desc: 'HLS url'
@@ -407,25 +341,42 @@ module Evercam
         if rights_string.nil?
           list   = []
           grants = []
-          rights = AccessRightSet.for(camera, options[:user])
-          AccessRight::BASE_RIGHTS.each do |right|
-            list << right if rights.allow?(right)
-            grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+          if options[:user].respond_to?('username')
+            if options[:user] == camera.owner
+              AccessRight::BASE_RIGHTS.each do |right|
+                list << right
+                grants << "#{AccessRight::GRANT}~#{right}"
+              end
+            else
+              options[:tokens] = AccessToken.where(user_id: options[:user].id).all if options[:tokens].nil?
+              rights = AccessRight.where(
+                token: options[:tokens],
+                camera_id: camera.id,
+                status: AccessRight::ACTIVE
+              ).select(:right).all
+              if rights.blank?
+                list = ["snapshot,list"]
+                grants = []
+              else
+                rights = rights.map { |right| right.to_s.gsub("::", "") }
+                rights.each do |right|
+                  list << right
+                  grants << right
+                end
+              end
+            end
+          else
+            rights = AccessRightSet.for(camera, options[:user])
+            AccessRight::BASE_RIGHTS.each do |right|
+              list << right if rights.allow?(right)
+              grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+            end
           end
           list.concat(grants) unless grants.empty?
-          rights_string = list.join(",")
+          rights_string = list.uniq.join(",")
           Evercam::Services::dalli_cache.set(key, rights_string)
         end
         rights_string
-      end
-
-      expose :thumbnail, if: lambda {|instance, options| options[:thumbnail]},
-             documentation: {
-               type: 'Image',
-               desc: '150x150 preview of camera view'
-             } do |camera, _options|
-        data = Base64.encode64(camera.preview).gsub("\n", '') unless camera.preview.nil?
-        camera.preview.nil? ? "" : "data:image/jpeg;base64,#{data}"
       end
 
       expose :thumbnail_url, documentation: {
@@ -437,4 +388,3 @@ module Evercam
     end
   end
 end
-

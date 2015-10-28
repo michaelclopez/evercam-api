@@ -42,7 +42,7 @@ module Evercam
         desc: "Vendor logo",
         required: true,
       } do |v, _o|
-        "http://evercam-public-assets.s3.amazonaws.com/#{v.exid}/logo.jpg"
+        "https://evercam-public-assets.s3.amazonaws.com/#{v.exid}/logo.jpg"
       end
     end
   end

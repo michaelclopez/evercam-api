@@ -162,18 +162,8 @@ module Evercam
                               action: 'created',
                               done_at: Time.now)
 
-        unless inputs[:external_host].blank?
-          # fire off the evr.cm zone update to sidekiq
-          DNSUpsertWorker.perform_async(id, inputs[:external_host]) unless Evercam::Config[:testserver]
-        end
-
-        # Check if online
-        Evercam::HeartbeatWorker.enqueue('async', id)
-
         camera
       end
-
     end
   end
 end
-
