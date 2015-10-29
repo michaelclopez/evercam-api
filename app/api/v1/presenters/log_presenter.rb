@@ -39,7 +39,7 @@ module Evercam
       } do |c,o|
         unless c.extra.nil? or c.extra['with'].nil?
           user = ::User.by_login(c.extra['with'])
-          unless user.nil?
+          unless user.nil? && user.fullname.nil?
             c.extra['with'] = user.fullname
           end
         end
