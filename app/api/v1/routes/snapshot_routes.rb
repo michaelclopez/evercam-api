@@ -257,11 +257,16 @@ module Evercam
             raise OutcomeError, outcome.to_json
           end
 
+          name = nil
+          unless access_token.nil?
+            token_user = User.where(id: access_token.user_id).first
+            name = token_user.fullname unless token_user.nil?
+          end
           CameraActivity.create(
             camera_id: camera.id,
             camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
+            name: (access_token.nil? ? nil : name),
             action: 'captured',
             done_at: Time.now,
             ip: request.ip
@@ -283,11 +288,16 @@ module Evercam
           rights = requester_rights_for(camera.owner, AccessRight::SNAPSHOTS)
           raise AuthorizationError.new if !rights.allow?(AccessRight::DELETE)
 
+          name = nil
+          unless access_token.nil?
+            token_user = User.where(id: access_token.user_id).first
+            name = token_user.fullname unless token_user.nil?
+          end
           CameraActivity.create(
             camera_id: camera.id,
             camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
+            name: (access_token.nil? ? nil : name),
             action: 'deleted snapshot',
             done_at: Time.now,
             ip: request.ip
@@ -341,11 +351,16 @@ module Evercam
             token = cipher.update(message)
             token << cipher.final
 
+            name = nil
+            unless access_token.nil?
+              token_user = User.where(id: access_token.user_id).first
+              name = token_user.fullname unless token_user.nil?
+            end
             CameraActivity.create(
               camera_id: camera.id,
               camera_exid: camera.exid,
               access_token_id: (access_token.nil? ? nil : access_token.id),
-              name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
+              name: (access_token.nil? ? nil : name),
               action: 'viewed',
               done_at: Time.now,
               ip: request.ip
@@ -417,11 +432,16 @@ module Evercam
           token = cipher.update(message)
           token << cipher.final
 
+          name = nil
+          unless access_token.nil?
+            token_user = User.where(id: access_token.user_id).first
+            name = token_user.fullname unless token_user.nil?
+          end
           CameraActivity.create(
             camera_id: camera.id,
             camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : User.where(id: access_token.user_id).first.fullname unless access_token.nil?),
+            name: (access_token.nil? ? nil : name),
             action: 'viewed',
             done_at: Time.now,
             ip: request.ip
