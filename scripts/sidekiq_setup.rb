@@ -13,4 +13,4 @@ Pusher.encrypted = true
 require 'evercam_misc'
 require 'evercam_models'
 require_relative '../lib/workers'
-Snapshot.db = Sequel.connect("#{ENV['SNAPS_DATABASE_URL']}", max_connections: 25)
+Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
