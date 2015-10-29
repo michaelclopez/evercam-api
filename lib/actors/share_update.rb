@@ -38,7 +38,7 @@ module Evercam
           action: 'updated share',
           done_at: Time.now,
           ip: inputs[:ip],
-          extra: {:with => share.user.email}.to_json
+          extra: { :with => share.user.email }.to_json
         )
         share
       end

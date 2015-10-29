@@ -30,7 +30,7 @@ module Evercam
               action: 'stopped sharing',
               done_at: Time.now,
               ip: inputs[:ip],
-              extra: {:with => share.user.email}.to_json
+              extra: { :with => share.user.email }.to_json
             )
           end
         end
