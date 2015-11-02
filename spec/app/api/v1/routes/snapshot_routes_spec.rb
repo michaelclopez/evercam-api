@@ -25,7 +25,7 @@ describe 'API routes/snapshots' do
     public_camera
   end
   let(:api_keys) { {api_id: camera0.owner.api_id, api_key: camera0.owner.api_key} }
-  let(:snap) { create(:snapshot, camera: camera0) }
+  let(:snap) { create(:snapshot, camera_id: camera0.id) }
   let(:public_snap) { create(:snapshot, camera: public_camera) }
 
   let(:other_user) { create(:user) }
@@ -47,7 +47,7 @@ describe 'API routes/snapshots' do
 
     context 'when unauthenticated' do
       it 'returns an unauthenticated error' do
-        get("/cameras/#{snap.camera.exid}/recordings/snapshots")
+        get("/cameras/#{camera0.exid}/recordings/snapshots")
         expect(last_response.status).to eq(401)
         data = JSON.parse(last_response.body)
         expect(data.include?("message")).to eq(true)
@@ -57,7 +57,7 @@ describe 'API routes/snapshots' do
 
     context 'when camera is public' do
       it 'doesnt return an unauthorized error' do
-        get("/cameras/#{snap.camera.exid}/recordings/snapshots", alt_keys)
+        get("/cameras/#{camera0.exid}/recordings/snapshots", alt_keys)
         expect(last_response.status).to eq(200)
         data = JSON.parse(last_response.body)
       end
@@ -73,7 +73,7 @@ describe 'API routes/snapshots' do
       @api_keys = {api_id: @cam.owner.api_id, api_key: @cam.owner.api_key}
       data = File.read('spec/resources/snapshot.jpg')
       (1..150).each do |n|
-        Snapshot.create(camera: @cam, created_at: Time.at(n), data: data)
+        Snapshot.create(camera_id: @cam.id, created_at: Time.at(n), data: data)
       end
     end
 
@@ -86,7 +86,7 @@ describe 'API routes/snapshots' do
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/days" do
 
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera: @cam, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00')) }
+        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00')) }
 
         it 'returns array of days for given date' do
           snapOld
@@ -132,7 +132,7 @@ describe 'API routes/snapshots' do
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/:day/hours" do
 
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera: @cam, created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00')) }
+        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00')) }
 
         it 'returns array of hours for given date' do
           snapOld
@@ -250,9 +250,9 @@ describe 'API routes/snapshots' do
     end
 
     let(:instant) { Time.now }
-    let(:snap1) { create(:snapshot, camera: camera0, created_at: instant) }
-    let(:snap2) { create(:snapshot, camera: camera0, created_at: instant - 1000) }
-    let(:snap3) { create(:snapshot, camera: camera0, created_at: instant + 1000) }
+    let(:snap1) { create(:snapshot, camera_id: camera0.id, created_at: instant) }
+    let(:snap2) { create(:snapshot, camera_id: camera0.id, created_at: instant - 1000) }
+    let(:snap3) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1000) }
     let(:other_user) { create(:user) }
 
     context 'when snapshot request is correct' do
@@ -260,7 +260,7 @@ describe 'API routes/snapshots' do
         snap1
         snap2
         snap3
-        get("/cameras/#{snap.camera.exid}/recordings/snapshots/latest",
+        get("/cameras/#{camera0.exid}/recordings/snapshots/latest",
             api_keys)
         expect(last_response.status).to eq(200)
         expect(last_response.json["snapshots"][0]["created_at"]).to eq(snap3.created_at.to_i)
@@ -405,9 +405,9 @@ describe 'API routes/snapshots' do
     context 'when snapshot request is correct' do
 
       let(:instant) { Time.now }
-      let(:s0) { create(:snapshot, camera: camera0, created_at: instant, data: 'xxx') }
-      let(:s1) { create(:snapshot, camera: camera0, created_at: instant+1, data: 'xxx') }
-      let(:s2) { create(:snapshot, camera: camera0, created_at: instant+2, data: 'xxx') }
+      let(:s0) { create(:snapshot, camera_id: camera0.id, created_at: instant, data: 'xxx') }
+      let(:s1) { create(:snapshot, camera_id: camera0.id, created_at: instant+1, data: 'xxx') }
+      let(:s2) { create(:snapshot, camera_id: camera0.id, created_at: instant+2, data: 'xxx') }
 
       before do
         s0

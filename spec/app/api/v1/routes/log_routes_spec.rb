@@ -35,10 +35,10 @@ describe 'API routes/client' do
 
     context 'when log amount is big' do
       before do
-        create(:camera_activity, camera: camera, action: 'aaa')
+        create(:camera_activity, camera_id: camera.id, access_token_id: nil, action: 'aaa')
         time = Time.at(100)
         60.times do |i|
-          create(:camera_activity, camera: camera, access_token: nil, done_at: time - i)
+          create(:camera_activity, camera_id: camera.id, access_token_id: nil, done_at: time - i)
         end
       end
 
