@@ -89,9 +89,7 @@ module Evercam
 
         CameraActivity.create(
           camera_id: camera.id,
-          camera_exid: camera.exid,
           access_token_id: caller.token.id,
-          name: caller.fullname,
           action: 'shared',
           done_at: Time.now,
           ip: request.ip,

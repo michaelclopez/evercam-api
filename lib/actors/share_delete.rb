@@ -24,9 +24,7 @@ module Evercam
             share.delete
             CameraActivity.create(
               camera_id: share.camera.id,
-              camera_exid: share.camera.exid,
               access_token_id: share.sharer.token.id,
-              name: share.sharer.fullname,
               action: 'stopped sharing',
               done_at: Time.now,
               ip: inputs[:ip],
