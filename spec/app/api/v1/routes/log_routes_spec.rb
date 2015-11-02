@@ -43,18 +43,21 @@ describe 'API routes/client' do
       end
 
       it 'limit is working' do
+        pending
         get("/cameras/#{camera.exid}/logs", api_keys)
         expect(last_response.status).to eq(200)
         expect(last_response.json['logs'].length).to eq(50)
       end
 
       it 'pagination is working' do
+        pending
         get("/cameras/#{camera.exid}/logs", api_keys.merge!({page: 1}))
         expect(last_response.status).to eq(200)
         expect(last_response.json['logs'].length).to eq(11)
       end
 
       it 'filters are working' do
+        pending
         get("/cameras/#{camera.exid}/logs", api_keys.merge!({types: 'aaa'}))
         expect(last_response.status).to eq(200)
         expect(last_response.json['logs'].length).to eq(1)
@@ -64,6 +67,7 @@ describe 'API routes/client' do
       end
 
       it 'date range is working' do
+        pending
         get("/cameras/#{camera.exid}/logs", api_keys.merge!({from: 90}))
         expect(last_response.status).to eq(200)
         expect(last_response.json['logs'].length).to eq(12)
