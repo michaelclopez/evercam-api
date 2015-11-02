@@ -268,7 +268,7 @@ GEM
     safe_yaml (1.0.4)
     sequel (4.26.0)
     shellany (0.0.1)
-    sidekiq (3.5.1)
+    sidekiq (3.5.3)
       celluloid (~> 0.17.2)
       connection_pool (~> 2.2, >= 2.2.0)
       json (~> 1.0)
