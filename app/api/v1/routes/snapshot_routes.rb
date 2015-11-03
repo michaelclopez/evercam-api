@@ -264,9 +264,7 @@ module Evercam
           end
           CameraActivity.create(
             camera_id: camera.id,
-            camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : name),
             action: 'captured',
             done_at: Time.now,
             ip: request.ip
@@ -295,9 +293,7 @@ module Evercam
           end
           CameraActivity.create(
             camera_id: camera.id,
-            camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : name),
             action: 'deleted snapshot',
             done_at: Time.now,
             ip: request.ip
@@ -358,9 +354,7 @@ module Evercam
             end
             CameraActivity.create(
               camera_id: camera.id,
-              camera_exid: camera.exid,
               access_token_id: (access_token.nil? ? nil : access_token.id),
-              name: (access_token.nil? ? nil : name),
               action: 'viewed',
               done_at: Time.now,
               ip: request.ip
@@ -439,9 +433,7 @@ module Evercam
           end
           CameraActivity.create(
             camera_id: camera.id,
-            camera_exid: camera.exid,
             access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : name),
             action: 'viewed',
             done_at: Time.now,
             ip: request.ip

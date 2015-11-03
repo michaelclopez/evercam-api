@@ -156,9 +156,7 @@ module Evercam
         camera.save
 
         CameraActivity.create(camera_id: camera.id,
-                              camera_exid: camera.exid,
                               access_token_id: user.token.id,
-                              name: user.fullname,
                               action: 'created',
                               done_at: Time.now)
 
