@@ -12,7 +12,7 @@ dropdb evercam_live --if-exists
 createdb evercam_live
 
 # Fetch the database url
-DATABASE_URL=`heroku config --app evercam-api | grep DATABASE_URL | awk '{print $2}'`
+DATABASE_URL=`heroku config --app evercam-api | grep -m 1 DATABASE_URL | awk '{print $2}'`
 
 # Set the location of the db schema dump and data
 SCHEMA_DUMP="./migrations/live_schema.dump"
