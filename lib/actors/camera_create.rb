@@ -7,6 +7,7 @@ module Evercam
         string :name
         string :username
         boolean :is_public
+        string :external_host
       end
 
       optional do
@@ -20,7 +21,6 @@ module Evercam
         string :h264_url
         string :audio_url
         string :mpeg_url
-        string :external_host
         string :internal_host
         integer :external_http_port
         integer :internal_http_port
@@ -46,7 +46,7 @@ module Evercam
           add_error(:name, :valid, 'Camera Name is too long. Maximum 24 characters.')
         end
 
-        if external_host && !external_host.blank? && !(external_host =~ Evercam::VALID_IP_ADDRESS_REGEX or external_host =~ Evercam::VALID_HOSTNAME_REGEX)
+        if !(external_host =~ Evercam::VALID_IP_ADDRESS_REGEX or external_host =~ Evercam::VALID_HOSTNAME_REGEX)
           add_error(:external_host, :valid, 'External url is invalid')
         end
 

@@ -214,7 +214,7 @@ module Evercam
         optional :mac_address, type: String, desc: "Camera MAC address."
         optional :location_lat, type: Float, desc: "Camera GPS latitude location."
         optional :location_lng, type: Float, desc: "Camera GPS longitude location."
-        optional :external_host, type: String, desc: "External camera host."
+        requires :external_host, type: String, desc: "External camera host."
         optional :internal_host, type: String, desc: "Internal camera host."
         optional :external_http_port, type: String, desc: "External camera http port."
         optional :internal_http_port, type: String, desc: "Internal camera http port."
@@ -233,6 +233,7 @@ module Evercam
         else
           parameters = {}.merge(params).merge(username: caller.username)
         end
+
         outcome    = Actors::CameraCreate.run(parameters)
         unless outcome.success?
           IntercomEventsWorker.perform_async('failed-creating-camera', caller.email)
