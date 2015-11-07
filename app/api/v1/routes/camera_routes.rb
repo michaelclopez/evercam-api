@@ -241,7 +241,7 @@ module Evercam
         end
         invalidate_for_user(caller.username)
         IntercomEventsWorker.perform_async('created-camera', caller.email)
-        CameraTouchWorker.perform_async(params[:id])
+        CameraTouchWorker.perform_async(outcome.result.exid)
         present Array(outcome.result), options, with: Presenters::Camera, user: caller
       end
 
