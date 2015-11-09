@@ -64,7 +64,6 @@ module Evercam
         requires :y2, type: Integer, desc: "Image selected area bottom left"
         requires :width, type: Integer, desc: "Image selected area width"
         requires :height, type: Integer, desc: "Image selected area height"
-
       end
       patch '/:id/apps/motion-detection/settings' do
         camera = get_cam(params[:id])
