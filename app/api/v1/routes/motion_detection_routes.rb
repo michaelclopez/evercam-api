@@ -52,18 +52,18 @@ module Evercam
            entity: Evercam::Presenters::Camera
       params do
         requires :id, type: String, desc: "Camera Id."
-        requires :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
+        optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
         optional :week_days, type: String, desc: "Motion Detection alert days"
         optional :alert_from_hour, type: Integer, desc: "Motion Detection alert from hour"
         optional :alert_to_hour, type: Integer, desc: "Motion Detection alert from hour"
         optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
         optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"
-        requires :x1, type: Integer, desc: "Image selected area top left"
-        requires :y1, type: Integer, desc: "Image selected area bottom left"
-        requires :x2, type: Integer, desc: "Image selected area top right"
-        requires :y2, type: Integer, desc: "Image selected area bottom left"
-        requires :width, type: Integer, desc: "Image selected area width"
-        requires :height, type: Integer, desc: "Image selected area height"
+        optional :x1, type: Integer, desc: "Image selected area top left"
+        optional :y1, type: Integer, desc: "Image selected area bottom left"
+        optional :x2, type: Integer, desc: "Image selected area top right"
+        optional :y2, type: Integer, desc: "Image selected area bottom left"
+        optional :width, type: Integer, desc: "Image selected area width"
+        optional :height, type: Integer, desc: "Image selected area height"
       end
       patch '/:id/apps/motion-detection/settings' do
         camera = get_cam(params[:id])
@@ -74,6 +74,10 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        camera = ::Camera.by_exid!(params[:id])
+        CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
+        Evercam::Services.dalli_cache.set(params[:id], camera)
         present Array(outcome.result), with: Presenters::Camera
       end
 

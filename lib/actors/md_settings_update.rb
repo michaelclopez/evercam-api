@@ -5,21 +5,21 @@ module Evercam
     class MdSettingsUpdate < Mutations::Command
       required do
         string :id
+      end
+
+      optional do
         boolean :enabled
+        string :week_days, :empty => true
+        integer :alert_from_hour, :empty => true
+        integer :alert_to_hour, :empty => true
+        integer :alert_interval_min, :empty => true
+        integer :sensitivity, :empty => true
         integer :x1, :empty => true
         integer :x2, :empty => true
         integer :y1, :empty => true
         integer :y2, :empty => true
         integer :width, :empty => true
         integer :height, :empty => true
-      end
-
-      optional do
-        string :week_days
-        integer :alert_from_hour
-        integer :alert_to_hour
-        integer :alert_interval_min
-        integer :sensitivity
       end
 
       def validate

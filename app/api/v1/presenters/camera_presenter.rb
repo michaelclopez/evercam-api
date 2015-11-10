@@ -314,77 +314,121 @@ module Evercam
           type: 'boolean',
           desc: 'motion detection is enabled of the camera'
         } do |c, _o|
-          c.config["motion"]["enabled"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["enabled"].present?
+            c.config["motion"]["enabled"]
+          else
+            false
+          end
         end
 
         expose :week_days, documentation: {
           type: 'String',
           desc: 'Alert days'
         } do |c, _o|
-          c.config["motion"]["week_days"] if c.config["motion"].present?
+          c.config["motion"]["week_days"].to_s if c.config["motion"].present?
         end
 
         expose :alert_from_hour, documentation: {
           type: 'integer',
           desc: 'Motion detection alert from hour'
         } do |c, _o|
-          c.config["motion"]["alert_from_hour"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["alert_from_hour"].present?
+            c.config["motion"]["alert_from_hour"]
+          else
+            0
+          end
         end
 
         expose :alert_to_hour, documentation: {
           type: 'integer',
           desc: 'Motion detection alert to hour'
         } do |c, _o|
-          c.config["motion"]["alert_to_hour"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["alert_to_hour"].present?
+            c.config["motion"]["alert_to_hour"]
+          else
+            0
+          end
         end
 
         expose :alert_interval_min, documentation: {
           type: 'integer',
           desc: 'Motion detection alert interval minute.'
         } do |c, _o|
-          c.config["motion"]["alert_interval_min"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["alert_interval_min"].present?
+            c.config["motion"]["alert_interval_min"]
+          else
+            0
+          end
         end
         expose :sensitivity, documentation: {
           type: 'integer',
           desc: 'Motion Detection sensitivity.'
         } do |c, _o|
-          c.config["motion"]["sensitivity"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["sensitivity"].present?
+            c.config["motion"]["sensitivity"]
+          else
+            0
+          end
         end
         expose :x1, documentation: {
           type: 'integer',
           desc: 'Image selected area top left.'
         } do |c, _o|
-          c.config["motion"]["x1"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["x1"].present?
+            c.config["motion"]["x1"]
+          else
+            0
+          end
         end
         expose :y1, documentation: {
           type: 'integer',
           desc: 'Image selected area bottom left.'
         } do |c, _o|
-          c.config["motion"]["y1"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["y1"].present?
+            c.config["motion"]["y1"]
+          else
+            0
+          end
         end
         expose :x2, documentation: {
           type: 'integer',
           desc: 'Image selected area top right.'
         } do |c, _o|
-          c.config["motion"]["x2"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["x2"].present?
+            c.config["motion"]["x2"]
+          else
+            0
+          end
         end
         expose :y2, documentation: {
           type: 'integer',
           desc: 'Image selected area bottom right.'
         } do |c, _o|
-          c.config["motion"]["y2"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["y2"].present?
+            c.config["motion"]["y2"]
+          else
+            0
+          end
         end
         expose :width, documentation: {
           type: 'integer',
           desc: 'Image selected area width.'
         } do |c, _o|
-          c.config["motion"]["width"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["width"].present?
+            c.config["motion"]["width"]
+          else
+            0
+          end
         end
         expose :height, documentation: {
           type: 'integer',
           desc: 'Image selected area height.'
         } do |c, _o|
-          c.config["motion"]["height"] if c.config["motion"].present?
+          if c.config["motion"].present? && c.config["motion"]["height"].present?
+            c.config["motion"]["height"]
+          else
+            0
+          end
         end
       end
 
