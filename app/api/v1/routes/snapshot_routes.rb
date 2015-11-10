@@ -12,6 +12,7 @@ module Evercam
     namespace :cameras do
       before do
         authorize!
+        header "Access-Control-Allow-Origin", "*"
       end
 
       params do
