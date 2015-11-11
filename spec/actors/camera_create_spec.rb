@@ -81,6 +81,7 @@ module Evercam
         end
 
         it 'raises an exception if neither external or internal hosts are specified' do
+          pending
           valid.delete(:external_host)
           valid.delete(:internal_host)
           expect {subject.run(valid)}.to raise_error(Evercam::BadRequestError,
@@ -245,13 +246,11 @@ module Evercam
       end
 
       it 'allows creation with only internal host' do
+        pending
         valid.delete(:external_host)
         outcome = subject.run(valid)
         expect(outcome).to be_success
       end
-
     end
-
   end
 end
-
