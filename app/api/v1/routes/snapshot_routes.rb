@@ -147,11 +147,14 @@ module Evercam
           exists = Evercam::Services.dalli_cache.get(cache_key)
 
           if exists.nil?
-            from = Time.new(params[:year], params[:month], params[:day], 0, 0, 0, offset).utc.to_s
-            to = Time.new(params[:year], params[:month], params[:day], 23, 59, 59, offset).utc.to_s
+            from = Time.new(params[:year], params[:month], params[:day], 0, 0, 0, offset).utc
+            to = Time.new(params[:year], params[:month], params[:day], 23, 59, 59, offset).utc
 
-            exists = Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
-            Evercam::Services.dalli_cache.set(cache_key, exists, 1.hours)
+            exists = Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from.to_s..to.to_s)).exists).first[:exists]
+
+            unless from.today? || from.future?
+              Evercam::Services.dalli_cache.set(cache_key, exists, 1.years)
+            end
           end
 
           { exists: exists }
