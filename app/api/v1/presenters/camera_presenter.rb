@@ -410,26 +410,6 @@ module Evercam
             0
           end
         end
-        expose :width, documentation: {
-          type: 'integer',
-          desc: 'Image selected area width.'
-        } do |c, _o|
-          if c.config["motion"].present? && c.config["motion"]["width"].present?
-            c.config["motion"]["width"]
-          else
-            0
-          end
-        end
-        expose :height, documentation: {
-          type: 'integer',
-          desc: 'Image selected area height.'
-        } do |c, _o|
-          if c.config["motion"].present? && c.config["motion"]["height"].present?
-            c.config["motion"]["height"]
-          else
-            0
-          end
-        end
       end
 
       expose :proxy_url do

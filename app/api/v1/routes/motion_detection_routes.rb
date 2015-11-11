@@ -62,8 +62,6 @@ module Evercam
         optional :y1, type: Integer, desc: "Image selected area bottom left"
         optional :x2, type: Integer, desc: "Image selected area top right"
         optional :y2, type: Integer, desc: "Image selected area bottom left"
-        optional :width, type: Integer, desc: "Image selected area width"
-        optional :height, type: Integer, desc: "Image selected area height"
       end
       patch '/:id/apps/motion-detection/settings' do
         camera = get_cam(params[:id])

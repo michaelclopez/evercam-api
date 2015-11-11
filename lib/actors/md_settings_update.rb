@@ -18,8 +18,6 @@ module Evercam
         integer :x2, :empty => true
         integer :y1, :empty => true
         integer :y2, :empty => true
-        integer :width, :empty => true
-        integer :height, :empty => true
       end
 
       def validate
@@ -32,12 +30,12 @@ module Evercam
         camera = ::Camera.by_exid(inputs[:id])
 
         [:enabled, :week_days, :alert_from_hour, :alert_to_hour, :alert_interval_min, :sensitivity,
-          :x1, :x2, :y1, :y2, :width, :height].each do |resource|
+          :x1, :x2, :y1, :y2].each do |resource|
           unless inputs[resource].nil?
             if camera.values[:config].has_key?('motion')
-              camera.values[:config]['motion'].merge!(resource => inputs[resource])
+              camera.values[:config]['motion'].merge!(resource => inputs[resource]) if inputs[resource].present?
             else
-              camera.values[:config].merge!('motion' => { resource => inputs[resource] })
+              camera.values[:config].merge!('motion' => { resource => inputs[resource] }) if inputs[resource].present?
             end
           end
         end
