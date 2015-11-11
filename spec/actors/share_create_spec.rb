@@ -208,7 +208,7 @@ module Evercam
                }
 
                it 'raises an exception' do
-                  expect {subject.run(parameters)}.to raise_error(Evercam::BadRequestError, "Invalid email address specified.")
+                  expect {subject.run(parameters)}.to raise_error(Evercam::BadRequestError, "you've entered an invalid email address.")
                end
             end
          end
