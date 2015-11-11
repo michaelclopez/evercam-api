@@ -1,4 +1,3 @@
-require 'concurrent/utilities'
 require_relative '../../lib/services'
 require_relative '../../app/api/v1/helpers/cache_helper'
 

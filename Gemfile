@@ -20,8 +20,6 @@ gem 'sidekiq'
 gem 'mini_magick'
 gem 'stringex'
 gem 'smarter_csv'
-gem 'concurrent-ruby'
-gem 'concurrent-ruby-ext'
 gem 'curb'
 
 gem 'grape'
