@@ -84,7 +84,7 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # GET /v1/cameras/:id/recordings/snapshots/:year/:month/day
+        # GET /v1/cameras/:id/recordings/snapshots/:year/:month/days
         #-------------------------------------------------------------------
         desc 'Returns list of specific days in a given month which contains any snapshots'
         params do
@@ -121,7 +121,44 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # GET /v1/cameras/:id/snapshots/:year/:month/:day/hours
+        # GET /v1/cameras/:id/recordings/snapshots/:year/:month/:day
+        #-------------------------------------------------------------------
+        desc 'Returns list of specific days in a given month which contains any snapshots'
+        params do
+          requires :year, type: Integer, desc: "Year, for example 2013"
+          requires :month, type: Integer, desc: "Month, for example 11"
+          requires :day, type: Integer, desc: "Day, for example 17"
+        end
+        get 'recordings/snapshots/:year/:month/:day' do
+          unless (1..12).include?(params[:month])
+            raise BadRequestError, 'Invalid month value'
+          end
+          unless (1..31).include?(params[:day])
+            raise BadRequestError, 'Invalid day value'
+          end
+          camera = get_cam(params[:id])
+
+          rights = requester_rights_for(camera)
+          raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
+
+          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+
+          cache_key = "snapshots|day|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
+          exists = Evercam::Services.dalli_cache.get(cache_key)
+
+          if exists.nil?
+            from = Time.new(params[:year], params[:month], params[:day], 0, 0, 0, offset).utc.to_s
+            to = Time.new(params[:year], params[:month], params[:day], 23, 59, 59, offset).utc.to_s
+
+            exists = Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
+            Evercam::Services.dalli_cache.set(cache_key, exists, 1.hours)
+          end
+
+          { exists: exists }
+        end
+
+        #-------------------------------------------------------------------
+        # GET /v1/cameras/:id/recordings/snapshots/:year/:month/:day/hours
         #-------------------------------------------------------------------
         desc 'Returns list of specific hours in a given day which contains any snapshots'
         params do
