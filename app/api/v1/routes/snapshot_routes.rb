@@ -311,6 +311,10 @@ module Evercam
     end
 
     namespace :cameras do
+      before do
+        header "Access-Control-Allow-Origin", "*"
+      end
+
       params do
         requires :id, type: String, desc: "Camera Id."
       end
