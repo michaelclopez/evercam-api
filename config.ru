@@ -74,6 +74,10 @@ map '/v1' do
   # Enable gzip
   use Rack::Deflater
 
+  # Force timeout before Heroku's dyno dies
+  use Rack::Timeout
+  Rack::Timeout.timeout = 25
+
   run Evercam::APIv1
 end
 

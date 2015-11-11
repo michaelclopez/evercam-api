@@ -4,6 +4,8 @@ ruby '2.2.2'
 gem 'puma'
 gem 'rack'
 gem 'rack-rewrite'
+gem 'rack-timeout',
+  require: 'rack-timeout'
 gem 'rack-ssl-enforcer',
   github: 'tobmatth/rack-ssl-enforcer'
 
