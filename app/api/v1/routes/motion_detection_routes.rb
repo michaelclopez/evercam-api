@@ -53,15 +53,14 @@ module Evercam
       params do
         requires :id, type: String, desc: "Camera Id."
         optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
-        optional :week_days, type: String, desc: "Motion Detection alert days"
-        optional :alert_from_hour, type: Integer, desc: "Motion Detection alert from hour"
-        optional :alert_to_hour, type: Integer, desc: "Motion Detection alert from hour"
         optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
         optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"
         optional :x1, type: Integer, desc: "Image selected area top left"
         optional :y1, type: Integer, desc: "Image selected area bottom left"
         optional :x2, type: Integer, desc: "Image selected area top right"
         optional :y2, type: Integer, desc: "Image selected area bottom left"
+        optional :schedule, type: String, desc: "Schedule"
+        optional :alert_email, type: 'Boolean', desc: "Is motion detection alert enable or not"
       end
       patch '/:id/apps/motion-detection/settings' do
         camera = get_cam(params[:id])
@@ -77,6 +76,54 @@ module Evercam
         CameraTouchWorker.perform_async(camera.exid)
         Evercam::Services.dalli_cache.set(params[:id], camera)
         present Array(outcome.result), with: Presenters::Camera
+      end
+
+      #---------------------------------------------------------------------------
+      # POST /v1/cameras/:id/apps/motion_detection/email
+      #---------------------------------------------------------------------------
+      desc 'Add email to send motion detection alert for specified camera'
+      params do
+        requires :id, type: String, desc: "Camera Id."
+        requires :email, type: String, desc: "Email where to send motion detection alert"
+      end
+      post '/:id/apps/motion-detection/email' do
+        camera = get_cam(params[:id])
+        rights = requester_rights_for(camera)
+        raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
+
+        outcome = Actors::MotionDetectionEmailCreate.run(params)
+        unless outcome.success?
+          raise OutcomeError, outcome.to_json
+        end
+        camera = ::Camera.by_exid!(params[:id])
+        CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
+        Evercam::Services.dalli_cache.set(params[:id], camera)
+        { email: params[:email] }
+      end
+
+      #---------------------------------------------------------------------------
+      # DELETE /v1/cameras/:id/apps/motion_detection/email
+      #---------------------------------------------------------------------------
+      desc 'Delete motion detection alert email'
+      params do
+        requires :id, type: String, desc: "Camera Id."
+        requires :email, type: String, desc: "Email where to send motion detection alert"
+      end
+      delete '/:id/apps/motion-detection/email' do
+        camera = get_cam(params[:id])
+        rights = requester_rights_for(camera)
+        raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
+
+        outcome = Actors::MotionDetectionEmailDelete.run(params)
+        unless outcome.success?
+          raise OutcomeError, outcome.to_json
+        end
+        camera = ::Camera.by_exid!(params[:id])
+        CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
+        Evercam::Services.dalli_cache.set(params[:id], camera)
+        {}
       end
 
       #---------------------------------------------------------------------------

@@ -321,35 +321,6 @@ module Evercam
           end
         end
 
-        expose :week_days, documentation: {
-          type: 'String',
-          desc: 'Alert days'
-        } do |c, _o|
-          c.config["motion"]["week_days"].to_s if c.config["motion"].present?
-        end
-
-        expose :alert_from_hour, documentation: {
-          type: 'integer',
-          desc: 'Motion detection alert from hour'
-        } do |c, _o|
-          if c.config["motion"].present? && c.config["motion"]["alert_from_hour"].present?
-            c.config["motion"]["alert_from_hour"]
-          else
-            0
-          end
-        end
-
-        expose :alert_to_hour, documentation: {
-          type: 'integer',
-          desc: 'Motion detection alert to hour'
-        } do |c, _o|
-          if c.config["motion"].present? && c.config["motion"]["alert_to_hour"].present?
-            c.config["motion"]["alert_to_hour"]
-          else
-            0
-          end
-        end
-
         expose :alert_interval_min, documentation: {
           type: 'integer',
           desc: 'Motion detection alert interval minute.'
@@ -408,6 +379,36 @@ module Evercam
             c.config["motion"]["y2"]
           else
             0
+          end
+        end
+        expose :schedule, documentation: {
+          type: "array",
+          desc: "Motion detection notification schedule"
+        } do |c, _o|
+          if c.config["motion"].present? && c.config["motion"]["schedule"].present?
+            c.config["motion"]["schedule"]
+          else
+            {}
+          end
+        end
+        expose :alert_email, documentation: {
+          type: "boolean",
+          desc: "Send Motion detection notification"
+        } do |c, _o|
+          if c.config["motion"].present? && c.config["motion"]["alert_email"].present?
+            c.config["motion"]["alert_email"]
+          else
+            false
+          end
+        end
+        expose :emails, documentation: {
+          type: "array",
+          desc: "Motion detection notification schedule"
+        } do |c, _o|
+          if c.config["motion"].present? && c.config["motion"]["emails"].present?
+            c.config["motion"]["emails"]
+          else
+            []
           end
         end
       end
