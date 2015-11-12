@@ -2,7 +2,7 @@ require 'stringio'
 
 module Evercam
   module Actors
-    class MotionDetectionEmailCreate < Mutations::Command
+    class MotionDetectionEmailDelete < Mutations::Command
       required do
         string :id
         string :email
@@ -18,14 +18,14 @@ module Evercam
         camera = ::Camera.by_exid(inputs[:id])
         if camera.values[:config].has_key?('motion')
           if camera.values[:config]['motion'].has_key?('emails')
-            camera.values[:config]['motion']["emails"].push(inputs["email"])
+            camera.values[:config]['motion']["emails"].delete(inputs["email"])
           else
-            camera.values[:config].merge!('motion' => { "emails" => [] })
-            camera.values[:config]['motion']["emails"].push(inputs["email"])
+            raise NotFoundError.new("Unable to locate email '#{inputs[:email]}'.",
+                                    "email_not_found_error", inputs[:email])
           end
         else
-          camera.values[:config].merge!('motion' => { "emails" => [] })
-          camera.values[:config]['motion']["emails"].push(inputs["email"])
+          raise NotFoundError.new("Unable to locate email '#{inputs[:email]}'.",
+                                  "email_not_found_error", inputs[:email])
         end
 
         camera.save

@@ -103,6 +103,30 @@ module Evercam
       end
 
       #---------------------------------------------------------------------------
+      # DELETE /v1/cameras/:id/apps/motion_detection/email
+      #---------------------------------------------------------------------------
+      desc 'Delete motion detection alert email'
+      params do
+        requires :id, type: String, desc: "Camera Id."
+        requires :email, type: String, desc: "Email where to send motion detection alert"
+      end
+      delete '/:id/apps/motion-detection/email' do
+        camera = get_cam(params[:id])
+        rights = requester_rights_for(camera)
+        raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
+
+        outcome = Actors::MotionDetectionEmailDelete.run(params)
+        unless outcome.success?
+          raise OutcomeError, outcome.to_json
+        end
+        camera = ::Camera.by_exid!(params[:id])
+        CacheInvalidationWorker.enqueue(camera.exid)
+        CameraTouchWorker.perform_async(camera.exid)
+        Evercam::Services.dalli_cache.set(params[:id], camera)
+        {}
+      end
+
+      #---------------------------------------------------------------------------
       # DELETE /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
       desc 'Delete motion detection settings for specified camera',
