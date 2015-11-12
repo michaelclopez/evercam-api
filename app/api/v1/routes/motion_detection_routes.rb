@@ -99,7 +99,7 @@ module Evercam
         CacheInvalidationWorker.enqueue(camera.exid)
         CameraTouchWorker.perform_async(camera.exid)
         Evercam::Services.dalli_cache.set(params[:id], camera)
-        {}
+        { email: params[:email] }
       end
 
       #---------------------------------------------------------------------------

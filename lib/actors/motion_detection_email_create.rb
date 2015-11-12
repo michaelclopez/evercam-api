@@ -18,6 +18,10 @@ module Evercam
         camera = ::Camera.by_exid(inputs[:id])
         if camera.values[:config].has_key?('motion')
           if camera.values[:config]['motion'].has_key?('emails')
+            if camera.values[:config]['motion']["emails"].include?(inputs["email"])
+              raise Evercam::ConflictError.new("The email '#{inputs[:email]}' is already exist.",
+                                      "duplicate_email_error", inputs[:email])
+            end
             camera.values[:config]['motion']["emails"].push(inputs["email"])
           else
             camera.values[:config].merge!('motion' => { "emails" => [] })
