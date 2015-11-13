@@ -401,16 +401,6 @@ module Evercam
             false
           end
         end
-        expose :emails, documentation: {
-          type: "array",
-          desc: "Motion detection notification schedule"
-        } do |c, _o|
-          if c.config["motion"].present? && c.config["motion"]["emails"].present?
-            c.config["motion"]["emails"]
-          else
-            []
-          end
-        end
       end
 
       expose :proxy_url do
