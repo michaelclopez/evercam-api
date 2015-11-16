@@ -40,12 +40,16 @@ module Evercam
 
       def execute
         camera = Camera.by_exid!(inputs[:id])
-        raise Evercam::ConflictError.new("A camera with the id '#{inputs[:id]}' does not exist.",
-                                         "camera_not_exist_error", inputs[:id]) if camera.nil?
+        if camera.nil?
+          raise Evercam::NotFoundError.new("A camera with the id '#{inputs[:id]}' does not exist.",
+                                           "camera_not_exist_error", inputs[:id])
+        end
 
         motion_detection = ::MotionDetection.where(camera_id: camera.id).first
-        raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
-                                         "motion_detection_not_exist_error", inputs[:id]) if motion_detection.nil?
+        if motion_detection.nil?
+          raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
+                                           "motion_detection_not_exist_error", inputs[:id])
+        end
 
         motion_detection.frequency = frequency if frequency
         motion_detection.minPosition = minPosition if minPosition

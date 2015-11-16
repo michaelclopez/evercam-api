@@ -32,7 +32,6 @@ module Evercam
         optional :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
         optional :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
         optional :schedule, type: String, desc: "Schedule"
-        # TODO new things
         optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
         optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
         optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"
@@ -68,7 +67,6 @@ module Evercam
         optional :step, type: Integer, desc: "Check each `step` pixel"
         optional :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
         optional :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
-
         optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
         optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
         optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"

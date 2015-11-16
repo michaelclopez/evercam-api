@@ -48,12 +48,10 @@ module Evercam
           emails.push(inputs["email"])
         end
 
-
         if MotionDetection.where(camera_id: camera.id).count != 0
           raise Evercam::ConflictError.new("The Motion Detection settings already exist for camera '#{inputs[:id]}'.",
                                            "duplicate_camera_id_error", inputs[:id])
         end
-
 
         motion_detection =  MotionDetection.new(
           camera: camera,
