@@ -16,6 +16,8 @@ The best starting point for Evercam is http://www.evercam.io/open-source
 
 After that, you'll want to go here: https://github.com/evercam/evercam-devops
 
+**All** of the documentation for Evercam can be found here: https://github.com/evercam/evercam-api/wiki
+
 Any questions, drop us a line: http://www.evercam.io/contact
 
 
