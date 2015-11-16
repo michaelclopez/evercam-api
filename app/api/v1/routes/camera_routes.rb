@@ -15,55 +15,6 @@ module Evercam
     include Evercam::CacheHelper
 
     resource :cameras do
-
-      #---------------------------------------------------------------------------
-      # POST /v1/cameras/test
-      #---------------------------------------------------------------------------
-      desc 'Tests if given camera parameters are correct'
-      params do
-        requires :external_url, type: String, desc: "External camera url."
-        requires :jpg_url, type: String, desc: "Snapshot url."
-        optional :cam_username, type: String, desc: "Camera username."
-        optional :cam_password, type: String, desc: "Camera password."
-        optional :vendor_id, type: String, desc: "Vendor Id"
-      end
-      post '/test' do
-        require 'openssl'
-        require 'base64'
-
-        vendor_exid = params[:vendor_id]
-        cam_auth = "#{params[:cam_username]}:#{params[:cam_password]}"
-
-        api_id = params.fetch('api_id', '')
-        api_key = params.fetch('api_key', '')
-        credentials = "#{api_id}:#{api_key}"
-
-        cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-        cipher.encrypt
-        cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-        cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-        cipher.padding = 0
-
-        message = params[:external_url]
-        message << "/#{params[:jpg_url].gsub('X_QQ_X', '?').gsub('X_AA_X', '&')}"
-        message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-        message << ' ' until message.length % 16 == 0
-        token = cipher.update(message)
-        token << cipher.final
-
-        url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/test?token=#{Base64.urlsafe_encode64(token)}&vendor_exid=#{vendor_exid}"
-
-        conn = Faraday.new(url: url) do |faraday|
-          faraday.adapter Faraday.default_adapter
-          faraday.options.timeout = 10
-          faraday.options.open_timeout = 10
-        end
-
-        response = conn.post
-        status response.status
-        JSON.parse response.body
-      end
-
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id
       #---------------------------------------------------------------------------
