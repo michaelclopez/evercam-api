@@ -15,22 +15,17 @@ module Evercam
       end
 
       def execute
-        camera = ::Camera.by_exid(inputs[:id])
-        if camera.values[:config].has_key?('motion')
-          if camera.values[:config]['motion'].has_key?('emails')
-            camera.values[:config]['motion']["emails"].delete(inputs["email"])
-          else
-            raise NotFoundError.new("Unable to locate email '#{inputs[:email]}'.",
-                                    "email_not_found_error", inputs[:email])
-          end
-        else
-          raise NotFoundError.new("Unable to locate email '#{inputs[:email]}'.",
-                                  "email_not_found_error", inputs[:email])
-        end
+        camera = Camera.by_exid!(inputs[:id])
+        raise Evercam::ConflictError.new("A camera with the id '#{inputs[:id]}' does not exist.",
+                                         "camera_not_exist_error", inputs[:id]) if camera.nil?
 
-        camera.save
+        motion_detection = ::MotionDetection.where(camera_id: camera.id).first
+        raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
+                                         "motion_detection_not_exist_error", inputs[:id]) if motion_detection.nil?
 
-        camera
+
+        motion_detection.emails.delete(inputs["email"])
+        motion_detection.save
       end
     end
   end

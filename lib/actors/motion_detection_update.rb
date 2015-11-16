@@ -1,6 +1,8 @@
+require 'stringio'
+
 module Evercam
   module Actors
-    class MotionDetectionCreate < Mutations::Command
+    class MotionDetectionUpdate < Mutations::Command
       required do
         string :id
       end
@@ -11,20 +13,23 @@ module Evercam
         integer :step
         integer :min
         integer :threshold
-        string :schedule
         boolean :enabled
         boolean :alert_email
-        integer :alert_interval_min
-        integer :sensitivity
-        integer :x1
-        integer :x2
-        integer :y1
-        integer :y2
-        string :email
+        integer :alert_interval_min, :empty => true
+        integer :sensitivity, :empty => true
+        integer :x1, :empty => true
+        integer :x2, :empty => true
+        integer :y1, :empty => true
+        integer :y2, :empty => true
+        string :schedule
       end
 
       def validate
-        if inputs["schedule"].present?
+        unless Camera.by_exid(id)
+          add_error(:camera, :exists, 'Camera does not exist')
+        end
+
+        unless inputs["schedule"].blank?
           begin
             JSON.parse(inputs["schedule"])
           rescue => _e
@@ -35,28 +40,17 @@ module Evercam
 
       def execute
         camera = Camera.by_exid!(inputs[:id])
-
-        if inputs["schedule"].blank?
-          schedule = {}
-        else
-          schedule = JSON.parse(inputs["schedule"])
-        end
-        if inputs["email"].blank?
-          emails = []
-        else
-          emails = []
-          emails.push(inputs["email"])
+        if camera.nil?
+          raise Evercam::NotFoundError.new("A camera with the id '#{inputs[:id]}' does not exist.",
+                                           "camera_not_exist_error", inputs[:id])
         end
 
-        if MotionDetection.where(camera_id: camera.id).count != 0
-          raise Evercam::ConflictError.new("The Motion Detection settings already exist for camera '#{inputs[:id]}'.",
-                                           "duplicate_camera_id_error", inputs[:id])
+        motion_detection = ::MotionDetection.where(camera_id: camera.id).first
+        if motion_detection.nil?
+          raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
+                                           "motion_detection_not_exist_error", inputs[:id])
         end
 
-        motion_detection =  MotionDetection.new(
-          camera: camera,
-          schedule: schedule
-        )
         motion_detection.frequency = frequency if frequency
         motion_detection.minPosition = minPosition if minPosition
         motion_detection.step = step if step
@@ -71,8 +65,9 @@ module Evercam
         motion_detection.x2 = x2 if x2
         motion_detection.y1 = y1 if y1
         motion_detection.y2 = y2 if y2
-        motion_detection.emails = emails
+        motion_detection.schedule = JSON.parse(inputs["schedule"]) if schedule
         motion_detection.save
+
         motion_detection
       end
     end

@@ -26,12 +26,21 @@ module Evercam
         entity: Evercam::Presenters::MotionDetection
       params do
         requires :id, type: String, desc: "Camera Id."
-        requires :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
-        requires :minPosition, type: Integer, desc: "Minimal Position of where to start in pixels"
-        requires :step, type: Integer, desc: "Check each `step` pixel"
-        requires :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
-        requires :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
-        requires :schedule, type: String, desc: "Schedule"
+        optional :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
+        optional :minPosition, type: Integer, desc: "Minimal Position of where to start in pixels"
+        optional :step, type: Integer, desc: "Check each `step` pixel"
+        optional :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
+        optional :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
+        optional :schedule, type: String, desc: "Schedule"
+        optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
+        optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
+        optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"
+        optional :x1, type: Integer, desc: "Image selected area top left"
+        optional :y1, type: Integer, desc: "Image selected area bottom left"
+        optional :x2, type: Integer, desc: "Image selected area top right"
+        optional :y2, type: Integer, desc: "Image selected area bottom left"
+        optional :alert_email, type: 'Boolean', desc: "Is motion detection alert enable or not"
+        optional :email, type: String, desc: "Motion Detection alert Email"
       end
       post '/:id/apps/motion-detection' do
         camera = get_cam(params[:id])
@@ -46,12 +55,18 @@ module Evercam
       end
 
       #---------------------------------------------------------------------------
-      # PATCH /v1/cameras/:id/apps/motion_detection/settings
+      # PATCH /v1/cameras/:id/apps/motion_detection
       #---------------------------------------------------------------------------
       desc 'Updates full or partial motion detection settings for specified camera',
-           entity: Evercam::Presenters::Camera
+           entity: Evercam::Presenters::MotionDetection
       params do
         requires :id, type: String, desc: "Camera Id."
+        requires :id, type: String, desc: "Camera Id."
+        optional :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
+        optional :minPosition, type: Integer, desc: "Minimal Position of where to start in pixels"
+        optional :step, type: Integer, desc: "Check each `step` pixel"
+        optional :min, type: Integer, desc: "Change between previous and current image should be at least `min` rate"
+        optional :threshold, type: Integer, desc: "Motion Detection threshold to fire the motino even or notification"
         optional :enabled, type: 'Boolean', desc: "Is camera motion detection enable or not"
         optional :alert_interval_min, type: Integer, desc: "Motion Detection alert interval"
         optional :sensitivity, type: Integer, desc: "Motion Detection sensitivity"
@@ -62,26 +77,23 @@ module Evercam
         optional :schedule, type: String, desc: "Schedule"
         optional :alert_email, type: 'Boolean', desc: "Is motion detection alert enable or not"
       end
-      patch '/:id/apps/motion-detection/settings' do
+      patch '/:id/apps/motion-detection' do
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
-        outcome = Actors::MdSettingsUpdate.run(params)
+        outcome = Actors::MotionDetectionUpdate.run(params)
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
-        camera = ::Camera.by_exid!(params[:id])
-        CacheInvalidationWorker.enqueue(camera.exid)
-        CameraTouchWorker.perform_async(camera.exid)
-        Evercam::Services.dalli_cache.set(params[:id], camera)
-        present Array(outcome.result), with: Presenters::Camera
+        present Array(outcome.result), with: Presenters::MotionDetection
       end
 
       #---------------------------------------------------------------------------
       # POST /v1/cameras/:id/apps/motion_detection/email
       #---------------------------------------------------------------------------
-      desc 'Add email to send motion detection alert for specified camera'
+      desc 'Add email to send motion detection alert for specified camera',
+           entity: Evercam::Presenters::MotionDetection
       params do
         requires :id, type: String, desc: "Camera Id."
         requires :email, type: String, desc: "Email where to send motion detection alert"
@@ -95,11 +107,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
-        camera = ::Camera.by_exid!(params[:id])
-        CacheInvalidationWorker.enqueue(camera.exid)
-        CameraTouchWorker.perform_async(camera.exid)
-        Evercam::Services.dalli_cache.set(params[:id], camera)
-        { email: params[:email] }
+        present Array(outcome.result), with: Presenters::MotionDetection
       end
 
       #---------------------------------------------------------------------------
@@ -119,10 +127,6 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
-        camera = ::Camera.by_exid!(params[:id])
-        CacheInvalidationWorker.enqueue(camera.exid)
-        CameraTouchWorker.perform_async(camera.exid)
-        Evercam::Services.dalli_cache.set(params[:id], camera)
         {}
       end
 
