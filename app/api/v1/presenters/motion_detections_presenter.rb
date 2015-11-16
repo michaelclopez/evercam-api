@@ -37,10 +37,55 @@ module Evercam
         required: true
       }
 
+
+      expose :enabled, documentation: {
+        type: 'boolean',
+        desc: 'motion detection is enabled of the camera'
+      }
+
+      expose :alert_interval_min, documentation: {
+        type: 'integer',
+        desc: 'Motion detection alert interval minute.'
+      }
+
+      expose :sensitivity, documentation: {
+        type: 'integer',
+        desc: 'Motion Detection sensitivity.'
+      }
+
+      expose :x1, documentation: {
+        type: 'integer',
+        desc: 'Image selected area top left.'
+      }
+
+      expose :y1, documentation: {
+        type: 'integer',
+        desc: 'Image selected area bottom left.'
+      }
+
+      expose :x2, documentation: {
+        type: 'integer',
+        desc: 'Image selected area top right.'
+      }
+
+      expose :y2, documentation: {
+        type: 'integer',
+        desc: 'Image selected area bottom right.'
+      }
+
+      expose :alert_email, documentation: {
+        type: "boolean",
+        desc: "Send Motion detection notification"
+      }
+
       expose :schedule, documentation: {
         type: 'array',
-        desc: '',
-        required: true
+        desc: 'Motion detection notification schedule',
+      }
+
+      expose :emails, documentation: {
+        type: 'array',
+        desc: 'Motion detection notification schedule',
       }
     end
   end

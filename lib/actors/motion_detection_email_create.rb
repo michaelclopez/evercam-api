@@ -15,26 +15,21 @@ module Evercam
       end
 
       def execute
-        camera = ::Camera.by_exid(inputs[:id])
-        if camera.values[:config].has_key?('motion')
-          if camera.values[:config]['motion'].has_key?('emails')
-            if camera.values[:config]['motion']["emails"].include?(inputs["email"])
-              raise Evercam::ConflictError.new("The email '#{inputs[:email]}' is already exist.",
-                                      "duplicate_email_error", inputs[:email])
-            end
-            camera.values[:config]['motion']["emails"].push(inputs["email"])
-          else
-            camera.values[:config].merge!('motion' => { "emails" => [] })
-            camera.values[:config]['motion']["emails"].push(inputs["email"])
-          end
-        else
-          camera.values[:config].merge!('motion' => { "emails" => [] })
-          camera.values[:config]['motion']["emails"].push(inputs["email"])
+        camera = Camera.by_exid!(inputs[:id])
+        raise Evercam::ConflictError.new("A camera with the id '#{inputs[:id]}' does not exist.",
+                                         "camera_not_exist_error", inputs[:id]) if camera.nil?
+
+        motion_detection = ::MotionDetection.where(camera_id: camera.id).first
+        raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
+                                         "motion_detection_not_exist_error", inputs[:id]) if motion_detection.nil?
+
+        if motion_detection.emails.include?(inputs["email"])
+          raise Evercam::ConflictError.new("The email '#{inputs[:email]}' is already exist.",
+                                           "duplicate_email_error", inputs[:email])
         end
-
-        camera.save
-
-        camera
+        motion_detection.emails.push(inputs["email"])
+        motion_detection.save
+        motion_detection
       end
     end
   end
