@@ -1,4 +1,5 @@
 require 'rake'
+require 'logjam'
 require 'evercam_misc'
 require 'active_support/core_ext/numeric/time'
 
