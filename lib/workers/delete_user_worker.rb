@@ -10,6 +10,7 @@ module Evercam
         user = ::User.by_login(username)
         raise NotFoundError, 'user does not exist' unless user
 
+        CameraShare.where(user_id: user.id).destroy
         query = Camera.where(owner: user)
         query.eager(:owner).all.select do |camera|
           invalidate_for_camera(camera.exid)
