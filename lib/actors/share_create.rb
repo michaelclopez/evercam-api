@@ -37,7 +37,7 @@ module Evercam
 
         if user.nil?
           if (/^.+@.+\..+$/ =~ inputs[:email].strip).nil?
-            raise Evercam::BadRequestError.new("Invalid email address specified.",
+            raise Evercam::BadRequestError.new("you've entered an invalid email address.",
                                                "invalid_share_email_address",
                                                inputs[:email])
           end
