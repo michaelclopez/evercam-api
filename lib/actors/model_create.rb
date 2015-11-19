@@ -6,12 +6,12 @@ module Evercam
         string :id
         string :name
         string :vendor_id
-        string :jpg_url
-        string :mjpg_url
-        string :h264_url
       end
 
       optional do
+        string :jpg_url
+        string :mjpg_url
+        string :h264_url
         string :mobile_url
         string :mpeg4_url
         string :lowres_url
@@ -50,9 +50,6 @@ module Evercam
             exid: id,
             name: name,
             vendor: vendor,
-            jpg_url: jpg_url,
-            h264_url: h264_url,
-            mjpg_url: mjpg_url,
             config: {}
         )
         [:jpg, :mjpg, :mpeg4, :mobile, :h264, :lowres].each do |resource|
@@ -65,6 +62,9 @@ module Evercam
             end
           end
         end
+        model.jpg_url = jpg_url if jpg_url
+        model.h264_url = h264_url if h264_url
+        model.mjpg_url = mjpg_url if mjpg_url
         model.shape = shape if shape
         model.resolution = resolution if resolution
         model.official_url = official_url if official_url
