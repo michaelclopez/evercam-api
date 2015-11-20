@@ -80,14 +80,6 @@ module Evercam
                                                      "Unable to locate a model for 'non_existent' under the '#{vendor.name}' vendor.")
         end
 
-        it 'raises an exception if neither external or internal hosts are specified' do
-          pending
-          valid.delete(:external_host)
-          valid.delete(:internal_host)
-          expect {subject.run(valid)}.to raise_error(Evercam::BadRequestError,
-                                                     "You must specify internal and/or external host.")
-        end
-
         it 'checks the camera id has correct length' do
           params = valid.merge(id: '123')
 
@@ -241,13 +233,6 @@ module Evercam
 
       it 'allows creation with only external host' do
         valid.delete(:internal_host)
-        outcome = subject.run(valid)
-        expect(outcome).to be_success
-      end
-
-      it 'allows creation with only internal host' do
-        pending
-        valid.delete(:external_host)
         outcome = subject.run(valid)
         expect(outcome).to be_success
       end
