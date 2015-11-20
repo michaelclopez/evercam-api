@@ -894,3 +894,34 @@ task :update_thumbnail_url do
     end
   end
 end
+
+task :add_missing_thumbnail_url do
+  require "resolv"
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'dalli'
+  require 'timeout'
+  require 'evercam_models'
+  require_relative 'lib/services'
+
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  Camera.where(is_online: false, thumbnail_url: nil).all.shuffle.each do |camera|
+    begin
+      puts camera.exid
+      Timeout::timeout(60) do
+        last_snapshot = Snapshot.where(camera_id: camera.id).order(:created_at).last
+        if last_snapshot
+          filepath = "#{camera.exid}/snapshots/#{last_snapshot.created_at.to_i}.jpg"
+          file = Evercam::Services.snapshot_bucket.objects[filepath]
+          thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+          camera.thumbnail_url = thumbnail_url
+          camera.save
+        end
+      end
+    rescue => e
+      log.warn(e)
+    end
+  end
+end
