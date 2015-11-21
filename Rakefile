@@ -911,10 +911,9 @@ task :add_missing_thumbnail_url do
     begin
       puts camera.exid
       Timeout::timeout(60) do
-        last_snapshot = Snapshot.where(camera_id: camera.id).order(:created_at).last
-        if last_snapshot
-          filepath = "#{camera.exid}/snapshots/#{last_snapshot.created_at.to_i}.jpg"
-          file = Evercam::Services.snapshot_bucket.objects[filepath]
+        filepath = "#{camera.exid}/snapshots/"
+        file = Evercam::Services.snapshot_bucket.objects.with_prefix(filepath).first
+        if file
           thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
           camera.thumbnail_url = thumbnail_url
           camera.save
