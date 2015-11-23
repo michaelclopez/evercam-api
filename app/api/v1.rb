@@ -50,7 +50,6 @@ module Evercam
     mount V1PublicRoutes
     mount V1ShareRoutes
     mount V1LogRoutes
-    mount V1RedirectRoutes
     mount V1AdminRoutes
     mount V1ArchiveRoutes
     mount V1AppRoutes
