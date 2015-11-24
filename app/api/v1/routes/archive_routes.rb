@@ -19,6 +19,7 @@ module Evercam
         requires :id, type: String, desc: 'The unique identifier for the camera.'
       end
       get '/:id/archives' do
+        params[:id].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -42,6 +43,8 @@ module Evercam
         requires :archive_id, type: String, desc: 'The unique identifier for the archive.'
       end
       get '/:id/archives/:archive_id' do
+        params[:id].downcase!
+        params[:archive_id].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -71,6 +74,7 @@ module Evercam
         optional :public, type: 'Boolean', desc: 'Available publically'
       end
       post '/:id/archives' do
+        params[:id].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -101,6 +105,8 @@ module Evercam
         optional :public, type: 'Boolean', desc: 'Available publically'
       end
       patch '/:id/archives/:archive_id' do
+        params[:id].downcase!
+        params[:archive_id].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -126,6 +132,8 @@ module Evercam
         requires :archive_id, type: String, desc: 'The unique identifier for the archive.'
       end
       delete '/:id/archives/:archive_id' do
+        params[:id].downcase!
+        params[:archive_id].downcase!
         camera = Camera.by_exid!(params[:id])
         raise NotFoundError.new unless camera
         rights = requester_rights_for(camera)

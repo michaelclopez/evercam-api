@@ -22,6 +22,8 @@ module Evercam
         optional :user_id, type: String, desc: 'The unique identifier for the user the camera is shared with.'
       end
       get '/:id/shares' do
+        params[:id].downcase!
+        params[:user_id].downcase! if params[:user_id]
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         shares = []
@@ -61,6 +63,8 @@ module Evercam
         optional :grantor, type: String, desc: "The user name of the user who is creating the share."
       end
       post '/:id/shares' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = ::Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         if !rights.is_owner? && !rights.allow?(AccessRight::EDIT) &&
@@ -122,6 +126,8 @@ module Evercam
         requires :email, type: String, desc: "The email address of user the camera was shared with."
       end
       delete '/:id/shares' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = Camera.by_exid!(params[:id])
         user = User.by_login(params[:email])
         raise NotFoundError.new if user.nil?
@@ -159,6 +165,8 @@ module Evercam
         requires :rights, type: String, desc: "A comma separate list of the rights to be set on the share."
       end
       patch '/:id/shares' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = Camera.by_exid!(params[:id])
         user = User.by_login(params[:email])
         raise NotFoundError.new if user.nil?
@@ -194,6 +202,7 @@ module Evercam
         optional :status, type: String, desc: "The request status to fetch, either 'PENDING', 'USED' or 'CANCELLED'."
       end
       get '/:id/shares/requests' do
+        params[:id].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         list = []
@@ -225,7 +234,8 @@ module Evercam
         requires :email, type: String, desc: "The email address of user the camera was shared with."
       end
       delete '/:id/shares/requests' do
-
+        params[:id].downcase!
+        params[:email].downcase!
         camera = Camera.by_exid!(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -251,6 +261,8 @@ module Evercam
         requires :email, type: String, desc: "The email address of user the camera was shared with."
       end
       patch '/:id/shares/requests' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = Camera.by_exid!(params[:id])
 
         share_request = CameraShareRequest.where(status: CameraShareRequest::PENDING,
@@ -286,6 +298,7 @@ module Evercam
     end
     get '/users/shares/:id' do
       authorize!
+      params[:id].downcase!
       user = User.by_login(params[:id])
       raise NotFoundError.new if user.nil?
       rights = requester_rights_for(user, AccessRight::CAMERAS)
