@@ -6,6 +6,8 @@ require_relative '../../lib/services'
 
 module Evercam
   class APIv1 < Grape::API
+    logger.formatter = GrapeLogging::Formatters::Default.new
+    use GrapeLogging::Middleware::RequestLogger, logger: logger, obfuscated_params: ['password', 'api_key']
     content_type :json, "application/json"
 
     # use JSON if accept header empty
