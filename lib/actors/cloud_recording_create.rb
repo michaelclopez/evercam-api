@@ -9,11 +9,16 @@ module Evercam
       optional do
         integer :frequency
         integer :storage_duration
+        string :status
         string :schedule
       end
 
       def execute
         camera = Camera.by_exid!(inputs[:id])
+
+        unless ["off", "on", "on-scheduled"].include? inputs["status"]
+          add_error(:status, :invalid, "The parameter 'status' isn't valid.")
+        end
 
         if inputs["schedule"].blank?
           schedule = {}
@@ -32,12 +37,14 @@ module Evercam
             camera: camera,
             frequency: inputs["frequency"],
             storage_duration: inputs["storage_duration"],
+            status: status,
             schedule: schedule
           )
         else
           cloud_recording.update(
             frequency: inputs["frequency"],
             storage_duration: inputs["storage_duration"],
+            status: status,
             schedule: schedule
           )
           cloud_recording

@@ -33,6 +33,7 @@ module Evercam
         requires :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
         requires :storage_duration, type: Integer, desc: "Storage Duration"
         requires :schedule, type: String, desc: "Schedule"
+        requires :status, type: String, desc: "Status"
       end
       post '/:id/apps/cloud-recording' do
         params[:id].downcase!
