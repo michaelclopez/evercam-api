@@ -52,6 +52,7 @@ module Evercam
         requires :id, type: String, desc: "Unique identifier for the model"
       end
       get ':id' do
+        params[:id].downcase!
         model = VendorModel.where(exid: params[:id]).first
         raise Evercam::NotFoundError.new("Unable to locate the '#{params[:id]}' model.",
             "model_not_found_error", params[:id]) if model.blank?
@@ -98,6 +99,8 @@ module Evercam
         optional :discontinued, type: "Boolean", desc: "Whether or not the vendor has Discontinued this model"
       end
       post do
+        params[:id].downcase!
+        params[:vendor_id].downcase!
         outcome = Actors::ModelCreate.run(params)
         unless outcome.success?
           raise OutcomeError, outcome.to_json
@@ -140,6 +143,7 @@ module Evercam
         optional :discontinued, type: "Boolean", desc: "Whether or not the vendor has Discontinued this model"
       end
       patch '/:id' do
+        params[:id].downcase!
         outcome = Actors::ModelUpdate.run(params)
         unless outcome.success?
           raise OutcomeError, outcome.to_json

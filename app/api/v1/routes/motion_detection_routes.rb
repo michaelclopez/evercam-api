@@ -10,6 +10,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id/apps/motion-detection' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
@@ -43,6 +44,7 @@ module Evercam
         optional :email, type: String, desc: "Motion Detection alert Email"
       end
       post '/:id/apps/motion-detection' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
@@ -61,7 +63,6 @@ module Evercam
            entity: Evercam::Presenters::MotionDetection
       params do
         requires :id, type: String, desc: "Camera Id."
-        requires :id, type: String, desc: "Camera Id."
         optional :frequency, type: Integer, desc: "Frequency of Snapshots per minute"
         optional :minPosition, type: Integer, desc: "Minimal Position of where to start in pixels"
         optional :step, type: Integer, desc: "Check each `step` pixel"
@@ -78,6 +79,7 @@ module Evercam
         optional :alert_email, type: 'Boolean', desc: "Is motion detection alert enable or not"
       end
       patch '/:id/apps/motion-detection' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -99,6 +101,8 @@ module Evercam
         requires :email, type: String, desc: "Email where to send motion detection alert"
       end
       post '/:id/apps/motion-detection/email' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -119,6 +123,8 @@ module Evercam
         requires :email, type: String, desc: "Email where to send motion detection alert"
       end
       delete '/:id/apps/motion-detection/email' do
+        params[:id].downcase!
+        params[:email].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -139,6 +145,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       delete '/:id/apps/motion-detection' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)

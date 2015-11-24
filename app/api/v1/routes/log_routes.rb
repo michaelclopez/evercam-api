@@ -23,6 +23,7 @@ module Evercam
         optional :objects, type: 'Boolean', desc: "Return objects instead of strings", default: false
       end
       get '/:id/logs' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         if params[:from].present? and params[:to].present? and params[:from].to_i > params[:to].to_i
           raise(BadRequestError, "From can't be higher than to")

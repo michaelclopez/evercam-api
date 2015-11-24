@@ -31,6 +31,7 @@ module Evercam
           optional :page, type: Integer, desc: "Page number, starting from 0"
         end
         get 'recordings/snapshots' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -72,6 +73,7 @@ module Evercam
           optional :with_data, type: 'Boolean', desc: "Should it send image data?"
         end
         get 'recordings/snapshots/latest' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
           snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
           if snapshot
@@ -95,6 +97,7 @@ module Evercam
           unless (1..12).include?(params[:month])
             raise BadRequestError, 'Invalid month value'
           end
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -136,6 +139,7 @@ module Evercam
           unless (1..31).include?(params[:day])
             raise BadRequestError, 'Invalid day value'
           end
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -172,6 +176,7 @@ module Evercam
           optional :range, type: Integer, desc: "Time range in seconds around specified timestamp. Default range is one second (so it matches only exact timestamp)."
         end
         get 'recordings/snapshots/:timestamp' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           if Evercam::Utils.is_num?(params["timestamp"])
@@ -195,6 +200,7 @@ module Evercam
           optional :with_data, type: 'Boolean', desc: "Should it return image data?"
         end
         post 'recordings/snapshots' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -248,6 +254,7 @@ module Evercam
           optional :with_data, type: 'Boolean', desc: "Should it return image data?"
         end
         post 'recordings/snapshots/:timestamp' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -284,6 +291,7 @@ module Evercam
           requires :timestamp, type: Integer, desc: "Snapshot Unix timestamp."
         end
         delete 'recordings/snapshots/:timestamp' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera.owner, AccessRight::SNAPSHOTS)
@@ -327,6 +335,7 @@ module Evercam
       route_param :id do
         desc 'Returns jpg from the camera'
         get '/live/snapshot' do
+          params[:id].downcase!
           camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
@@ -387,6 +396,7 @@ module Evercam
         requires :day, type: Integer, desc: "Day, for example 17"
       end
       get ':id/recordings/snapshots/:year/:month/:day' do
+        params[:id].downcase!
         user_cache_key = "#{params[:api_id]}|snapshots|day|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
         exists = Evercam::Services.dalli_cache.get(user_cache_key)
 
@@ -516,6 +526,7 @@ module Evercam
       route_param :id do
         desc 'Returns jpg from the camera'
         get 'recordings/snapshots/latest/jpg' do
+          params[:id].downcase!
           camera = ::Camera.by_exid!(params[:id])
 
           rights = requester_rights_for(camera)

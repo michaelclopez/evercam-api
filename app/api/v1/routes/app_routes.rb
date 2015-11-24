@@ -12,6 +12,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id/apps' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)

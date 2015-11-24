@@ -25,6 +25,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -182,6 +183,7 @@ module Evercam
         if params[:id].blank?
           parameters = {}.merge(params).merge(username: caller.username, id: auto_generate_camera_id(params[:name]))
         else
+          params[:id].downcase!
           parameters = {}.merge(params).merge(username: caller.username)
         end
 
@@ -229,6 +231,7 @@ module Evercam
         optional :h264_url, type: String, desc: "H264 url."
       end
       patch '/:id' do
+        params[:id].downcase!
         camera = Evercam::Services.dalli_cache.get(params[:id])
         camera = ::Camera.by_exid!(params[:id]) if camera.nil?
         rights = requester_rights_for(camera)
@@ -274,6 +277,7 @@ module Evercam
         entity: Evercam::Presenters::Camera
       }
       delete '/:id' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::DELETE)
@@ -303,6 +307,8 @@ module Evercam
          requires :user_id, type: String, desc: "The Evercam user name or email address for the new camera owner."
       end
       put '/:id' do
+        params[:id].downcase!
+        params[:user_id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.is_owner?

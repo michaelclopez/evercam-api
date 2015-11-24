@@ -43,6 +43,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id/ptz/status' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
@@ -59,6 +60,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id/ptz/presets' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)
@@ -75,6 +77,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       post '/:id/ptz/home' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -91,6 +94,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       post '/:id/ptz/home/set' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -108,6 +112,7 @@ module Evercam
         requires :preset_token, type: String, desc: "Preset Token"
       end
       post '/:id/ptz/presets/:preset_token' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -125,6 +130,7 @@ module Evercam
         requires :preset_name, type: String, desc: "Preset Token"
       end
       post '/:id/ptz/presets/create/:preset_name' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -142,6 +148,7 @@ module Evercam
         requires :preset_token, type: String, desc: "Preset Token"
       end
       post '/:id/ptz/presets/go/:preset_token' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -159,6 +166,7 @@ module Evercam
         requires :direction, type: String, desc: "Direction"
       end
       post '/:id/ptz/continuous/start/:direction' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -176,6 +184,7 @@ module Evercam
         requires :mode, type: String, desc: "Mode"
       end
       post '/:id/ptz/continuous/zoom/:mode' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -192,6 +201,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       post '/:id/ptz/continuous/stop' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -208,6 +218,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       post '/:id/ptz/relative' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
@@ -224,6 +235,7 @@ module Evercam
         requires :id, type: String, desc: "Camera Id."
       end
       get '/:id/macaddr' do
+        params[:id].downcase!
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::VIEW)

@@ -35,6 +35,7 @@ module Evercam
         requires :id, type: String, desc: "Unique identifier for the vendor"
       end
       get ':id' do
+        params[:id].downcase!
         vendor = Vendor.where(exid: params[:id]).first
         raise Evercam::NotFoundError.new("Unable to locate the '#{params[:id]}' vendor.",
                                          "vendor_not_found_error", params[:id]) if vendor.blank?
@@ -57,6 +58,7 @@ module Evercam
         optional :macs, type: String, desc: "Comma separated list of MAC's prefixes the vendor uses"
       end
       post do
+        params[:id].downcase!
         known_macs = ['']
         if params.include?(:macs) && params[:macs]
           known_macs = params[:macs].split(",").inject([]) { |list, entry| list << entry.strip }
@@ -88,6 +90,7 @@ module Evercam
         optional :macs, type: String, desc: "Comma separated list of MAC's prefixes the vendor uses"
       end
       patch '/:id' do
+        params[:id].downcase!
         known_macs = ['']
         if params.include?(:macs) && params[:macs]
           known_macs = params[:macs].split(",").inject([]) { |list, entry| list << entry.strip }

@@ -42,6 +42,7 @@ module Evercam
           params[:country].downcase!
         end
         params[:username].downcase!
+        params[:email].downcase!
         outcome = Actors::UserSignup.run(params)
         if !outcome.success?
           raise_error(400, "invalid_parameters",
@@ -106,7 +107,6 @@ module Evercam
         requires :id, type: String, desc: "Username"
         optional :firstname, type: String, desc: "First Name"
         optional :lastname, type: String, desc: "Last Name"
-        optional :username, type: String, desc: "Username"
         optional :country, type: String, desc: "Country"
         optional :email, type: String, desc: "Email"
         optional :billing_id, type: String, desc: "Billing ID"
@@ -117,6 +117,7 @@ module Evercam
         params[:id] = params[:id][0..-6] if params[:id].end_with?('.json')
         params[:id] = params[:id][0..-5] if params[:id].end_with?('.xml')
         params[:id].downcase!
+        params[:email].downcase! if params[:email]
         target = ::User.by_login(params[:id])
         raise NotFoundError, 'user does not exist' unless target
 
