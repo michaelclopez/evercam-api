@@ -20,6 +20,13 @@ module Evercam
         required: true
       }
 
+      expose :status,
+        documentation: {
+        type: 'string',
+        desc: '',
+        required: true
+      }
+
       expose :schedule,
         documentation: {
         type: 'array',
