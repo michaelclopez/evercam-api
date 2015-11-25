@@ -924,3 +924,30 @@ task :add_missing_thumbnail_url do
     end
   end
 end
+
+task :create_cloud_recording_status do
+  require 'evercam_models'
+
+  full_schedule = {
+    "Monday" => ["00:00-23:59"],
+    "Tuesday" => ["00:00-23:59"],
+    "Wednesday" => ["00:00-23:59"],
+    "Thursday" => ["00:00-23:59"],
+    "Friday" => ["00:00-23:59"],
+    "Saturday" => ["00:00-23:59"],
+    "Sunday" => ["00:00-23:59"]
+  }
+
+  CloudRecording.each do |cloud_recording|
+    if cloud_recording.schedule == full_schedule
+      if cloud_recording.frequency == 1
+        cloud_recording.status = "off"
+      else
+        cloud_recording.status = "on"
+      end
+    else
+      cloud_recording.status = "on-scheduled"
+    end
+    cloud_recording.save
+  end
+end
