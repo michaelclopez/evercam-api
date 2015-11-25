@@ -37,14 +37,14 @@ module Evercam
             camera: camera,
             frequency: inputs["frequency"],
             storage_duration: inputs["storage_duration"],
-            status: status,
+            status: inputs["status"],
             schedule: schedule
           )
         else
           cloud_recording.update(
             frequency: inputs["frequency"],
             storage_duration: inputs["storage_duration"],
-            status: status,
+            status: inputs["status"],
             schedule: schedule
           )
           cloud_recording
