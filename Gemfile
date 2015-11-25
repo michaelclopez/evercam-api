@@ -25,6 +25,8 @@ gem 'curb'
 gem 'grape'
 gem 'grape-entity'
 gem 'grape-swagger', '= 0.10.2'
+gem 'grape_logging',
+  github: 'mosic/grape_logging'
 
 gem 'georuby'
 

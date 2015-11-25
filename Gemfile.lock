@@ -25,6 +25,13 @@ GIT
       net-http-digest_auth (~> 1.4)
 
 GIT
+  remote: git://github.com/mosic/grape_logging.git
+  revision: 38be90984b5ad713ead9156a2392e20908a5f79a
+  specs:
+    grape_logging (1.1.2)
+      grape
+
+GIT
   remote: git://github.com/rails/activesupport-json_encoder.git
   revision: f02fb52c02609b3157e9288e1502dc6a4fe3b1fd
   specs:
@@ -335,6 +342,7 @@ DEPENDENCIES
   grape
   grape-entity
   grape-swagger (= 0.10.2)
+  grape_logging!
   guard-rack
   guard-rspec
   intercom
