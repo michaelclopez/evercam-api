@@ -18,9 +18,9 @@ namespace :db do
     envs = [Evercam::Config.env]
     envs << :test if :development == envs[0]
     envs.each do |env|
-      dbName = Evercam::Config.settings[env][:database]
-      puts "migrate: #{env} with databse name #{dbName}"
-      db = Sequel.connect(dbName)
+      db_url = Evercam::Config.settings[env][:database]
+      puts "migrate: #{env} with database url #{db_url}"
+      db = Sequel.connect(db_url)
       Sequel::Migrator.run(db, 'migrations')
     end
   end
