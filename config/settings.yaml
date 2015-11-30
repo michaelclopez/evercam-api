@@ -56,6 +56,7 @@
 :test:
   <<: *defaults
   :database: postgres://localhost/evercam_tst
+  :snaps_database: postgres://localhost/evercam_tst
   :mail:
     :from: evercam.io <support@evercam.io>
     :via: :test

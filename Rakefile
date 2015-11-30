@@ -11,7 +11,6 @@ end
 
 namespace :db do
   require 'sequel'
-  Sequel.connect(Evercam::Config[:database])
   Sequel.extension :migration, :pg_json, :pg_array
 
   task :migrate do
@@ -30,6 +29,34 @@ namespace :db do
     envs << :test if :development == envs[0]
     envs.each do |env|
       db = Sequel.connect(Evercam::Config.settings[env][:database])
+      migrations = db[:schema_migrations].order(:filename).to_a
+      migration = 0
+      if migrations.length > 1
+        match = /^(\d+).+$/.match(migrations[-2][:filename])
+        migration = match[1].to_i if match
+      end
+
+      Sequel::Migrator.run(db, 'migrations', target: migration)
+      puts "migrate: #{env}, ('#{migration}')"
+    end
+  end
+
+  task :migrate_snapshots do
+    envs = [Evercam::Config.env]
+    envs << :test if :development == envs[0]
+    envs.each do |env|
+      db_url = Evercam::Config.settings[env][:snaps_database]
+      puts "migrate: #{env} with database url #{db_url}"
+      db = Sequel.connect(db_url)
+      Sequel::Migrator.run(db, 'migrations')
+    end
+  end
+
+  task :rollback_snapshots do
+    envs = [Evercam::Config.env]
+    envs << :test if :development == envs[0]
+    envs.each do |env|
+      db = Sequel.connect(Evercam::Config.settings[env][:snaps_database])
       migrations = db[:schema_migrations].order(:filename).to_a
       migration = 0
       if migrations.length > 1
