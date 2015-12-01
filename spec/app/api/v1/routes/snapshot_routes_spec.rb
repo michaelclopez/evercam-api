@@ -71,9 +71,8 @@ describe 'API routes/snapshots' do
       @exid     = 'xxx'
       @cam      = create(:camera, exid: @exid)
       @api_keys = {api_id: @cam.owner.api_id, api_key: @cam.owner.api_key}
-      data = File.read('spec/resources/snapshot.jpg')
       (1..150).each do |n|
-        Snapshot.create(camera_id: @cam.id, created_at: Time.at(n), data: data)
+        Snapshot.create(camera_id: @cam.id, created_at: Time.at(n))
       end
     end
 
@@ -566,8 +565,7 @@ describe 'API routes/snapshots' do
 
     let(:params) {
       {
-        notes: 'Snap note',
-        data: Rack::Test::UploadedFile.new('spec/resources/snapshot.jpg', 'image/jpeg')
+        notes: 'Snap note'
       }
     }
 
