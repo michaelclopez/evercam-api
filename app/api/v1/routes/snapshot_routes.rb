@@ -75,13 +75,28 @@ module Evercam
         get 'recordings/snapshots/latest' do
           params[:id].downcase!
           camera = get_cam(params[:id])
-          snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
-          if snapshot
-            rights = requester_rights_for(camera)
-            raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
-            present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
+
+          if camera.thumbnail_url
+            path = URI::parse(camera.thumbnail_url).path
+            path = path.gsub(camera.exid, '')
+            timestamp = path.gsub(/[^\d]/, '').to_i
+
+            data = OpenStruct.new
+            data.created_at = timestamp
+            data.notes = nil
+            data.motionlevel = nil
+
+            present(Array(data), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           else
-            present([], with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
+            snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+            if snapshot
+
+              rights = requester_rights_for(camera)
+              raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
+              present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
+            else
+              present([], with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
+            end
           end
         end
 
