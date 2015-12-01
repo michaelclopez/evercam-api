@@ -4,7 +4,6 @@ require 'base64'
 module Evercam
   module Presenters
     class Snapshot < Presenter
-
       root :snapshots
 
       expose :created_at, documentation: {
@@ -34,17 +33,11 @@ module Evercam
         desc: 'Image data',
         required: false
       } do |snapshot, options|
-        if snapshot.data == 'S3'
-          filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          image = Evercam::Services.snapshot_bucket.objects[filepath].read
-        else
-          image = snapshot.data
-        end
+        filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
+        image = Evercam::Services.snapshot_bucket.objects[filepath].read
         data = Base64.encode64(image).gsub("\n", '')
         "data:image/jpeg;base64,#{data}"
       end
-
     end
   end
 end
-
