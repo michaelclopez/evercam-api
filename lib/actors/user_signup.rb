@@ -80,7 +80,7 @@ module Evercam
             api_key: Evercam::Config[:intercom][:api_key]
           )
           begin
-            ic_user = intercom.users.find(:email => inputs[:email])
+            ic_user = intercom.users.find(:user_id => inputs[:username])
           rescue Intercom::ResourceNotFound
             # Ignore it
           end
@@ -89,6 +89,7 @@ module Evercam
             begin
               intercom.users.create(
                 :email => inputs[:email],
+                :user_id => inputs[:username],
                 :name => user.fullname,
                 :signed_up_at => Time.now.to_i
               )
