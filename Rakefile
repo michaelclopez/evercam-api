@@ -978,3 +978,52 @@ task :create_cloud_recording_status do
     cloud_recording.save
   end
 end
+
+task :update_intercom_users do
+  require 'evercam_models'
+
+  if Evercam::Config.env == :production
+    intercom = Intercom::Client.new(
+      app_id: Evercam::Config[:intercom][:app_id],
+      api_key: Evercam::Config[:intercom][:api_key]
+    )
+    User.each do |user|
+      puts user.username
+      begin
+        ic_user = intercom.users.find(:email => user.email)
+      rescue Intercom::ResourceNotFound
+        # Ignore it
+      end
+      if ic_user.nil?
+        # Create ic user
+        begin
+          intercom.users.create(
+            :email => user.email,
+            :user_id => user.username,
+            :name => user.fullname,
+            :signed_up_at => user.created_at.to_i,
+            :last_seen_user_agent => request.user_agent,
+            :last_seen_ip => request.remote_ip,
+            :new_session => true
+          )
+        rescue
+          # Ignore it
+        end
+      else
+        begin
+          ic_user.user_id = user.username
+          ic_user.email = user.email
+          ic_user.name = user.fullname
+          ic_user.signed_up_at = user.created_at.to_i
+          ic_user.last_seen_user_agent = request.user_agent
+          ic_user.last_request_at = Time.now.to_i
+          ic_user.new_session = true
+          ic_user.last_seen_ip = request.remote_ip
+          intercom.users.save(ic_user)
+        rescue
+          # Ignore it
+        end
+      end
+    end
+  end
+end
