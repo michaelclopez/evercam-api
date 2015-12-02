@@ -1006,11 +1006,10 @@ task :update_intercom_users do
               :user_id => user.username,
               :name => user.fullname,
               :signed_up_at => user.created_at.to_i,
-              :last_seen_user_agent => request.user_agent,
-              :last_seen_ip => request.remote_ip,
               :new_session => true
             )
-          rescue
+          rescue => error
+            puts "User Create: #{error.message}"
             # Ignore it
           end
         else
@@ -1019,12 +1018,11 @@ task :update_intercom_users do
             ic_user.email = user.email
             ic_user.name = user.fullname
             ic_user.signed_up_at = user.created_at.to_i
-            ic_user.last_seen_user_agent = request.user_agent
             ic_user.last_request_at = Time.now.to_i
             ic_user.new_session = true
-            ic_user.last_seen_ip = request.remote_ip
             intercom.users.save(ic_user)
-          rescue
+          rescue => error
+            puts "User Update: #{error.message}"
             # Ignore it
           end
         end
