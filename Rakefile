@@ -1018,8 +1018,7 @@ task :update_intercom_users do
             ic_user.email = user.email
             ic_user.name = user.fullname
             ic_user.signed_up_at = user.created_at.to_i
-            ic_user.last_request_at = Time.now.to_i
-            ic_user.new_session = true
+            ic_user.last_request_at = user.updated_at.to_i
             intercom.users.save(ic_user)
           rescue => error
             puts "User Update: #{error.message}"
