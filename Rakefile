@@ -979,7 +979,7 @@ task :create_cloud_recording_status do
   end
 end
 
-task :update_intercom_users do
+task :update_intercom_users, [:user_id, :to_id] do |_t, args|
   require 'intercom'
   Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
   require 'evercam_models'
@@ -990,9 +990,9 @@ task :update_intercom_users do
       app_id: Evercam::Config[:intercom][:app_id],
       api_key: Evercam::Config[:intercom][:api_key]
     )
-    User.each do |user|
+    User.where(:id => args[:user_id]...args[:to_id]).order(:id).each do |user|
       if user.email =~ VALID_EMAIL_REGEX
-        puts "#{user.username}-#{user.email}"
+        puts "#{user.id}-#{user.username}-#{user.email}"
         begin
           ic_user = intercom.users.find(:email => user.email)
         rescue Intercom::ResourceNotFound
