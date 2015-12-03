@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: adeb8e52d808247d9a9088a0f415b94dac0766ad
+  revision: 0caa20fd7b7203852c18e03529b2b6f79eee5e54
   specs:
     evercam_models (0.3.38)
       activesupport (~> 4.2)
@@ -192,7 +192,7 @@ GEM
     method_source (0.8.2)
     mime-types (2.6.1)
     mini_magick (4.3.3)
-    mini_portile2 (2.0.0.rc2)
+    mini_portile2 (2.0.0)
     minitest (5.8.3)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
@@ -207,7 +207,7 @@ GEM
       grape
       newrelic_rpm
     newrelic_rpm (3.13.0.299)
-    nokogiri (1.6.7.rc4)
+    nokogiri (1.6.7)
       mini_portile2 (~> 2.0.0.rc2)
     notiffany (0.0.7)
       nenv (~> 0.1)
