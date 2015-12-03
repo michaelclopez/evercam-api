@@ -1029,3 +1029,14 @@ task :update_intercom_users, [:user_id, :to_id] do |_t, args|
     end
   end
 end
+
+task :update_intercom_users, [:camera_id, :from_time, :to_time] do |_t, args|
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  if Evercam::Config.env == :development
+    camera Camera.where(:exid => args[:user_id])
+
+  end
+end
