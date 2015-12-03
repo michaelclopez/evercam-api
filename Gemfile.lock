@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: 0caa20fd7b7203852c18e03529b2b6f79eee5e54
+  revision: 7833ce478c804d2b9842167f938915c724bf86da
   specs:
     evercam_models (0.3.38)
       activesupport (~> 4.2)
