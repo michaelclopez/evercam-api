@@ -101,7 +101,7 @@ module Evercam
           ip: request.ip,
           extra: { :with => params[:email] }.to_json
         )
-        IntercomEventsWorker.perform_async('shared-camera', caller.email)
+        IntercomEventsWorker.perform_async('shared-camera', caller.email, caller.username)
         if outcome.result.class == CameraShare
           # Send email to user
           EmailWorker.perform_async({type: 'share', user: caller.username, email: target_user.email, message: params['message'], camera: camera.exid}) unless caller.email == params[:email]

@@ -5,7 +5,7 @@ module Evercam
 
     include Sidekiq::Worker
 
-    def perform(event, email)
+    def perform(event, email ,username)
       begin
         intercom = Intercom::Client.new(
           app_id: Evercam::Config[:intercom][:app_id],
@@ -14,7 +14,8 @@ module Evercam
         intercom.events.create(
            :event_name => event,
            :created_at => Time.now.to_i,
-           :email  => email
+           :email  => email,
+           :user_id => username
          )
         logger.info("Created #{event} event for #{email}")
       rescue => e

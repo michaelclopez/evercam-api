@@ -189,11 +189,11 @@ module Evercam
 
         outcome    = Actors::CameraCreate.run(parameters)
         unless outcome.success?
-          IntercomEventsWorker.perform_async('failed-creating-camera', caller.email)
+          IntercomEventsWorker.perform_async('failed-creating-camera', caller.email, caller.username)
           raise OutcomeError, outcome.to_json
         end
         invalidate_for_user(caller.username)
-        IntercomEventsWorker.perform_async('created-camera', caller.email)
+        IntercomEventsWorker.perform_async('created-camera', caller.email, caller.username)
         CameraTouchWorker.perform_async(outcome.result.exid)
         present Array(outcome.result), options, with: Presenters::Camera, user: caller
       end
@@ -259,7 +259,7 @@ module Evercam
           )
         end
         if params[:is_public] and not caller.kind_of?(Client)
-          IntercomEventsWorker.perform_async('made-camera-public', caller.email)
+          IntercomEventsWorker.perform_async('made-camera-public', caller.email, caller.username)
         end
 
         camera = ::Camera.by_exid!(params[:id])
