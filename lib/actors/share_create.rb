@@ -27,13 +27,12 @@ module Evercam
                                            "camera_not_found_error", inputs[:id])
         end
 
-        if inputs[:grantor] && User.where(username: grantor).count == 0
+        if inputs[:grantor] && User.where(username: /#{grantor}/i).count == 0
           raise Evercam::NotFoundError.new("Unable to locate a user for '#{inputs[:grantor]}'.",
                                            "share_grantor_not_found_error", inputs[:grantor])
         end
 
-        user = User.where(email: inputs[:email].strip).first
-        user = User.where(username: inputs[:email].strip).first if user.nil?
+        user = User.by_login(inputs[:email].strip)
 
         if user.nil?
           if (/^.+@.+\..+$/ =~ inputs[:email].strip).nil?
