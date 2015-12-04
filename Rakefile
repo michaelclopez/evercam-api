@@ -70,6 +70,9 @@ namespace :db do
   end
 
   task :seed do
+    env = Evercam::Config.env
+    db_url = Evercam::Config.settings[env][:database]
+    Sequel.connect(db_url)
     require 'evercam_models'
 
     country = Country.create(iso3166_a2: "ad", name: "Andorra")
