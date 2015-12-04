@@ -15,12 +15,12 @@ module Evercam
       end
 
       def create_share_for_user(user, camera)
-         grantor = (inputs[:grantor] ? User.where(username: /#{inputs[:grantor]}/i).first : camera.owner)
+         grantor = (inputs[:grantor] ? User.where(Sequel.ilike(:username, inputs[:grantor])).first : camera.owner)
          create_share(grantor, user, camera, inputs[:rights], inputs[:message])
       end
 
       def create_share_for_request(share_request)
-         user = User.where(email: /#{share_request.email}/i).first
+         user = User.where(Sequel.ilike(:email, share_request.email)).first
          Sequel::Model.db.transaction do
             share_request.update(status: CameraShareRequest::USED)
             create_share(share_request.user, user, share_request.camera, share_request.rights, share_request.message)
@@ -36,7 +36,7 @@ module Evercam
                                              "duplicate_share_request_error", email)
          end
 
-         grantor = (inputs[:grantor] ? User.where(username: /#{inputs[:grantor]}/i).first : camera.owner)
+         grantor = (inputs[:grantor] ? User.where(Sequel.ilike(:username, inputs[:grantor])).first : camera.owner)
          CameraShareRequest.create(camera: camera,
                                    user:   grantor,
                                    status: CameraShareRequest::PENDING,
