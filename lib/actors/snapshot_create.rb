@@ -1,18 +1,17 @@
 # Disable File validation, it doesn't work
 module Mutations
   class FileFilter < AdditionalFilter
-      alias_method :filter_old, :filter
+    alias_method :filter_old, :filter
 
-      def filter(data)
-        [data, nil]
-      end
+    def filter(data)
+      [data, nil]
+    end
   end
 end
 
 module Evercam
   module Actors
     class SnapshotCreate < Mutations::Command
-
       required do
         string :id
         integer :timestamp
@@ -39,12 +38,11 @@ module Evercam
 
         Snapshot.create(
           camera_id: camera.id,
-          created_at: Time.at(timestamp),
-          data: 'S3',
-          notes: notes
+          created_at: Time.at(timestamp).utc,
+          notes: notes,
+          snapshot_id: "#{camera.id}_#{Time.at(timestamp).strftime("%Y%m%d%H%M%S%L")}"
         )
       end
-
     end
   end
 end
