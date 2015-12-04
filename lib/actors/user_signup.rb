@@ -10,6 +10,8 @@ module Evercam
         string :username
         string :email
         string :password
+        string :request_ip
+        string :user_agent
       end
 
       optional do
@@ -35,7 +37,11 @@ module Evercam
         country  = Country.by_iso3166(inputs[:country])
         password = inputs[:password]
         share_request_key = inputs[:share_request_key]
+        request_ip = inputs[:request_ip]
+        user_agent = inputs[:user_agent]
         inputs.delete("share_request_key")
+        inputs.delete("request_ip")
+        inputs.delete("user_agent")
 
         if !inputs[:country].blank? && country.nil?
           raise Evercam::NotFoundError.new("The country code "\
@@ -91,6 +97,9 @@ module Evercam
                 :email => inputs[:email],
                 :user_id => inputs[:username],
                 :name => user.fullname,
+                :last_seen_user_agent => user_agent,
+                :last_request_at => Time.now.to_i,
+                :last_seen_ip => request_ip,
                 :signed_up_at => Time.now.to_i
               )
             rescue
