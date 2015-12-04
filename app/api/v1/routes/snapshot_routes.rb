@@ -50,10 +50,11 @@ module Evercam
           to_time = Time.now.utc if params[:to].blank?
 
           off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
-          from = Time.new(from_time.year, from_time.month, from_time.day, from_time.hour, from_time.min, from_time.sec, off_set).utc.to_s
-          to = Time.new(to_time.year, to_time.month, to_time.day, to_time.hour, to_time.min, to_time.sec, off_set).utc.to_s
+          from = Time.new(from_time.year, from_time.month, from_time.day, from_time.hour, from_time.min, from_time.sec, off_set).utc
+          to = Time.new(to_time.year, to_time.month, to_time.day, to_time.hour, to_time.min, to_time.sec, off_set).utc
 
-          query = Snapshot.where(:camera_id => camera.id).select(:notes, :created_at, :motionlevel).order(:created_at).filter(:created_at => (from..to))
+          query = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}")
+                    .select(:notes, :created_at, :motionlevel, :snapshot_id).order(:created_at)
 
           count = query.count
           total_pages = count / limit
@@ -128,7 +129,7 @@ module Evercam
               from = Time.new(params[:year], params[:month], day, 0, 0, 0, offset).utc.to_s
               to = Time.new(params[:year], params[:month], day, 23, 59, 59, offset).utc.to_s
 
-              if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
+              if Snapshot.db.select(Snapshot.where(Sequel.like(:snapshot_id, "#{camera.id}_#{from.strftime("%Y%m%d")}%")).exists).first[:exists]
                 days << day
               end
             end
@@ -167,10 +168,10 @@ module Evercam
           if hours.nil?
             hours = []
             (0..23).each do |hour|
-              from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc.to_s
-              to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc.to_s
+              from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc
+              to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc
 
-              if Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from..to)).exists).first[:exists]
+              if Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
                 hours << hour
               end
             end
@@ -193,15 +194,21 @@ module Evercam
         get 'recordings/snapshots/:timestamp' do
           params[:id].downcase!
           camera = get_cam(params[:id])
+          rights   = requester_rights_for(camera)
+          raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
           if Evercam::Utils.is_num?(params["timestamp"])
             timestamp = Time.at(params[:timestamp].to_i)
           else
             timestamp = ActiveSupport::TimeZone.new('UTC').parse(params[:timestamp])
           end
-          snapshot = Snapshot.snapshot_by_ts!(camera.id, timestamp, params[:range].to_i)
-          rights   = requester_rights_for(camera)
-          raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
+          range = params[:range].to_i
+          if range < 1
+            range = 1
+          end
+          from = timestamp - range + 1
+          to = timestamp + range
+          snapshot = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}")
 
           present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
         end
@@ -327,7 +334,7 @@ module Evercam
             ip: request.ip
           )
 
-          Snapshot.snapshot_by_ts!(camera.id, Time.at(params[:timestamp].to_i)).destroy
+          Snapshot.where(:snapshot_id => "#{camera.id}_#{Time.at(params[:timestamp].to_i).strftime("%Y%m%d%H%M%S%L")}%").destroy
           {}
         end
       end
@@ -436,7 +443,7 @@ module Evercam
             from = Time.new(params[:year], params[:month], params[:day], 0, 0, 0, offset).utc
             to = Time.new(params[:year], params[:month], params[:day], 23, 59, 59, offset).utc
 
-            exists = Snapshot.db.select(Snapshot.where(camera_id: camera.id, created_at: (from.to_s..to.to_s)).exists).first[:exists]
+            exists = Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
 
             unless from.today? || from.future?
               Evercam::Services.dalli_cache.set(cache_key, exists, 1.years)
