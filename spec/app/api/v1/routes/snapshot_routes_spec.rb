@@ -23,14 +23,14 @@ describe 'API routes/snapshots' do
     public_camera
   end
   let(:api_keys) { {api_id: camera0.owner.api_id, api_key: camera0.owner.api_key} }
-  let(:snap) { create(:snapshot, camera_id: camera0.id) }
+  let(:snap) { create(:snapshot, camera_id: camera0.id, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
   let(:public_snap) { create(:snapshot, camera: public_camera) }
 
   let(:other_user) { create(:user) }
   let(:alt_keys) { {api_id: other_user.api_id, api_key: other_user.api_key} }
 
   describe('GET /cameras/:id/recordings/snapshots') do
-    let(:snap1) { create(:snapshot, camera: camera0, created_at: Time.now) }
+    let(:snap1) { create(:snapshot, camera: camera0, created_at: Time.now, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
 
     context 'when snapshot request is correct' do
       it 'all snapshots for given camera are returned' do
@@ -239,9 +239,9 @@ describe 'API routes/snapshots' do
     end
 
     let(:instant) { Time.now }
-    let(:snap1) { create(:snapshot, camera_id: camera0.id, created_at: instant) }
-    let(:snap2) { create(:snapshot, camera_id: camera0.id, created_at: instant - 1000) }
-    let(:snap3) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1000) }
+    let(:snap1) { create(:snapshot, camera_id: camera0.id, created_at: instant, snapshot_id: "#{camera0.id}_#{instant.strftime("%Y%m%d%H%M%S%L")}") }
+    let(:snap2) { create(:snapshot, camera_id: camera0.id, created_at: instant - 1000, snapshot_id: "#{camera0.id}_#{(instant - 1000).strftime("%Y%m%d%H%M%S%L")}") }
+    let(:snap3) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1000, snapshot_id: "#{camera0.id}_#{(instant + 1000).strftime("%Y%m%d%H%M%S%L")}") }
     let(:other_user) { create(:user) }
 
     context 'when snapshot request is correct' do
@@ -382,9 +382,9 @@ describe 'API routes/snapshots' do
   describe "GET /cameras/:id/recordings/snapshots/:timestamp" do
     context 'when snapshot request is correct' do
       let(:instant) { Time.now }
-      let(:s0) { create(:snapshot, camera_id: camera0.id, created_at: instant, data: 'xxx') }
-      let(:s1) { create(:snapshot, camera_id: camera0.id, created_at: instant+1, data: 'xxx') }
-      let(:s2) { create(:snapshot, camera_id: camera0.id, created_at: instant+2, data: 'xxx') }
+      let(:s0) { create(:snapshot, camera_id: camera0.id, created_at: instant, snapshot_id: "#{camera0.id}_#{instant.strftime("%Y%m%d%H%M%S%L")}") }
+      let(:s1) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1, snapshot_id: "#{camera0.id}_#{(instant + 1).strftime("%Y%m%d%H%M%S%L")}") }
+      let(:s2) { create(:snapshot, camera_id: camera0.id, created_at: instant + 2, snapshot_id: "#{camera0.id}_#{(instant + 2).strftime("%Y%m%d%H%M%S%L")}") }
 
       before do
         s0
