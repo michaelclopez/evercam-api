@@ -424,16 +424,6 @@ describe 'API routes/snapshots' do
         end
       end
 
-      context 'type is full' do
-        it 'snapshot without image data is returned' do
-          get("/cameras/#{camera0.exid}/recordings/"\
-              "snapshots/#{snap.created_at.to_i}",
-              { with_data: "true" }.merge(api_keys))
-          expect(last_response.json['snapshots'][0]['data']).not_to be_nil
-          expect(last_response.status).to eq(200)
-        end
-      end
-
       context 'when unauthenticated' do
         it 'returns an unauthenticated error' do
           get("/cameras/#{camera0.exid}/recordings/"\
