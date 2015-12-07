@@ -2,9 +2,7 @@ require 'data_helper'
 
 module Evercam
   module Actors
-
     describe UserSignup do
-
       let(:valid) do
         {
           firstname: 'Garrett',
@@ -19,7 +17,6 @@ module Evercam
       subject { UserSignup }
 
       describe 'invalid params' do
-
         it 'raises an exception if the user name is already registered' do
           user0 = create(:user)
           params = valid.merge(username: user0.username)
@@ -50,18 +47,16 @@ module Evercam
           errors = outcome.errors.symbolic
           expect(errors[:email]).to eq(:invalid)
         end
-
       end
 
       describe 'account creation' do
-
         it 'creates a user with provided String password' do
-          user   = create(:user)
+          user = create(:user)
           double = User.expects(:new).at_least_once
 
           double.returns(user)
 
-          user = UserSignup.run(valid)
+          UserSignup.run(valid)
         end
 
         it 'sends an email confirmation message to the user' do
@@ -79,11 +74,7 @@ module Evercam
           found_user = User.where(email: 'garrett@evercam.io')
           expect(user.id).to eq(found_user.first.id)
         end
-
       end
-
     end
-
   end
 end
-
