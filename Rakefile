@@ -70,8 +70,7 @@ namespace :db do
   end
 
   task :seed do
-    env = Evercam::Config.env
-    db_url = Evercam::Config.settings[env][:database]
+    db_url = Evercam::Config.settings[:development][:database]
     Sequel.connect(db_url)
     require 'evercam_models'
 
