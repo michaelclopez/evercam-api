@@ -1031,3 +1031,73 @@ task :update_intercom_users, [:user_id, :to_id] do |_t, args|
     end
   end
 end
+
+task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :prior_all] do |_t, args|
+  require 'aws'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  s3 = AWS::S3.new(
+    :access_key_id => Evercam::Config[:amazon][:access_key_id],
+    :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+
+  puts "Start processing of camera #{args[:camera_id]}"
+  if Evercam::Config.env == :production
+    camera = Camera.where(:exid => args[:camera_id]).first
+    cloud_recording = CloudRecording.where(camera_id: camera.id).first
+    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+
+    if args[:delete_all].present?
+      Snapshot.where(:camera_id => camera.id).delete
+      snapshot_bucket.with_prefix("#{camera.exid}/")
+      puts "Delete all history for camera: #{camera.name}"
+    elsif args[:prior_all].present?
+      first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
+      latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+      to = latest_snap.created_at - args[:prior_all].to_i.days
+      puts "From: #{first_snap.created_at}"
+      puts "To: #{to}"
+      snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{first_snap.created_at.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+      puts "Total snapshots: #{snapshots.count}"
+
+      snapshots.each do |snapshot|
+        filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+        snapshot_bucket.objects[filepath].delete
+        snapshot.delete
+      end
+      puts "Snapshots deleted"
+    elsif args[:from_time].present? && args[:to_time].present?
+      from_time = Time.parse(args[:from_time]).utc
+      to_time = Time.parse(args[:to_time]).utc
+      puts "From Time: #{from_time.to_s}"
+      puts "To Time: #{to_time.to_s}"
+      snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_time.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to_time.strftime("%Y%m%d%H%M%S%L")}").select
+      puts "Total snapshots: #{snapshots.count}"
+
+      snapshots.each do |snapshot|
+        filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+        snapshot_bucket.objects[filepath].delete
+        snapshot.delete
+      end
+      puts "Snapshots deleted"
+    else
+      first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
+      latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+      to = latest_snap.created_at - cloud_recording.storage_duration.days
+      puts "From: #{first_snap.created_at}"
+      puts "To: #{to}"
+      snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{first_snap.created_at.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+      puts "Total snapshots: #{snapshots.count}"
+
+      snapshots.each do |snapshot|
+        filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+        snapshot_bucket.objects[filepath].delete
+        snapshot.delete
+      end
+      puts "Snapshots deleted"
+    end
+  end
+end
