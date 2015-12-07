@@ -334,7 +334,7 @@ module Evercam
             ip: request.ip
           )
 
-          snapshot_timestamp = Time.at(params[:timestamp].to_i).utc.strftime("%Y%m%d%H%M%S%L")
+          snapshot_timestamp = Time.at(params[:timestamp].to_i).utc.strftime("%Y%m%d%H%M%S")
           snapshot_id = "#{camera.id}_#{snapshot_timestamp}"
           snapshot_query = Sequel.ilike(:snapshot_id, "#{snapshot_id}%")
           Snapshot.where(snapshot_query).delete
