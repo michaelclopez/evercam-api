@@ -1045,14 +1045,15 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
   snapshot_bucket = s3.buckets['evercam-camera-assets']
 
   puts "Start processing of camera #{args[:camera_id]}"
-  if Evercam::Config.env == :production
+  if Evercam::Config.env == :development
     camera = Camera.where(:exid => args[:camera_id]).first
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
-    if args[:delete_all].present?
-      Snapshot.where(:camera_id => camera.id).delete
-      snapshot_bucket.with_prefix("#{camera.exid}/")
+    if args[:delete_all].present? && args[:delete_all].eql?("all")
+      puts "Deleting all history"
+      # Snapshot.where(:camera_id => camera.id).delete
+      # snapshot_bucket.with_prefix("#{camera.exid}/")
       puts "Delete all history for camera: #{camera.name}"
     elsif args[:prior_all].present?
       first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
