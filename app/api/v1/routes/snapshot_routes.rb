@@ -127,7 +127,7 @@ module Evercam
             days = []
             (1..Date.new(params[:year], params[:month], -1).day).each do |day|
               from = Time.new(params[:year], params[:month], day, 0, 0, 0, offset).utc.to_s
-              if Snapshot.db.select(Snapshot.where(Sequel.like(:snapshot_id, "#{camera.id}_#{Time.parse(from).strftime("%Y%m%d")}%")).exists).first[:exists]
+              if Snapshot.db.select(Snapshot.where(Sequel.like(:snapshot_id, "#{camera.id}_#{Time.parse(from).utc.strftime("%Y%m%d")}%")).exists).first[:exists]
                 days << day
               end
             end

@@ -23,7 +23,7 @@ describe 'API routes/snapshots' do
     public_camera
   end
   let(:api_keys) { {api_id: camera0.owner.api_id, api_key: camera0.owner.api_key} }
-  let(:snap) { create(:snapshot, camera_id: camera0.id, created_at: Time.now, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
+  let(:snap) { create(:snapshot, camera_id: camera0.id, created_at: Time.now.utc, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
   let(:public_snap) { create(:snapshot, camera: public_camera) }
 
   let(:other_user) { create(:user) }
