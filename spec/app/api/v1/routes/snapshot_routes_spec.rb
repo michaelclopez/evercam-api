@@ -23,7 +23,7 @@ describe 'API routes/snapshots' do
     public_camera
   end
   let(:api_keys) { {api_id: camera0.owner.api_id, api_key: camera0.owner.api_key} }
-  let(:snap) { create(:snapshot, camera_id: camera0.id, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
+  let(:snap) { create(:snapshot, camera_id: camera0.id, created_at: Time.now, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
   let(:public_snap) { create(:snapshot, camera: public_camera) }
 
   let(:other_user) { create(:user) }
@@ -73,16 +73,27 @@ describe 'API routes/snapshots' do
 
     after(:all) do
       username = @cam.owner.username
-      Camera.where(:exid => @exid).delete
+      camera = Camera.where(:exid => @exid).first
+      snapshots = Snapshot.where(camera_id: camera.id)
+      snapshots.delete
+      camera.delete
       User.where(:username => username).delete
     end
 
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/days" do
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00')) }
+        let(:create_snapshot) do
+          create(
+            :snapshot,
+            camera_id: @cam.id,
+            created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'),
+            snapshot_id: "#{@cam.id}_19700117000000000"
+            )
+        end
+        let(:create_snapshot) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'), snapshot_id: "#{@cam.id}_19700117000000000") }
 
         it 'returns array of days for given date' do
-          snapOld
+          create_snapshot
           get("/cameras/#{@exid}/recordings/snapshots/1970/01/days", @api_keys)
           expect(last_response.status).to eq(200)
           expect(last_response.json['days']).to eq([1, 17])
@@ -124,10 +135,17 @@ describe 'API routes/snapshots' do
 
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/:day/hours" do
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00')) }
+        let(:create_snapshot) do
+          create(
+            :snapshot,
+            camera_id: @cam.id,
+            created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00'),
+            snapshot_id: "#{@cam.id}_19700101170000000"
+          )
+        end
 
         it 'returns array of hours for given date' do
-          snapOld
+          create_snapshot
           get("/cameras/#{@exid}/recordings/snapshots"\
               "/1970/01/01/hours",
               @api_keys)
@@ -390,6 +408,9 @@ describe 'API routes/snapshots' do
         s0
         s1
         s2
+
+        stub_request(:get, /.*evercam-camera-assets.s3.amazonaws.com.*/).
+          to_return(:status => 201, :body => "", :headers => {})
       end
 
       context 'range is specified' do
@@ -398,7 +419,7 @@ describe 'API routes/snapshots' do
               "snapshots/#{s0.created_at.to_i}",
               { range: 10 }.merge(api_keys))
           expect(last_response.json['snapshots'][0]['data']).to be_nil
-          expect(last_response.json['snapshots'][0]['created_at']).to eq(s2.created_at.to_i)
+          expect(last_response.json['snapshots'][0]['created_at']).to eq(s0.created_at.to_i)
           expect(last_response.status).to eq(200)
         end
       end
@@ -528,7 +549,8 @@ describe 'API routes/snapshots' do
   describe "POST /cameras/:id/recordings/snapshots/:timestamp" do
     let(:params) do
       {
-        notes: 'Snap note'
+        notes: 'Snap note',
+        data: Rack::Test::UploadedFile.new('spec/resources/snapshot.jpg', 'image/jpeg')
       }
     end
 
@@ -571,8 +593,7 @@ describe 'API routes/snapshots' do
       let(:camera3) { create(:camera, is_public: false) }
 
       it 'returns an unauthorized error' do
-        post("/cameras/#{camera3.exid}/recordings/snapshots/12345678",
-             params.merge(alt_keys))
+        post("/cameras/#{camera3.exid}/recordings/snapshots/12345678", params.merge(alt_keys))
         expect(last_response.status).to eq(403)
         data = JSON.parse(last_response.body)
         expect(data.include?("message")).to eq(true)
@@ -584,9 +605,7 @@ describe 'API routes/snapshots' do
   describe 'DELETE /cameras/:id/recordings/snapshots/:timestamp' do
     context 'when snapshot request is correct' do
       it 'snapshot is deleted' do
-        delete("/cameras/#{camera0.exid}/recordings"\
-               "/snapshots/#{snap.created_at.to_i}",
-               api_keys)
+        delete("/cameras/#{camera0.exid}/recordings/snapshots/#{snap.created_at.to_i}", api_keys)
         expect(last_response.status).to eq(200)
         expect(Snapshot.first).to be_nil
       end
