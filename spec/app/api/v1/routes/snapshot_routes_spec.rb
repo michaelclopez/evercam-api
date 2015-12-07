@@ -1,6 +1,6 @@
 require 'rack_helper'
-require_app 'api/v1'
 require 'webmock/rspec'
+require_app 'api/v1'
 
 describe 'API routes/snapshots' do
   let(:app) { Evercam::APIv1 }
@@ -175,35 +175,35 @@ describe 'API routes/snapshots' do
     context 'when snapshot request is correct' do
       context 'all snapshots within given range are returned' do
         it 'applies default no data limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(100)
         end
 
         it 'applies default no data limit and returns second page' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, page: 2 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(50)
         end
 
         it 'applies specified limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, limit: 15 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(15)
         end
 
         it 'applies default data limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, with_data: true }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(100)
         end
 
         it 'applies specified limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, with_data: true, limit: 5
               }.merge(@api_keys))
           expect(last_response.status).to eq(200)
@@ -211,7 +211,7 @@ describe 'API routes/snapshots' do
         end
 
         it 'returns only two entries' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 2 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(2)
