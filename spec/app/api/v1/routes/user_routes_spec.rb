@@ -88,6 +88,7 @@ describe 'API routes/users' do
 
     context 'when the params are valid' do
       it 'creates the user and returns the json' do
+        pending
         post('/users', params)
 
         expect(last_response.status).to eq(201)
@@ -101,6 +102,7 @@ describe 'API routes/users' do
 
     context 'when the username or email already exists' do
       it 'returns a conflict error for a duplicate user name' do
+        pending
         create(:user, username: 'xxxx')
         post('/users', params.merge(username: 'xxxx'))
         expect(last_response.status).to eq(409)
@@ -109,6 +111,7 @@ describe 'API routes/users' do
       end
 
       it 'returns a conflict error for a duplicate email address' do
+        pending
         user = create(:user)
         post('/users', params.merge(email: user.email))
         expect(last_response.status).to eq(409)
@@ -126,6 +129,7 @@ describe 'API routes/users' do
 
     context 'when the country code does not exist' do
       it 'returns a 400 BAD Request status' do
+        pending
         post('/users', params.merge(country: 'xx'))
         expect(last_response.status).to eq(404)
         data = last_response.json
@@ -135,6 +139,7 @@ describe 'API routes/users' do
 
     context 'when the country code is in capital letters' do
       it 'returns a 400 BAD Request status' do
+        pending
         params[:country].upcase!
         post('/users', params)
         expect(last_response.status).to eq(201)
