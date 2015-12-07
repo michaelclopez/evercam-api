@@ -88,7 +88,7 @@ describe 'API routes/snapshots' do
             camera_id: @cam.id,
             created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'),
             snapshot_id: "#{@cam.id}_19700117000000000"
-            )
+          )
         end
         let(:create_snapshot) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'), snapshot_id: "#{@cam.id}_19700117000000000") }
 
@@ -290,7 +290,7 @@ describe 'API routes/snapshots' do
         get("/cameras/#snap.camera.exid/recordings/snapshots/latest",
             api_id: other_user.api_id, api_key: other_user.api_key)
         expect(last_response.status).to eq(200)
-        data = JSON.parse(last_response.body)
+        JSON.parse(last_response.body)
       end
     end
   end
@@ -315,8 +315,8 @@ describe 'API routes/snapshots' do
             stub_request(:get, /.*89.101.225.158:8105.*/).
               to_return(:status => 401, :body => "", :headers => {})
 
-            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'};
-            snap.camera.values[:config]['auth'] = {};
+            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'}
+            snap.camera.values[:config]['auth'] = {}
             snap.camera.save
             get("/cameras/#{snap.camera.exid}/live/snapshot", api_keys)
             expect(last_response.status).to eq(403)
@@ -329,8 +329,8 @@ describe 'API routes/snapshots' do
             stub_request(:get, /.*89.101.225.158:8105.*/).
               to_return(:status => 200, :body => "", :headers => {})
 
-            snap.camera.values[:config]['snapshots'] =  { jpg: '/Streaming/channels/1/picture'}
-            snap.camera.values[:config]['auth'] = {basic: {username: 'admin', password: 'mehcam'}};
+            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'}
+            snap.camera.values[:config]['auth'] = {basic: {username: 'admin', password: 'mehcam'}}
             snap.camera.save
             get("/cameras/#{snap.camera.exid}/live/snapshot", api_keys)
             expect(last_response.status).to eq(200)
@@ -472,14 +472,13 @@ describe 'API routes/snapshots' do
   end
 
   describe 'POST /cameras/:id/snapshots' do
-    let(:params) {
+    let(:params) do
       {
         notes: 'Snap note'
       }
-    }
+    end
 
     context 'when snapshot request is correct' do
-
       it 'returns 200 OK status' do
         skip
         stub_request(:get, "http://abcd:wxyz@89.101.225.158:8105/onvif/snapshot").
