@@ -1,6 +1,6 @@
 require 'rack_helper'
-require_app 'api/v1'
 require 'webmock/rspec'
+require_app 'api/v1'
 
 describe 'API routes/snapshots' do
   let(:app) { Evercam::APIv1 }
@@ -23,7 +23,7 @@ describe 'API routes/snapshots' do
     public_camera
   end
   let(:api_keys) { {api_id: camera0.owner.api_id, api_key: camera0.owner.api_key} }
-  let(:snap) { create(:snapshot, camera_id: camera0.id, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
+  let(:snap) { create(:snapshot, camera_id: camera0.id, created_at: Time.now.utc, snapshot_id: "#{camera0.id}_#{Time.now.utc.strftime("%Y%m%d%H%M%S%L")}") }
   let(:public_snap) { create(:snapshot, camera: public_camera) }
 
   let(:other_user) { create(:user) }
@@ -73,16 +73,27 @@ describe 'API routes/snapshots' do
 
     after(:all) do
       username = @cam.owner.username
-      Camera.where(:exid => @exid).delete
+      camera = Camera.where(:exid => @exid).first
+      snapshots = Snapshot.where(camera_id: camera.id)
+      snapshots.delete
+      camera.delete
       User.where(:username => username).delete
     end
 
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/days" do
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00')) }
+        let(:create_snapshot) do
+          create(
+            :snapshot,
+            camera_id: @cam.id,
+            created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'),
+            snapshot_id: "#{@cam.id}_19700117000000000"
+          )
+        end
+        let(:create_snapshot) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 17, 0, 0, 0, '+00:00'), snapshot_id: "#{@cam.id}_19700117000000000") }
 
         it 'returns array of days for given date' do
-          snapOld
+          create_snapshot
           get("/cameras/#{@exid}/recordings/snapshots/1970/01/days", @api_keys)
           expect(last_response.status).to eq(200)
           expect(last_response.json['days']).to eq([1, 17])
@@ -124,10 +135,17 @@ describe 'API routes/snapshots' do
 
     describe "GET /cameras/:id/recordings/snapshots/:year/:month/:day/hours" do
       context 'when snapshot request is correct' do
-        let(:snapOld) { create(:snapshot, camera_id: @cam.id, created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00')) }
+        let(:create_snapshot) do
+          create(
+            :snapshot,
+            camera_id: @cam.id,
+            created_at: Time.new(1970, 01, 01, 17, 0, 0, '+00:00'),
+            snapshot_id: "#{@cam.id}_19700101170000000"
+          )
+        end
 
         it 'returns array of hours for given date' do
-          snapOld
+          create_snapshot
           get("/cameras/#{@exid}/recordings/snapshots"\
               "/1970/01/01/hours",
               @api_keys)
@@ -175,35 +193,35 @@ describe 'API routes/snapshots' do
     context 'when snapshot request is correct' do
       context 'all snapshots within given range are returned' do
         it 'applies default no data limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(100)
         end
 
         it 'applies default no data limit and returns second page' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, page: 2 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(50)
         end
 
         it 'applies specified limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, limit: 15 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(15)
         end
 
         it 'applies default data limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, with_data: true }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(100)
         end
 
         it 'applies specified limit' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range=",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 1234567890, with_data: true, limit: 5
               }.merge(@api_keys))
           expect(last_response.status).to eq(200)
@@ -211,7 +229,7 @@ describe 'API routes/snapshots' do
         end
 
         it 'returns only two entries' do
-          get("/cameras/#{@exid}/recordings/snapshots/?range",
+          get("/cameras/#{@exid}/recordings/snapshots",
               { from: 1, to: 2 }.merge(@api_keys))
           expect(last_response.status).to eq(200)
           expect(last_response.json["snapshots"].length).to eq(2)
@@ -272,7 +290,7 @@ describe 'API routes/snapshots' do
         get("/cameras/#snap.camera.exid/recordings/snapshots/latest",
             api_id: other_user.api_id, api_key: other_user.api_key)
         expect(last_response.status).to eq(200)
-        data = JSON.parse(last_response.body)
+        JSON.parse(last_response.body)
       end
     end
   end
@@ -297,8 +315,8 @@ describe 'API routes/snapshots' do
             stub_request(:get, /.*89.101.225.158:8105.*/).
               to_return(:status => 401, :body => "", :headers => {})
 
-            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'};
-            snap.camera.values[:config]['auth'] = {};
+            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'}
+            snap.camera.values[:config]['auth'] = {}
             snap.camera.save
             get("/cameras/#{snap.camera.exid}/live/snapshot", api_keys)
             expect(last_response.status).to eq(403)
@@ -311,8 +329,8 @@ describe 'API routes/snapshots' do
             stub_request(:get, /.*89.101.225.158:8105.*/).
               to_return(:status => 200, :body => "", :headers => {})
 
-            snap.camera.values[:config]['snapshots'] =  { jpg: '/Streaming/channels/1/picture'}
-            snap.camera.values[:config]['auth'] = {basic: {username: 'admin', password: 'mehcam'}};
+            snap.camera.values[:config]['snapshots'] = { jpg: '/Streaming/channels/1/picture'}
+            snap.camera.values[:config]['auth'] = {basic: {username: 'admin', password: 'mehcam'}}
             snap.camera.save
             get("/cameras/#{snap.camera.exid}/live/snapshot", api_keys)
             expect(last_response.status).to eq(200)
@@ -390,6 +408,9 @@ describe 'API routes/snapshots' do
         s0
         s1
         s2
+
+        stub_request(:get, /.*evercam-camera-assets.s3.amazonaws.com.*/).
+          to_return(:status => 201, :body => "", :headers => {})
       end
 
       context 'range is specified' do
@@ -398,7 +419,7 @@ describe 'API routes/snapshots' do
               "snapshots/#{s0.created_at.to_i}",
               { range: 10 }.merge(api_keys))
           expect(last_response.json['snapshots'][0]['data']).to be_nil
-          expect(last_response.json['snapshots'][0]['created_at']).to eq(s2.created_at.to_i)
+          expect(last_response.json['snapshots'][0]['created_at']).to eq(s0.created_at.to_i)
           expect(last_response.status).to eq(200)
         end
       end
@@ -420,16 +441,6 @@ describe 'API routes/snapshots' do
               "snapshots/#{snap.created_at.to_i}",
               api_keys)
           expect(last_response.json['snapshots'][0]['data']).to be_nil
-          expect(last_response.status).to eq(200)
-        end
-      end
-
-      context 'type is full' do
-        it 'snapshot without image data is returned' do
-          get("/cameras/#{camera0.exid}/recordings/"\
-              "snapshots/#{snap.created_at.to_i}",
-              { with_data: "true" }.merge(api_keys))
-          expect(last_response.json['snapshots'][0]['data']).not_to be_nil
           expect(last_response.status).to eq(200)
         end
       end
@@ -461,14 +472,13 @@ describe 'API routes/snapshots' do
   end
 
   describe 'POST /cameras/:id/snapshots' do
-    let(:params) {
+    let(:params) do
       {
         notes: 'Snap note'
       }
-    }
+    end
 
     context 'when snapshot request is correct' do
-
       it 'returns 200 OK status' do
         skip
         stub_request(:get, "http://abcd:wxyz@89.101.225.158:8105/onvif/snapshot").
@@ -538,7 +548,8 @@ describe 'API routes/snapshots' do
   describe "POST /cameras/:id/recordings/snapshots/:timestamp" do
     let(:params) do
       {
-        notes: 'Snap note'
+        notes: 'Snap note',
+        data: Rack::Test::UploadedFile.new('spec/resources/snapshot.jpg', 'image/jpeg')
       }
     end
 
@@ -581,8 +592,7 @@ describe 'API routes/snapshots' do
       let(:camera3) { create(:camera, is_public: false) }
 
       it 'returns an unauthorized error' do
-        post("/cameras/#{camera3.exid}/recordings/snapshots/12345678",
-             params.merge(alt_keys))
+        post("/cameras/#{camera3.exid}/recordings/snapshots/12345678", params.merge(alt_keys))
         expect(last_response.status).to eq(403)
         data = JSON.parse(last_response.body)
         expect(data.include?("message")).to eq(true)
@@ -594,9 +604,7 @@ describe 'API routes/snapshots' do
   describe 'DELETE /cameras/:id/recordings/snapshots/:timestamp' do
     context 'when snapshot request is correct' do
       it 'snapshot is deleted' do
-        delete("/cameras/#{camera0.exid}/recordings"\
-               "/snapshots/#{snap.created_at.to_i}",
-               api_keys)
+        delete("/cameras/#{camera0.exid}/recordings/snapshots/#{snap.created_at.to_i}", api_keys)
         expect(last_response.status).to eq(200)
         expect(Snapshot.first).to be_nil
       end
