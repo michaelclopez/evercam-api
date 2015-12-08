@@ -1049,16 +1049,18 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
     camera = Camera.where(:exid => args[:camera_id]).first
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+    from_date = Time.new(2015, 01, 01, 0, 0, 0).utc
+    to_date = Time.now.utc
 
     if args[:delete_all].present? && args[:delete_all].eql?("all")
       puts "Start deletion all history"
-      # Snapshot.where(:camera_id => camera.id).delete
-      # snapshot_bucket.with_prefix("#{camera.exid}/")
+      Snapshot.where(:camera_id => camera.id).delete
+      snapshot_bucket.with_prefix("#{camera.exid}/").delete
       puts "Delete all history for camera: #{camera.name}"
     elsif args[:prior_all].present?
       puts "Start deletion prior to all"
-      first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
-      latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+      first_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).first
+      latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
       to = latest_snap.created_at - args[:prior_all].to_i.days
       puts "From: #{first_snap.created_at}"
       puts "To: #{to}"
@@ -1088,8 +1090,8 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       puts "Snapshots deleted"
     else
       puts "Start deletion according to camera-id"
-      first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
-      latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+      first_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).first
+      latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
       to = latest_snap.created_at - cloud_recording.storage_duration.days
       puts "From: #{first_snap.created_at}"
       puts "To: #{to}"
