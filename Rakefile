@@ -1036,7 +1036,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
   require 'aws'
   Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
   require 'evercam_models'
-  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}")
 
   s3 = AWS::S3.new(
     :access_key_id => Evercam::Config[:amazon][:access_key_id],
@@ -1051,11 +1051,12 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     if args[:delete_all].present? && args[:delete_all].eql?("all")
-      puts "Deleting all history"
+      puts "Start deletion all history"
       # Snapshot.where(:camera_id => camera.id).delete
       # snapshot_bucket.with_prefix("#{camera.exid}/")
       puts "Delete all history for camera: #{camera.name}"
     elsif args[:prior_all].present?
+      puts "Start deletion prior to all"
       first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
       latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
       to = latest_snap.created_at - args[:prior_all].to_i.days
@@ -1071,6 +1072,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       end
       puts "Snapshots deleted"
     elsif args[:from_time].present? && args[:to_time].present?
+      puts "Start deletion according to from-date and to-date"
       from_time = Time.parse(args[:from_time]).utc
       to_time = Time.parse(args[:to_time]).utc
       puts "From Time: #{from_time.to_s}"
@@ -1085,6 +1087,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       end
       puts "Snapshots deleted"
     else
+      puts "Start deletion according to camera-id"
       first_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).first
       latest_snap = Snapshot.where(:camera_id => camera.id).order(:created_at).last
       to = latest_snap.created_at - cloud_recording.storage_duration.days
