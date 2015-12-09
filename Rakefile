@@ -1084,6 +1084,12 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
         camera.save
       end
+    elsif args[:delete_all].present? && args[:delete_all].eql?("all-camera")
+      puts "Start deletion all history and delete camera"
+      Snapshot.where(:camera_id => camera.id).delete
+      snapshot_bucket.with_prefix("#{camera.exid}/").delete
+      camera.delete
+      puts "Delete all history and also delete camera"
     elsif args[:prior_all].present?
       puts "Start deletion prior to all"
       first_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).first
