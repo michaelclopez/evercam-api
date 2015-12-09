@@ -1050,7 +1050,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
   if Evercam::Config.env == :production
     camera = Camera.where(:exid => args[:camera_id]).first
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
-    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+    puts "Cloud Recordings: #{cloud_recording.storage_duration}" if cloud_recording.present?
     from_date = Time.new(2015, 01, 01, 0, 0, 0).utc
     to_date = Time.now.utc
 
