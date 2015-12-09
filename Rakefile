@@ -1036,6 +1036,8 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
   require 'aws'
   require 'active_support'
   require 'active_support/core_ext'
+  require 'dalli'
+  require_relative 'lib/services'
   Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
   require 'evercam_models'
   Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}")
@@ -1084,6 +1086,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
         camera.save
       end
+      Evercam::Services.dalli_cache.flush_all
     elsif args[:delete_all].present? && args[:delete_all].eql?("all-camera")
       puts "Start deletion all history and delete camera"
       ids = args[:ids].split(",").inject([]) { |list, entry| list << entry.strip }
@@ -1093,6 +1096,8 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         camera.delete
         puts "Delete all history and also delete camera: #{camera_name}"
       end
+      Evercam::Services.dalli_cache.flush_all
+      puts "Cameras deleted along with history."
     elsif args[:prior_all].present?
       puts "Start deletion prior to all"
       first_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).first
@@ -1108,6 +1113,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
       end
+      Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
     elsif args[:from_time].present? && args[:to_time].present?
       puts "Start deletion according to from-date and to-date"
@@ -1123,6 +1129,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
       end
+      Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
     else
       puts "Start deletion according to camera-id"
@@ -1139,6 +1146,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
       end
+      Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
     end
   end
