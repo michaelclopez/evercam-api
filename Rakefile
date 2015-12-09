@@ -1032,7 +1032,7 @@ task :update_intercom_users, [:user_id, :to_id] do |_t, args|
   end
 end
 
-task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :prior_all] do |_t, args|
+task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :prior_all, :ids] do |_t, args|
   require 'aws'
   require 'active_support'
   require 'active_support/core_ext'
@@ -1075,7 +1075,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       end
       Snapshot.where(:camera_id => camera.id).delete
-      snapshot_bucket.with_prefix("#{camera.exid}/").delete
+      snapshot_bucket.with_prefix("#{camera.exid}/snapshots/").delete_all
       puts "Delete all history for camera: #{camera.name}"
       if camera.thumbnail_url.blank?
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
@@ -1086,10 +1086,13 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       end
     elsif args[:delete_all].present? && args[:delete_all].eql?("all-camera")
       puts "Start deletion all history and delete camera"
-      Snapshot.where(:camera_id => camera.id).delete
-      snapshot_bucket.with_prefix("#{camera.exid}/").delete
-      camera.delete
-      puts "Delete all history and also delete camera"
+      ids = args[:ids].split(",").inject([]) { |list, entry| list << entry.strip }
+      Camera.where(exid: ids).each do |camera|
+        snapshot_bucket.with_prefix("#{camera.exid}/").delete
+        camera_name = camera.name
+        camera.delete
+        puts "Delete all history and also delete camera: #{camera_name}"
+      end
     elsif args[:prior_all].present?
       puts "Start deletion prior to all"
       first_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).first
