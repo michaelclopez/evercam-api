@@ -1093,7 +1093,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       Evercam::Services.dalli_cache.flush_all
     elsif args[:delete_all].present? && args[:delete_all].eql?("all-camera")
       puts "Start deletion all history and delete camera"
-      ids = args[:ids].split(";").inject([]) { |list, entry| list << entry.strip }
+      ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
       Camera.where(exid: ids).each do |cam|
         snapshot_bucket.objects.with_prefix("#{cam.exid}/").delete
         camera_name = cam.name
