@@ -1079,7 +1079,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       end
       Snapshot.where(:camera_id => camera.id).delete
-      snapshot_bucket.with_prefix("#{camera.exid}/snapshots/").delete_all
+      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
       puts "Delete all history for camera: #{camera.name}"
       if camera.thumbnail_url.blank?
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
@@ -1095,7 +1095,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       puts "Start deletion all history and delete camera"
       ids = args[:ids].split(",").inject([]) { |list, entry| list << entry.strip }
       Camera.where(exid: ids).each do |cam|
-        snapshot_bucket.with_prefix("#{cam.exid}/").delete
+        snapshot_bucket.objects.with_prefix("#{cam.exid}/").delete
         camera_name = cam.name
         cam.delete
         puts "Delete all history and also delete camera: #{camera_name}"
