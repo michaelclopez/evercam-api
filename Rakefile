@@ -1038,9 +1038,9 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
   require 'active_support/core_ext'
   require 'dalli'
   require_relative 'lib/services'
-  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}")
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
   require 'evercam_models'
-  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}")
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
 
   s3 = AWS::S3.new(
     :access_key_id => Evercam::Config[:amazon][:access_key_id],
@@ -1066,6 +1066,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
+        snapshot_bucket.objects[newpath].delete
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       else
         filepath = URI::parse(camera.thumbnail_url).path
@@ -1074,6 +1075,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
 
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
+        snapshot_bucket.objects[newpath].delete
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       end
       Snapshot.where(:camera_id => camera.id).delete
@@ -1081,7 +1083,9 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       puts "Delete all history for camera: #{camera.name}"
       if camera.thumbnail_url.blank?
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects["#{camera.exid}/#{timestamp}.jpg"].read)
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+        snapshot_bucket.objects[newpath].delete
         file = snapshot_bucket.objects[filepath]
         camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
         camera.save
@@ -1112,6 +1116,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
+        puts "Delete snapshot: #{filepath}"
       end
       Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
@@ -1128,6 +1133,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
+        puts "Delete snapshot: #{filepath}"
       end
       Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
@@ -1145,6 +1151,7 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
         filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
         snapshot_bucket.objects[filepath].delete
         snapshot.delete
+        puts "Delete snapshot: #{filepath}"
       end
       Evercam::Services.dalli_cache.flush_all
       puts "Snapshots deleted"
