@@ -1081,11 +1081,12 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
       Snapshot.where(:camera_id => camera.id).delete
       snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
       puts "Delete all history for camera: #{camera.name}"
+
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+      snapshot_bucket.objects[newpath].delete
       if camera.thumbnail_url.blank?
-        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
-        snapshot_bucket.objects[newpath].delete
         file = snapshot_bucket.objects[filepath]
         camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
         camera.save
