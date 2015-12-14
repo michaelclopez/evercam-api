@@ -1159,3 +1159,25 @@ task :delete_camera_history, [:camera_id, :delete_all, :from_time, :to_time, :pr
     end
   end
 end
+
+task :delete_useless_s3_folders do
+  require 'aws'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+
+  s3 = AWS::S3.new(
+    :access_key_id => Evercam::Config[:amazon][:access_key_id],
+    :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+  tree = snapshot_bucket.as_tree
+  directories = tree.children.select(&:branch?).collect(&:prefix)
+  puts directories.count
+  directories.each do |directory|
+    camera_id = directory.delete('/')
+    if Camera.where(exid: camera_id).count.eql?(0)
+      puts "Start deleting directory for Camera (#{camera_id})"
+      snapshot_bucket.objects[camera_id].delete
+    end
+  end
+end
