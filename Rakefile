@@ -1177,6 +1177,7 @@ task :delete_useless_s3_folders do
     camera_id = directory.delete('/')
     if Camera.where(exid: camera_id).count.eql?(0)
       puts "Start deleting directory for Camera (#{camera_id})"
+      snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
       snapshot_bucket.objects[camera_id].delete
     end
   end
