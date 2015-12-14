@@ -1172,7 +1172,6 @@ task :delete_useless_s3_folders do
   snapshot_bucket = s3.buckets['evercam-camera-assets']
   tree = snapshot_bucket.as_tree
   directories = tree.children.select(&:branch?).collect(&:prefix)
-  # tree.children.select(&:leaf?).collect(&:key)
   puts directories.count
   directories.each do |directory|
     camera_id = directory.delete('/')
