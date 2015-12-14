@@ -1175,7 +1175,7 @@ task :delete_useless_s3_folders do
   # tree.children.select(&:leaf?).collect(&:key)
   puts directories.count
   directories.each do |directory|
-    camera_id = directory.gsub('/','')
+    camera_id = directory.delete('/')
     if Camera.where(exid: camera_id).count.eql?(0)
       puts "Start deleting directory for Camera (#{camera_id})"
       snapshot_bucket.objects[camera_id].delete
