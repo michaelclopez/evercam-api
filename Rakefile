@@ -1238,7 +1238,7 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
       if camera.thumbnail_url.blank?
         file = snapshot_bucket.objects[filepath]
         camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
-        camera.savegit
+        camera.save
       end
     end
   end
