@@ -1209,13 +1209,14 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
     if camera.thumbnail_url.blank?
       from_date = Time.now.utc - 1.days if camera.is_online
       latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
-      timestamp = latest_snap.created_at.to_i
-
-      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-      newpath = "#{camera.exid}/#{timestamp}.jpg"
-      puts "File path path: #{newpath}"
-      snapshot_bucket.objects[newpath].delete
-      snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+      if latest_snap.present?
+        timestamp = latest_snap.created_at.to_i
+        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        puts "File path path: #{newpath}"
+        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+      end
     else
       filepath = URI::parse(camera.thumbnail_url).path
       filepath = filepath.gsub(camera.exid, '')
@@ -1229,15 +1230,16 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
     Snapshot.where(:camera_id => camera.id).delete
     snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
     puts "All history deleted for camera: #{camera.name}"
-
-    filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-    newpath = "#{camera.exid}/#{timestamp}.jpg"
-    snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
-    snapshot_bucket.objects[newpath].delete
-    if camera.thumbnail_url.blank?
-      file = snapshot_bucket.objects[filepath]
-      camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
-      camera.save
+    if timestamp.present?
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+      snapshot_bucket.objects[newpath].delete
+      if camera.thumbnail_url.blank?
+        file = snapshot_bucket.objects[filepath]
+        camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+        camera.savegit
+      end
     end
   end
 end
