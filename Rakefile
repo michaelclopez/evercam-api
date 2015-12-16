@@ -1269,7 +1269,7 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
           image_length = snapshot_bucket.objects[filepath].content_length
           if image_length <= 5120
             snapshot_bucket.objects[filepath].delete
-            # snapshot.delete
+            snapshot.delete
             puts "Delete snapshot: #{filepath}"
             puts "This is not a proper image. Length: #{image_length} bytes"
           end
