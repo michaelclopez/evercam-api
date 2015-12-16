@@ -1243,3 +1243,26 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
     end
   end
 end
+
+task :delete_broken_camera_history, [:camera_id] do |_t, args|
+  require 'aws'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 2)
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 2)
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+  if args[:camera_id].present?
+    camera = Camera.where(:exid => args[:camera_id]).first
+    tree = snapshot_bucket.as_tree(:prefix => "#{camera.exid}/snapshots/")
+    files = tree.children.select(&:leaf?).collect(&:key)
+    files.each do |file|
+      puts file
+    end
+  else
+
+  end
+end
