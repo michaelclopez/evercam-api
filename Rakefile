@@ -1198,12 +1198,12 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
       :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
   )
   snapshot_bucket = s3.buckets['evercam-camera-assets']
-  cameras = Camera.where(is_online: false).where(Sequel.~(id: ids)).where(Sequel.expr(:last_online_at) <= last_online_date)
+  cameras = Camera.where(is_online: false).where(Sequel.~(id: ids)).where(Sequel.expr(:last_online_at) <= last_online_date).order(:exid)
   puts "Total Offline cameras: #{cameras.count}"
   from_date = Time.new(2015, 01, 01, 0, 0, 0).utc
 
   cameras.each do |camera|
-    puts "Start deletion on camera #{camera.name}"
+    puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     to_date = last_online_date
     to_date = camera.last_online_at unless camera.last_online_at.blank?
     if camera.thumbnail_url.blank?
@@ -1227,7 +1227,9 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
       snapshot_bucket.objects[newpath].delete
       snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
     end
+    puts "Start deletion from database"
     Snapshot.where(:camera_id => camera.id).delete
+    puts "Start deletion from bucket"
     snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
     puts "All history deleted for camera: #{camera.name}"
     if timestamp.present?
@@ -1241,5 +1243,6 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
         camera.save
       end
     end
+    puts "---------------------------"
   end
 end
