@@ -1257,12 +1257,24 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
   snapshot_bucket = s3.buckets['evercam-camera-assets']
   if args[:camera_id].present?
     camera = Camera.where(:exid => args[:camera_id]).first
-    tree = snapshot_bucket.as_tree(:prefix => "#{camera.exid}/snapshots/")
-    files = tree.children.select(&:leaf?).collect(&:key)
-    files.each do |file|
-      puts file
+    (2014..2015).each do |year|
+      (1..12).each do |month|
+        from = Time.new(year, month, 1, 0, 0, 0).utc
+        to = Time.new(year, month, 1, 23, 59, 59).utc.end_of_month
+        puts "From: #{from}"
+        puts "To: #{to}"
+        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+        snapshots.each do |snapshot|
+          filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          image_length = snapshot_bucket.objects[filepath].content_length
+          if image_length <= 5120
+            snapshot_bucket.objects[filepath].delete
+            # snapshot.delete
+            puts "Delete snapshot: #{filepath}"
+            puts "This is not a proper image. Length: #{image_length} bytes"
+          end
+        end
+      end
     end
-  else
-
   end
 end
