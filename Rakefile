@@ -1201,10 +1201,10 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
   cameras = Camera.where(is_online: false).where(Sequel.~(id: ids)).where(Sequel.expr(:last_online_at) <= last_online_date)
   puts "Total Offline cameras: #{cameras.count}"
   from_date = Time.new(2015, 01, 01, 0, 0, 0).utc
-  to_date = last_online_date
 
   cameras.each do |camera|
     puts "Start deletion on camera #{camera.name}"
+    to_date = last_online_date
     to_date = camera.last_online_at unless camera.last_online_at.blank?
     if camera.thumbnail_url.blank?
       from_date = Time.now.utc - 1.days if camera.is_online
