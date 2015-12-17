@@ -1344,7 +1344,7 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
       camera_to_date = latest_snap.created_at - cloud_recording.storage_duration.days
       cr_year = camera_to_date.strftime("%Y").to_i
       cr_month = camera_to_date.strftime("%m").to_i
-      pust "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
+      puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
 
       (2014..cr_year).each do |year|
         (1..cr_month).each do |month|
@@ -1357,15 +1357,15 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
           puts "To: #{to}"
           snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
           puts "Total Snapshots: #{snapshots.count}"
-          # snapshots.each do |snapshot|
-          #   filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          #   # snapshot_bucket.objects[filepath].delete
-          #   # snapshot.delete
-          #   puts "Delete snapshot: #{filepath}"
-          # end
+          snapshots.each do |snapshot|
+            filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+            snapshot_bucket.objects[filepath].delete
+            snapshot.delete
+            puts "Delete snapshot: #{filepath}"
+          end
         end
       end
     end
-    # Evercam::Services.dalli_cache.flush_all
+    Evercam::Services.dalli_cache.flush_all
   end
 end
