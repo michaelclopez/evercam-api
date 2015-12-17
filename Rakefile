@@ -1228,9 +1228,27 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
       snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
     end
     puts "Start deletion from database"
-    Snapshot.where(:camera_id => camera.id).delete
-    puts "Start deletion from bucket"
+
+    (2014..2015).each do |year|
+      (1..12).each do |month|
+        from = Time.new(year, month, 1, 0, 0, 0).utc
+        to = Time.new(year, month, 1, 23, 59, 59).utc.end_of_month
+        puts "From: #{from}"
+        puts "To: #{to}"
+        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+        snapshots.each do |snapshot|
+          filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          snapshot_bucket.objects[filepath].delete
+          snapshot.delete
+          puts "Delete snapshot: #{filepath}"
+        end
+      end
+    end
+    # Snapshot.where(:camera_id => camera.id).delete
+    # puts "Start deletion from bucket"
     snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
+
+
     puts "All history deleted for camera: #{camera.name}"
     if timestamp.present?
       filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
