@@ -1269,7 +1269,11 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
         snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
         snapshots.each do |snapshot|
           filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          image_length = snapshot_bucket.objects[filepath].content_length
+          if snapshot_bucket.objects[filepath].exists?
+            image_length = snapshot_bucket.objects[filepath].content_length
+          else
+            image_length = 0
+          end
           if image_length <= 5120
             snapshot_bucket.objects[filepath].delete
             snapshot.delete
