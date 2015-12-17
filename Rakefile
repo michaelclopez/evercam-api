@@ -1276,8 +1276,8 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
       :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
   )
   snapshot_bucket = s3.buckets['evercam-camera-assets']
-  if args[:camera_id].present?
-    camera = Camera.where(:exid => args[:camera_id]).first
+  Camera.each do |camera|
+    # camera = Camera.where(:exid => args[:camera_id]).first
     (2014..2015).each do |year|
       (1..12).each do |month|
         from = Time.new(year, month, 1, 0, 0, 0).utc
@@ -1301,5 +1301,71 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
         end
       end
     end
+    puts "Complete camera #{camera.name}(#{camera.exid})"
+  end
+  puts "Deletion for broken snapshots completed."
+end
+
+task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
+  require 'aws'
+  require 'dalli'
+  require_relative 'lib/services'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+
+  ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
+  Camera.where(exid: ids).each do |camera|
+    puts "Start deletion on camera #{camera.name}(#{camera.exid})"
+    cloud_recording = CloudRecording.where(camera_id: camera.id).first
+    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+
+    to_date = Time.now.utc
+    from_date = to_date - 15.days
+    unless camera.is_online.nil? || camera.is_online
+      if camera.last_online_at.nil?
+        from_date = camera.created_at
+        to_date = camera.last_polled_at
+      else
+        from_date = camera.last_online_at - 15.days
+        to_date = camera.last_online_at
+      end
+    end
+
+    puts "From: #{from_date}---To: #{to_date}"
+    latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
+    if latest_snap.present?
+      camera_to_date = latest_snap.created_at - cloud_recording.storage_duration.days
+      cr_year = camera_to_date.strftime("%Y").to_i
+      cr_month = camera_to_date.strftime("%m").to_i
+      pust "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
+
+      (2014..cr_year).each do |year|
+        (1..cr_month).each do |month|
+          from = Time.new(year, month, 1, 0, 0, 0).utc
+          to = Time.new(year, month, 1, 23, 59, 59).utc.end_of_month
+          if year.eql?(cr_year) && month.eql?(cr_month)
+            to = camera_to_date.utc
+          end
+          puts "From: #{from}"
+          puts "To: #{to}"
+          snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+          puts "Total Snapshots: #{snapshots.count}"
+          # snapshots.each do |snapshot|
+          #   filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          #   # snapshot_bucket.objects[filepath].delete
+          #   # snapshot.delete
+          #   puts "Delete snapshot: #{filepath}"
+          # end
+        end
+      end
+    end
+    # Evercam::Services.dalli_cache.flush_all
   end
 end
