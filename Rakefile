@@ -1341,7 +1341,7 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
     puts "From: #{from_date}---To: #{to_date}"
     latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
     if latest_snap.present?
-      camera_to_date = latest_snap.created_at - cloud_recording.storage_duration.days
+      camera_to_date = latest_snap.created_at - (cloud_recording.storage_duration + 1).days
       cr_year = camera_to_date.strftime("%Y").to_i
       cr_month = camera_to_date.strftime("%m").to_i
       puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
