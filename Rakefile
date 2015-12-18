@@ -1403,7 +1403,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
     puts "From: #{from_date}---To: #{to_date}"
     latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
     if latest_snap.present?
-      camera_to_date = latest_snap.created_at - (cloud_recording.storage_duration + 1).days
+      camera_to_date = latest_snap.created_at
       cr_year = camera_to_date.strftime("%Y").to_i
       cr_month = camera_to_date.strftime("%m").to_i
       puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
@@ -1414,7 +1414,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
-        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       else
         filepath = URI::parse(camera.thumbnail_url).path
@@ -1423,7 +1423,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
 
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       end
       # Save last snapshot
@@ -1441,7 +1441,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
           puts "Total Snapshots: #{snapshots.count}"
           snapshots.each do |snapshot|
             filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-            snapshot_bucket.objects[filepath].delete
+            snapshot_bucket.objects[filepath].delete if snapshot_bucket.objects[filepath].exists?
             snapshot.delete
             puts "Delete snapshot: #{filepath}"
           end
@@ -1453,7 +1453,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
-        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         if camera.thumbnail_url.blank?
           file = snapshot_bucket.objects[filepath]
           camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
@@ -1468,7 +1468,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
 
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
       end
       snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
@@ -1476,7 +1476,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
-        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
       end
     end
     Evercam::Services.dalli_cache.flush_all
