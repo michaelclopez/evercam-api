@@ -1460,6 +1460,24 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
           camera.save
         end
       end
+    else
+      if camera.thumbnail_url.present?
+        filepath = URI::parse(camera.thumbnail_url).path
+        filepath = filepath.gsub(camera.exid, '')
+        timestamp = filepath.gsub(/[^\d]/, '').to_i
+
+        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        snapshot_bucket.objects[newpath].delete
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+      end
+      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
+      if timestamp.present?
+        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+        snapshot_bucket.objects[newpath].delete
+      end
     end
     Evercam::Services.dalli_cache.flush_all
   end
