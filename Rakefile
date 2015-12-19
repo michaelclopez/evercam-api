@@ -954,6 +954,35 @@ task :add_missing_thumbnail_url do
   end
 end
 
+task :fix_broken_thumbnail_url do
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require "resolv"
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'dalli'
+  require 'timeout'
+  require 'evercam_models'
+  require "faraday"
+  require_relative 'lib/services'
+
+  Camera.where(is_online: true).all.shuffle.each do |camera|
+    begin
+      puts camera.exid
+      url = "https://api.evercam.io/v1/cameras/#{camera.exid}/recordings/snapshots?api_id=#{camera.owner.api_id}&api_key=#{camera.owner.api_key}&notes=Evercam%20Thumbnail"
+
+      conn = Faraday.new(url: url) do |faraday|
+        faraday.adapter Faraday.default_adapter
+        faraday.options.timeout = 30
+        faraday.options.open_timeout = 30
+      end
+
+      conn.post
+    rescue => e
+      log.warn(e)
+    end
+  end
+end
+
 task :create_cloud_recording_status do
   require 'evercam_models'
 
