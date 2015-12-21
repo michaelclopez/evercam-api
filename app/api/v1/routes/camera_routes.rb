@@ -293,7 +293,7 @@ module Evercam
         MotionDetection.where(camera: camera).each(&:delete)
 
         DeleteCameraWorker.perform_async(camera.exid)
-        DeleteSnapshotsWorker.perform_async(camera.exid,camera.id)
+        DeleteSnapshotsWorker.perform_async(camera.exid, camera.id)
         {}
       end
 
