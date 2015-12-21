@@ -79,7 +79,7 @@ group :test do
   gem 'simplecov'
   gem 'rack-test'
   gem 'factory_girl'
-  gem 'nokogiri', '~> 1.6.7.rc4'
+  gem 'nokogiri', '~> 1.6.7.1'
   gem 'webmock', '~> 1.21.0'
   gem 'rspec', '= 3.3.0'
   gem 'guard-rspec'
