@@ -1444,7 +1444,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
         snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
-        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       else
         filepath = URI::parse(camera.thumbnail_url).path
         filepath = filepath.gsub(camera.exid, '')
@@ -1453,7 +1453,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
-        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       end
       # Save last snapshot
 
@@ -1481,7 +1481,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
       if timestamp.present?
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         if camera.thumbnail_url.blank?
           file = snapshot_bucket.objects[filepath]
@@ -1498,13 +1498,13 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
-        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read)
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       end
       snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
       if timestamp.present?
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read)
+        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
       end
     end
