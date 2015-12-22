@@ -1348,7 +1348,7 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
   snapshot_bucket = s3.buckets['evercam-camera-assets']
 
   ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
-  Camera.where(exid: ids).each do |camera|
+  Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
@@ -1412,7 +1412,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
   snapshot_bucket = s3.buckets['evercam-camera-assets']
 
   ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
-  Camera.where(exid: ids).each do |camera|
+  Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
