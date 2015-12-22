@@ -1565,6 +1565,10 @@ task :for_testing, [:ids] do |_t, args|
           snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
           puts "Total Snapshots: #{snapshots.count}"
           puts "End Time: #{Time.now}"
+          puts "Start deletion from bucket"
+          bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_if {|o| o.gsub(".jpg") >= from.ot_i && o.gsub(".jpg") >= to.ot_i }
+          puts "Start deletion from table"
+          snapshots.delete
           # snapshots.each do |snapshot|
           #   filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
           #   snapshot_bucket.objects[filepath].delete
