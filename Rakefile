@@ -1566,7 +1566,6 @@ task :for_testing, [:ids] do |_t, args|
           puts "Total Snapshots: #{snapshots.count}"
           puts "End Time: #{Time.now}"
           puts "Start deletion from bucket"
-          if
           snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_if {|o| o.gsub(".jpg") >= from.ot_i && o.gsub(".jpg") >= to.ot_i }
           puts "Start deletion from table"
           snapshots.delete
