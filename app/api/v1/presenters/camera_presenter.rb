@@ -99,6 +99,11 @@ module Evercam
         s.timezone.zone
       end
 
+      expose :is_online_email_owner_notification, documentation: {
+        type: 'boolean',
+        desc: 'Whether or not to send online/offline notifications to camera owner.'
+      }
+
       expose :is_online, documentation: {
         type: 'boolean',
         desc: 'Whether or not this camera is currently online'
