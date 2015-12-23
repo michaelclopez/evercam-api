@@ -1525,7 +1525,7 @@ task :for_testing, [:ids] do |_t, args|
       :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
   )
   snapshot_bucket = s3.buckets['evercam-camera-assets']
-
+  puts "#{1448928000.to_s[0...5]}"
   ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
@@ -1563,12 +1563,16 @@ task :for_testing, [:ids] do |_t, args|
           puts "To: #{to}"
           puts "Start Time: #{Time.now}"
           snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-          puts "Total Snapshots: #{snapshots.count}"
+          total_snaps = snapshots.count
+          puts "Total Snapshots: #{total_snaps}"
           puts "End Time: #{Time.now}"
-          puts "Start deletion from bucket"
-          snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_if {|o| o.gsub(".jpg") >= from.ot_i && o.gsub(".jpg") >= to.ot_i }
-          puts "Start deletion from table"
-          snapshots.delete
+          if total_snaps > 0
+            puts "Start deletion from bucket"
+            bucket_path = "#{camera.exid}/snapshots/"
+            snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...5]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
+            puts "Start deletion from table"
+            snapshots.delete
+          end
           # snapshots.each do |snapshot|
           #   filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
           #   snapshot_bucket.objects[filepath].delete
