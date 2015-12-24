@@ -1525,7 +1525,6 @@ task :for_testing, [:ids] do |_t, args|
       :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
   )
   snapshot_bucket = s3.buckets['evercam-camera-assets']
-  puts "#{1448928000.to_s[0...5]}"
   ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
@@ -1552,33 +1551,29 @@ task :for_testing, [:ids] do |_t, args|
       cr_month = camera_to_date.strftime("%m").to_i
       puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
 
-      (2014..cr_year).each do |year|
-        (1..cr_month).each do |month|
-          from = Time.new(year, month, 1, 0, 0, 0).utc
-          to = Time.new(year, month, 1, 23, 59, 59).utc.end_of_month
-          if year.eql?(cr_year) && month.eql?(cr_month)
-            to = camera_to_date.utc
-          end
-          puts "From: #{from}"
-          puts "To: #{to}"
-          puts "Start Time: #{Time.now}"
-          snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-          total_snaps = snapshots.count
-          puts "Total Snapshots: #{total_snaps}"
-          puts "End Time: #{Time.now}"
-          if total_snaps > 0
-            puts "Start deletion from bucket"
-            bucket_path = "#{camera.exid}/snapshots/"
-            snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...5]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
-            puts "Start deletion from table"
-            snapshots.delete
-          end
-          # snapshots.each do |snapshot|
-          #   filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          #   snapshot_bucket.objects[filepath].delete
-          #   snapshot.delete
-          #   puts "Delete snapshot: #{filepath}"
-          # end
+      start_date = Date.new(2014, 1, 1)
+      end_date = Date.new(2015, 12, 31)
+      (start_date..end_date).each do |d|
+        year = d.strftime("%Y")
+        month = d.strftime("%m")
+        day = d.strftime("%d")
+        from = Time.new(year, month, day, 0, 0, 0).utc
+        to = Time.new(year, month, day, 23, 59, 59).utc
+
+        puts "From: #{from}"
+        puts "To: #{to}"
+        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+        total_snaps = snapshots.count
+        puts "Total Snapshots: #{total_snaps}"
+        bucket_path = "#{camera.exid}/snapshots/"
+        if total_snaps > 0
+          puts "Start deletion from bucket"
+          snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
+          puts "Start deletion from table"
+          snapshots.delete
+        else
+          puts "No database records but have files in bucket"
+          snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
         end
       end
     end
