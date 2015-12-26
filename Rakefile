@@ -1588,7 +1588,7 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
         puts "From: #{from}"
         puts "To: #{to}"
         snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-        puts "Total Snapshots: #{snapshots.count}"
+        puts "Camera(#{camera.exid}) Total Snapshots: #{snapshots.count}"
         puts "Delete from buckets"
         snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
         puts "Delete snapshots"
@@ -1609,6 +1609,7 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
         end
       end
     else
+      puts "Start else portion"
       if camera.thumbnail_url.present?
         filepath = URI::parse(camera.thumbnail_url).path
         filepath = filepath.gsub(camera.exid, '')
@@ -1684,7 +1685,7 @@ task :for_testing, [:ids] do |_t, args|
         puts "To: #{to}"
         snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
         total_snaps = snapshots.count
-        puts "Total Snapshots: #{total_snaps}"
+        puts "Camera(#{camera.exid}) Total Snapshots: #{total_snaps}"
         bucket_path = "#{camera.exid}/snapshots/"
         if total_snaps > 0
           puts "Start deletion from bucket"
