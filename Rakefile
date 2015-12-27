@@ -1533,13 +1533,13 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     to_date = Time.now.utc
-    from_date = to_date - 15.days
+    from_date = to_date - 25.days
     unless camera.is_online.nil? || camera.is_online
       if camera.last_online_at.nil?
         from_date = camera.created_at
         to_date = camera.last_polled_at
       else
-        from_date = camera.last_online_at - 15.days
+        from_date = camera.last_online_at - 25.days
         to_date = camera.last_online_at
       end
     end
@@ -1559,7 +1559,6 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
-        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       else
         filepath = URI::parse(camera.thumbnail_url).path
@@ -1568,7 +1567,6 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
 
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       end
       # Save last snapshot
@@ -1617,7 +1615,6 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
 
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       end
       snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
