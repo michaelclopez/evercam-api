@@ -1512,7 +1512,7 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
   end
 end
 
-task :delete_cameras_all_history2, [:ids] do |_t, args|
+task :delete_cameras_all_history_day, [:ids] do |_t, args|
   require 'aws'
   require 'dalli'
   require_relative 'lib/services'
@@ -1629,7 +1629,7 @@ task :delete_cameras_all_history2, [:ids] do |_t, args|
   end
 end
 
-task :for_testing, [:ids] do |_t, args|
+task :delete_given_cameras_history_according_duration_day, [:ids] do |_t, args|
   require 'aws'
   require 'dalli'
   require_relative 'lib/services'
