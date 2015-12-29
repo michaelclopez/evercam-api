@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/evercam/evercam-models.git
-  revision: 7833ce478c804d2b9842167f938915c724bf86da
+  revision: 6e4069cb262d1f99b82a174c98495013f523625c
   specs:
     evercam_models (0.3.38)
       activesupport (~> 4.2)
@@ -132,7 +132,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     ffi (1.9.10)
     formatador (0.2.5)
-    geocoder (1.2.12)
+    geocoder (1.2.14)
     georuby (2.5.2)
     grape (0.13.0)
       activesupport
