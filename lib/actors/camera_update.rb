@@ -38,6 +38,7 @@ module Evercam
         string :location_lat, :empty => true
 
         boolean :discoverable
+        boolean :is_online_email_owner_notification
       end
 
       def validate
@@ -162,6 +163,7 @@ module Evercam
         camera.values[:config].merge!({'external_host' => inputs[:external_host].empty? ? '' : inputs[:external_host]}) unless inputs[:external_host].nil?
         camera.values[:config].merge!({'internal_host' => inputs[:internal_host].empty? ? '' : inputs[:internal_host]}) unless inputs[:internal_host].nil?
         camera.discoverable = (inputs[:discoverable] == true) if inputs.include?(:discoverable)
+        camera.is_online_email_owner_notification = (inputs[:is_online_email_owner_notification] == true) if inputs.include?(:is_online_email_owner_notification)
         camera.save
 
         camera
