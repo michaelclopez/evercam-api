@@ -1243,7 +1243,6 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
-        snapshot_bucket.objects[newpath].delete
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
       end
     else
@@ -1253,28 +1252,29 @@ task :delete_history_offline_cameras, [:offline_from] do |_t, args|
 
       filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
       newpath = "#{camera.exid}/#{timestamp}.jpg"
-      snapshot_bucket.objects[newpath].delete
       snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
     end
-    puts "Start deletion from database"
 
-    (2014..2015).each do |year|
-      (1..12).each do |month|
-        from = Time.new(year, month, 1, 0, 0, 0).utc
-        to = Time.new(year, month, 1, 23, 59, 59).utc.end_of_month
-        puts "From: #{from}"
-        puts "To: #{to}"
-        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-        snapshots.each do |snapshot|
-          filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          snapshot_bucket.objects[filepath].delete
-          snapshot.delete
-          puts "Delete snapshot: #{filepath}"
-        end
-      end
+    start_date = Date.new(2014, 1, 1)
+    end_date = Date.new(2015, 12, 31)
+    (start_date..end_date).each do |d|
+      year = d.strftime("%Y")
+      month = d.strftime("%m")
+      day = d.strftime("%d")
+      from = Time.new(year, month, day, 0, 0, 0).utc
+      to = Time.new(year, month, day, 23, 59, 59).utc
+
+      puts "From: #{from}"
+      puts "To: #{to}"
+      snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+      total_snaps = snapshots.count
+      puts "Camera(#{camera.exid}) Total Snapshots: #{total_snaps}"
+      puts "Start deletion from bucket"
+      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
+      puts "Start deletion from table"
+      snapshots.delete
     end
     snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
-
 
     puts "All history deleted for camera: #{camera.name}"
     if timestamp.present?
