@@ -1,7 +1,6 @@
 module Evercam
   module Actors
     class CloudRecordingCreate < Mutations::Command
-
       required do
         string :id
       end
@@ -34,7 +33,7 @@ module Evercam
 
         if cloud_recording.blank?
           CloudRecording.create(
-            camera: camera,
+            camera_id: camera.id,
             frequency: inputs["frequency"],
             storage_duration: inputs["storage_duration"],
             status: inputs["status"],
