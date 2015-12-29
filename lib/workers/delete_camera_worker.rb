@@ -9,6 +9,7 @@ module Evercam
       camera = ::Camera.by_exid(exid)
       raise NotFoundError, 'camera does not exist' unless camera
 
+      CloudRecording.where(camera_id: camera.id).destroy
       invalidate_for_camera(camera.exid)
       camera.destroy
 
