@@ -35,6 +35,7 @@ module Evercam
 
         boolean :is_online
         boolean :discoverable
+        boolean :is_online_email_owner_notification
       end
 
       def validate
@@ -141,6 +142,7 @@ module Evercam
         camera.mac_address = mac_address if mac_address
 
         camera.discoverable = inputs[:discoverable] if inputs[:discoverable]
+        camera.is_online_email_owner_notification = inputs[:is_online_email_owner_notification] if inputs[:is_online_email_owner_notification]
         if inputs[:is_online]
           camera.is_online = inputs[:is_online]
           camera.last_online_at = Time.now

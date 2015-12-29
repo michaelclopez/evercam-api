@@ -178,25 +178,25 @@ module Evercam
         optional :audio_url, type: String, desc: "Audio url."
         optional :h264_url, type: String, desc: "H264 url."
         optional :is_online_email_owner_notification, type: 'Boolean', desc: "To Enable or Disable Camera Email Notification"
+      end
+      post do
+        raise BadRequestError.new("Requester is not a user.") if caller.nil? || !caller.instance_of?(User)
+        if params[:id].blank?
+          parameters = {}.merge(params).merge(username: caller.username, id: auto_generate_camera_id(params[:name]))
+        else
+          params[:id].downcase!
+          parameters = {}.merge(params).merge(username: caller.username)
         end
-        post do
-          raise BadRequestError.new("Requester is not a user.") if caller.nil? || !caller.instance_of?(User)
-          if params[:id].blank?
-            parameters = {}.merge(params).merge(username: caller.username, id: auto_generate_camera_id(params[:name]))
-          else
-            params[:id].downcase!
-            parameters = {}.merge(params).merge(username: caller.username)
-          end
-          outcome    = Actors::CameraCreate.run(parameters)
-          unless outcome.success?
-            IntercomEventsWorker.perform_async('failed-creating-camera', caller.email, caller.username)
-            raise OutcomeError, outcome.to_json
-          end
-          invalidate_for_user(caller.username)
-          IntercomEventsWorker.perform_async('created-camera', caller.email, caller.username)
-          CameraTouchWorker.perform_async(outcome.result.exid)
-          present Array(outcome.result), options, with: Presenters::Camera, user: caller
+        outcome    = Actors::CameraCreate.run(parameters)
+        unless outcome.success?
+          IntercomEventsWorker.perform_async('failed-creating-camera', caller.email, caller.username)
+          raise OutcomeError, outcome.to_json
         end
+        invalidate_for_user(caller.username)
+        IntercomEventsWorker.perform_async('created-camera', caller.email, caller.username)
+        CameraTouchWorker.perform_async(outcome.result.exid)
+        present Array(outcome.result), options, with: Presenters::Camera, user: caller
+      end
 
       #-------------------------------------------------------------------------
       # PATCH /v1/cameras/:id
