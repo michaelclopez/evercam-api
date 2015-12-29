@@ -187,7 +187,6 @@ module Evercam
             params[:id].downcase!
             parameters = {}.merge(params).merge(username: caller.username)
           end
-
           outcome    = Actors::CameraCreate.run(parameters)
           unless outcome.success?
           IntercomEventsWorker.perform_async('failed-creating-camera', caller.email, caller.username)
