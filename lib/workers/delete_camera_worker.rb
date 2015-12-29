@@ -6,17 +6,15 @@ module Evercam
     include Evercam::CacheHelper
 
     def perform(exid)
-      begin
-        camera = ::Camera.by_exid(exid)
-        raise NotFoundError, 'camera does not exist' unless camera
+      camera = ::Camera.by_exid(exid)
+      raise NotFoundError, 'camera does not exist' unless camera
 
-        invalidate_for_camera(camera.exid)
-        camera.destroy
+      invalidate_for_camera(camera.exid)
+      camera.destroy
 
-        logger.info("Camera (#{exid}) deleted successfully.")
-      rescue => e
-        logger.warn "Camera delete exception: #{e.message}"
-      end
+      logger.info("Camera (#{exid}) deleted successfully.")
+    rescue => e
+      logger.warn "Camera delete exception: #{e.message}"
     end
   end
 end
