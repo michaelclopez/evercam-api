@@ -1351,6 +1351,22 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
+    if cloud_recording.nil?
+      cloud_recording = {
+        "frequency" => 1,
+        "status" => "off",
+        "storage_duration" => 0,
+        "schedule" => {
+          "Monday" => ["00:00-23:59"],
+          "Tuesday" => ["00:00-23:59"],
+          "Wednesday" => ["00:00-23:59"],
+          "Thursday" => ["00:00-23:59"],
+          "Friday" => ["00:00-23:59"],
+          "Saturday" => ["00:00-23:59"],
+          "Sunday" => ["00:00-23:59"]
+        }
+      }
+    end
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     to_date = Time.now.utc
@@ -1415,7 +1431,6 @@ task :delete_cameras_all_history, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
-    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     to_date = Time.now.utc
     from_date = to_date - 15.days
@@ -1530,7 +1545,6 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
-    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     to_date = Time.now.utc
     from_date = to_date - 25.days
@@ -1646,6 +1660,22 @@ task :delete_given_cameras_history_according_duration_day, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
+    if cloud_recording.nil?
+      cloud_recording = {
+        "frequency" => 1,
+        "status" => "off",
+        "storage_duration" => 0,
+        "schedule" => {
+          "Monday" => ["00:00-23:59"],
+          "Tuesday" => ["00:00-23:59"],
+          "Wednesday" => ["00:00-23:59"],
+          "Thursday" => ["00:00-23:59"],
+          "Friday" => ["00:00-23:59"],
+          "Saturday" => ["00:00-23:59"],
+          "Sunday" => ["00:00-23:59"]
+        }
+      }
+    end
     puts "Cloud Recordings: #{cloud_recording.storage_duration}"
 
     to_date = Time.now.utc
