@@ -17,8 +17,25 @@ module Evercam
       subject { UserSignup }
 
       describe 'invalid params' do
+
+        it 'raises an exception if an invalid country code is specified' do
+          params = valid.merge(country: "blah")
+          expect {subject.run(params)}.to raise_error(Evercam::NotFoundError,
+                                                      "The country code 'blah' is not valid.")
+        end
+
+        it 'checks that the email address follows a basic format' do
+          params = {}.merge(valid).merge(email: "email#{Time.now.to_i}.blah.com")
+          outcome = subject.run(params)
+          expect(outcome).to_not be_success
+
+          errors = outcome.errors.symbolic
+          expect(errors[:email]).to eq(:invalid)
+        end
+      end
+
+      describe 'user already registered' do
         it 'raises an exception if the user name is already registered' do
-          pending
           user0 = create(:user)
           params = valid.merge(username: user0.username)
 
@@ -27,29 +44,12 @@ module Evercam
         end
 
         it 'raises an exception if the email address is already registered' do
-          pending
           user0 = create(:user)
+          user0 = {}.merge(user0).merge(email: "garrett@evercam.io")
           params = valid.merge(email: user0.email)
 
           expect {subject.run(params)}.to raise_error(Evercam::ConflictError,
                                                       "The email address '#{user0.email}' is already registered.")
-        end
-
-        it 'raises an exception if an invalid country code is specified' do
-          pending
-          params = valid.merge(country: "blah")
-          expect {subject.run(params)}.to raise_error(Evercam::NotFoundError,
-                                                      "The country code 'blah' is not valid.")
-        end
-
-        it 'checks that the email address follows a basic format' do
-          pending
-          params = {}.merge(valid).merge(email: "email#{Time.now.to_i}.blah.com")
-          outcome = subject.run(params)
-          expect(outcome).to_not be_success
-
-          errors = outcome.errors.symbolic
-          expect(errors[:email]).to eq(:invalid)
         end
       end
 
