@@ -1333,7 +1333,7 @@ task :delete_broken_camera_history, [:camera_id] do |_t, args|
   puts "Deletion for broken snapshots completed."
 end
 
-task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
+task :delete_given_cameras_history_according_duration, [:ids, :days] do |_t, args|
   require 'aws'
   require 'dalli'
   require_relative 'lib/services'
@@ -1351,23 +1351,9 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
-    if cloud_recording.nil?
-      cloud_recording = {
-        "frequency" => 1,
-        "status" => "off",
-        "storage_duration" => 0,
-        "schedule" => {
-          "Monday" => ["00:00-23:59"],
-          "Tuesday" => ["00:00-23:59"],
-          "Wednesday" => ["00:00-23:59"],
-          "Thursday" => ["00:00-23:59"],
-          "Friday" => ["00:00-23:59"],
-          "Saturday" => ["00:00-23:59"],
-          "Sunday" => ["00:00-23:59"]
-        }
-      }
-    end
-    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+    storage_duration = args[:days].present? ? args[:days].to_i : 0
+    storage_duration = cloud_recording.storage_duration unless cloud_recording.nil?
+    puts "Cloud Recordings: #{storage_duration}"
 
     to_date = Time.now.utc
     from_date = to_date - 15.days
@@ -1384,7 +1370,7 @@ task :delete_given_cameras_history_according_duration, [:ids] do |_t, args|
     puts "From: #{from_date}---To: #{to_date}"
     latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
     if latest_snap.present?
-      camera_to_date = latest_snap.created_at - (cloud_recording.storage_duration + 1).days
+      camera_to_date = latest_snap.created_at - (storage_duration + 1).days
       cr_year = camera_to_date.strftime("%Y").to_i
       cr_month = camera_to_date.strftime("%m").to_i
       puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
@@ -1643,7 +1629,7 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
   end
 end
 
-task :delete_given_cameras_history_according_duration_day, [:ids] do |_t, args|
+task :delete_given_cameras_history_according_duration_day, [:ids, :days] do |_t, args|
   require 'aws'
   require 'dalli'
   require_relative 'lib/services'
@@ -1660,23 +1646,9 @@ task :delete_given_cameras_history_according_duration_day, [:ids] do |_t, args|
   Camera.where(exid: ids).order(:exid).each do |camera|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
-    if cloud_recording.nil?
-      cloud_recording = {
-        "frequency" => 1,
-        "status" => "off",
-        "storage_duration" => 0,
-        "schedule" => {
-          "Monday" => ["00:00-23:59"],
-          "Tuesday" => ["00:00-23:59"],
-          "Wednesday" => ["00:00-23:59"],
-          "Thursday" => ["00:00-23:59"],
-          "Friday" => ["00:00-23:59"],
-          "Saturday" => ["00:00-23:59"],
-          "Sunday" => ["00:00-23:59"]
-        }
-      }
-    end
-    puts "Cloud Recordings: #{cloud_recording.storage_duration}"
+    storage_duration = args[:days].present? ? args[:days].to_i : 0
+    storage_duration = cloud_recording.storage_duration unless cloud_recording.nil?
+    puts "Cloud Recordings: #{storage_duration}"
 
     to_date = Time.now.utc
     from_date = to_date - 5.days
@@ -1693,7 +1665,7 @@ task :delete_given_cameras_history_according_duration_day, [:ids] do |_t, args|
     puts "From: #{from_date}---To: #{to_date}"
     latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
     if latest_snap.present?
-      camera_to_date = latest_snap.created_at - (cloud_recording.storage_duration + 1).days
+      camera_to_date = latest_snap.created_at - (storage_duration + 1).days
       cr_year = camera_to_date.strftime("%Y").to_i
       cr_month = camera_to_date.strftime("%m").to_i
       cr_day = camera_to_date.strftime("%d").to_i
