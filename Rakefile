@@ -1700,3 +1700,61 @@ task :delete_given_cameras_history_according_duration_day, [:ids, :days] do |_t,
     Evercam::Services.dalli_cache.flush_all
   end
 end
+
+task :clean_bucket, [:ids] do |_t, args|
+  require 'aws'
+  require 'dalli'
+  require_relative 'lib/services'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+
+  ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
+  Camera.where(id: ids).order(:id).each do |camera|
+    puts "Start deletion on camera #{camera.name}(#{camera.exid})"
+
+    # Save last snapshot
+    if camera.thumbnail_url.blank?
+      first_snap = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").first
+      if first_snap
+        snap_key = first_snap.key
+        snap_key = snap_key.gsub(camera.exid, '')
+        timestamp = snap_key.gsub(/[^\d]/, '').to_i
+
+        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        puts "File path path: #{newpath}"
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+      end
+    else
+      filepath = URI::parse(camera.thumbnail_url).path
+      filepath = filepath.gsub(camera.exid, '')
+      timestamp = filepath.gsub(/[^\d]/, '').to_i
+
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+    end
+    # Save last snapshots
+
+    snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
+    # Copy last snapshot back to snapshots folder
+    if timestamp.present?
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
+      snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
+      if camera.thumbnail_url.blank?
+        file = snapshot_bucket.objects[filepath]
+        camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+        camera.save
+      end
+    end
+  end
+end
