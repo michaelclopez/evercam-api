@@ -89,9 +89,8 @@ module Evercam
 
             present(Array(data), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
           else
-            snapshot = Snapshot.where(:camera_id => camera.id).order(:created_at).last
+            snapshot = Snapshot.where(snapshot_id: "#{camera.id.to_i - 1}_".."#{camera.id.to_i + 1}_").order(:snapshot_id).last
             if snapshot
-
               rights = requester_rights_for(camera)
               raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
               present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
