@@ -8,7 +8,10 @@ module Evercam
   class APIv1 < Grape::API
     unless Evercam::Config.env == :test
       logger.formatter = GrapeLogging::Formatters::Default.new
-      use GrapeLogging::Middleware::RequestLogger, logger: logger, obfuscated_params: ['password', 'api_key']
+      use GrapeLogging::Middleware::RequestLogger,
+          logger: logger,
+          obfuscated_params: ["password", "api_key"],
+          ignored_methods: ["GET"]
     end
     content_type :json, "application/json"
 
