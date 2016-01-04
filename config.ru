@@ -77,6 +77,7 @@ map '/v1' do
   # Force timeout before Heroku's dyno dies
   use Rack::Timeout
   Rack::Timeout.timeout = 25
+  Rack::Timeout::Logger.disable
 
   run Evercam::APIv1
 end
