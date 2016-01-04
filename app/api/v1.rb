@@ -11,7 +11,7 @@ module Evercam
       use GrapeLogging::Middleware::RequestLogger,
           logger: logger,
           obfuscated_params: ["password", "api_key"],
-          ignored_methods: ["GET"]
+          ignored_methods: ["GET", "OPTIONS"]
     end
     content_type :json, "application/json"
 
