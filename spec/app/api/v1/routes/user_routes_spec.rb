@@ -129,7 +129,7 @@ describe 'API routes/users' do
         post('/users', params.merge(country: 'xx'))
         expect(last_response.status).to eq(400)
         data = last_response.json
-        expect(data["message"]).to eq("The country code 'xx' is not valid.")
+        expect(data["message"]).to eq("Invalid parameters specified to request.")
       end
     end
 

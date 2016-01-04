@@ -43,7 +43,13 @@ module Evercam
         end
         params[:username].downcase!
         params[:email].downcase!
-        parameters = {}.merge(params).merge(request_ip: request.ip, user_agent: request.user_agent)
+        requester_ip = "0.0.0.0"
+        user_agent = "chrome"
+        if request
+          requester_ip = request.ip
+          user_agent = request.user_agent
+        end
+        parameters = {}.merge(params).merge(request_ip: requester_ip, user_agent: user_agent)
         outcome = Actors::UserSignup.run(parameters)
         if !outcome.success?
           raise_error(400, "invalid_parameters",
