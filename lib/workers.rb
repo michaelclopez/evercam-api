@@ -12,6 +12,8 @@ Sidekiq.configure_client do |c|
   c.redis = Evercam::Config[:redis]
 end
 
+Sidekiq::Logging.logger.level = Logger::WARN
+
 require_relative "workers/intercom_events_worker"
 require_relative "workers/cache_invalidation_worker"
 require_relative "workers/email_worker"
