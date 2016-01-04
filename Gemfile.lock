@@ -26,7 +26,7 @@ GIT
 
 GIT
   remote: git://github.com/mosic/grape_logging.git
-  revision: 38be90984b5ad713ead9156a2392e20908a5f79a
+  revision: e2b60604e1d1a2093e28e7c4b01377e9b188d0ba
   specs:
     grape_logging (1.1.2)
       grape
