@@ -258,9 +258,14 @@ module Evercam
             faraday.options.open_timeout = 10
           end
 
-          response = conn.post
-          status response.status
-          JSON.parse response.body
+          begin
+            response = conn.post
+            status response.status
+            JSON.parse response.body
+          rescue Faraday::TimeoutError
+            status 504
+            {message: "Connecting to Evercam Media timed out."}
+          end
         end
 
         #-------------------------------------------------------------------
