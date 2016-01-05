@@ -127,9 +127,9 @@ describe 'API routes/users' do
     context 'when the country code does not exist' do
       it 'returns a 400 BAD Request status' do
         post('/users', params.merge(country: 'xx'))
-        expect(last_response.status).to eq(400)
+        expect(last_response.status).to eq(404)
         data = last_response.json
-        expect(data["message"]).to eq("Invalid parameters specified to request.")
+        expect(data["message"]).to eq("The country code 'xx' is not valid.")
       end
     end
 
@@ -137,7 +137,7 @@ describe 'API routes/users' do
       it 'returns a 400 BAD Request status' do
         params[:country].upcase!
         post('/users', params)
-        expect(last_response.status).to eq(400)
+        expect(last_response.status).to eq(201)
       end
     end
   end

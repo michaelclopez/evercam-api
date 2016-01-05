@@ -10,7 +10,9 @@ module Evercam
           username: "user#{Time.now.to_i}",
           email: 'garrett@evercam.io',
           password: 'password',
-          country: create(:country).iso3166_a2
+          country: create(:country).iso3166_a2,
+          request_ip: '0.0.0.0',
+          user_agent: 'chrome'
         }
       end
 
@@ -51,6 +53,11 @@ module Evercam
 
       describe 'account creation' do
         it 'creates a user with provided String password' do
+          user = create(:user)
+          double = User.expects(:new).at_least_once
+
+          double.returns(user)
+
           UserSignup.run(valid)
         end
 
