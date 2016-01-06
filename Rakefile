@@ -1795,6 +1795,7 @@ task :restore_data, [:ids] do |_t, args|
         if timestamp < end_index
           puts "Timestamp: #{timestamp}, Date: #{Time.at(timestamp).utc}"
           begin
+            Snapshot.unrestrict_primary_key
             Snapshot.create(
                 snapshot_id: "#{camera.id}_#{Time.at(timestamp).utc.strftime("%Y%m%d%H%M%S%L")}",
                 camera_id: camera.id,
