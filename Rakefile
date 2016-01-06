@@ -1782,25 +1782,44 @@ task :restore_data, [:ids] do |_t, args|
       start_index = start_index.gsub(camera.exid, '')
       start_index = start_index.gsub(/[^\d]/, '').to_i
       end_index = Time.new(2015, 12, 31, 8, 59, 59).utc.to_i
-      start_index = start_index.to_s[0..5].to_i
-      end_index = end_index.to_s[0..5].to_i
-      puts "#{start_index}--#{end_index}"
-      (start_index..end_index).each do |d|
-        files = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{d}").collect(&:key)
-        # puts files.count
-        # files.each do{ |x| puts x }
-        files.each do |file|
-          timestamp = file.gsub(camera.exid, '')
-          timestamp = timestamp.gsub(/[^\d]/, '').to_i
+      # start_index = start_index.to_s[0..5].to_i
+      # end_index = end_index.to_s[0..5].to_i
+      # puts "#{start_index}--#{end_index}"
+      tree = snapshot_bucket.as_tree(:prefix => "#{camera.exid}/snapshots/")
+      files = tree.children.select(&:leaf?).collect(&:key)
+      puts files.count
+      files.each do |file|
+        puts file
+        timestamp = file.gsub(camera.exid, '')
+        timestamp = timestamp.gsub(/[^\d]/, '').to_i
+        if timestamp < end_index
           puts "Timestamp: #{timestamp}, Date: #{Time.at(timestamp).utc}"
-          Snapshot.create(
-              snapshot_id: "#{camera.id}_#{Time.at(timestamp).utc.strftime("%Y%m%d%H%M%S%L")}",
-              camera_id: camera.id,
-              created_at: Time.at(timestamp).utc,
-              notes: "Evercam Proxy"
-          )
+          begin
+            Snapshot.create(
+                snapshot_id: "#{camera.id}_#{Time.at(timestamp).utc.strftime("%Y%m%d%H%M%S%L")}",
+                camera_id: camera.id,
+                created_at: Time.at(timestamp).utc,
+                notes: "Evercam Proxy"
+            )
+          rescue => error
+            puts "Error: #{error.message}"
+          end
         end
       end
+      # (start_index..end_index).each do |d|
+      #   files = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{d}").collect(&:key)
+      #   files.each do |file|
+      #     timestamp = file.gsub(camera.exid, '')
+      #     timestamp = timestamp.gsub(/[^\d]/, '').to_i
+      #     puts "Timestamp: #{timestamp}, Date: #{Time.at(timestamp).utc}"
+      #     Snapshot.create(
+      #       snapshot_id: "#{camera.id}_#{Time.at(timestamp).utc.strftime("%Y%m%d%H%M%S%L")}",
+      #       camera_id: camera.id,
+      #       created_at: Time.at(timestamp).utc,
+      #       notes: "Evercam Proxy"
+      #     )
+      #   end
+      # end
     end
   end
 end
