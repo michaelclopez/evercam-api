@@ -1545,84 +1545,68 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
     end
 
     puts "From: #{from_date}---To: #{to_date}"
-    latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
-    if latest_snap.present?
-      camera_to_date = latest_snap.created_at
-      cr_year = camera_to_date.strftime("%Y").to_i
-      cr_month = camera_to_date.strftime("%m").to_i
-      cr_day = camera_to_date.strftime("%d").to_i
-      puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
 
-      # Save last snapshot
-      if camera.thumbnail_url.blank?
-        timestamp = latest_snap.created_at.to_i
+    # Save last snapshot
+    if camera.thumbnail_url.blank?
+      first_snap = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").first
+      if first_snap
+        snap_key = first_snap.key
+        snap_key = snap_key.gsub(camera.exid, '')
+        timestamp = snap_key.gsub(/[^\d]/, '').to_i
+
         filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
         newpath = "#{camera.exid}/#{timestamp}.jpg"
         puts "File path path: #{newpath}"
         snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
-      else
-        filepath = URI::parse(camera.thumbnail_url).path
-        filepath = filepath.gsub(camera.exid, '')
-        timestamp = filepath.gsub(/[^\d]/, '').to_i
-
-        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
-      end
-      # Save last snapshot
-
-      start_date = Date.new(2014, 1, 1)
-      end_date = Date.new(cr_year, cr_month, cr_day)
-      (start_date..end_date).each do |d|
-        year = d.strftime("%Y")
-        month = d.strftime("%m")
-        day = d.strftime("%d")
-        from = Time.new(year, month, day, 0, 0, 0).utc
-        to = Time.new(year, month, day, 23, 59, 59).utc
-        if year.eql?(cr_year) && month.eql?(cr_month)
-          to = camera_to_date.utc
-        end
-
-        puts "From: #{from}"
-        puts "To: #{to}"
-        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-        puts "Camera(#{camera.exid}) Total Snapshots: #{snapshots.count}"
-        puts "Delete from buckets"
-        snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
-        puts "Delete snapshots"
-        snapshots.delete
-      end
-
-      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
-      # Copy last snapshot back to snapshots folder
-      if timestamp.present?
-        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
-        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
-        if camera.thumbnail_url.blank?
-          file = snapshot_bucket.objects[filepath]
-          camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
-          camera.save
-        end
       end
     else
-      puts "Start else portion"
-      if camera.thumbnail_url.present?
-        filepath = URI::parse(camera.thumbnail_url).path
-        filepath = filepath.gsub(camera.exid, '')
-        timestamp = filepath.gsub(/[^\d]/, '').to_i
+      filepath = URI::parse(camera.thumbnail_url).path
+      filepath = filepath.gsub(camera.exid, '')
+      timestamp = filepath.gsub(/[^\d]/, '').to_i
 
-        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+    end
+    # Save last snapshot
+    camera_to_date = Time.utc
+    cr_year = camera_to_date.strftime("%Y").to_i
+    cr_month = camera_to_date.strftime("%m").to_i
+    cr_day = camera_to_date.strftime("%d").to_i
+
+    start_date = Date.new(2014, 1, 1)
+    end_date = Date.new(cr_year, cr_month, cr_day)
+    (start_date..end_date).each do |d|
+      year = d.strftime("%Y")
+      month = d.strftime("%m")
+      day = d.strftime("%d")
+      from = Time.new(year, month, day, 0, 0, 0).utc
+      to = Time.new(year, month, day, 23, 59, 59).utc
+      if year.eql?(cr_year) && month.eql?(cr_month)
+        to = camera_to_date.utc
       end
-      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
-      if timestamp.present?
-        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
-        newpath = "#{camera.exid}/#{timestamp}.jpg"
-        snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
-        snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
+
+      puts "From: #{from}"
+      puts "To: #{to}"
+      snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+      puts "Camera(#{camera.exid}) Total Snapshots: #{snapshots.count}"
+      puts "Delete from buckets"
+      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
+      puts "Delete snapshots"
+      snapshots.delete
+    end
+
+    snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
+    # Copy last snapshot back to snapshots folder
+    if timestamp.present?
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
+      snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
+      if camera.thumbnail_url.blank?
+        file = snapshot_bucket.objects[filepath]
+        camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+        camera.save
       end
     end
     Evercam::Services.dalli_cache.flush_all
@@ -1663,41 +1647,43 @@ task :delete_given_cameras_history_according_duration_day, [:ids, :days] do |_t,
     end
 
     puts "From: #{from_date}---To: #{to_date}"
-    latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
-    if latest_snap.present?
-      camera_to_date = latest_snap.created_at - (storage_duration + 1).days
-      cr_year = camera_to_date.strftime("%Y").to_i
-      cr_month = camera_to_date.strftime("%m").to_i
-      cr_day = camera_to_date.strftime("%d").to_i
-      puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
+    unless storage_duration.eql?(-1)
+      latest_snap = Snapshot.where(:snapshot_id => "#{camera.id}_#{from_date.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to_date.strftime("%Y%m%d%H%M%S%L")}").order(:created_at).last
+      if latest_snap.present?
+        camera_to_date = latest_snap.created_at - storage_duration.days
+        cr_year = camera_to_date.strftime("%Y").to_i
+        cr_month = camera_to_date.strftime("%m").to_i
+        cr_day = camera_to_date.strftime("%d").to_i
+        puts "Camera Recording to-date: #{camera_to_date} and CR Year:#{cr_year}, CR Month:#{cr_month}"
 
-      start_date = Date.new(2014, 1, 1)
-      end_date = Date.new(cr_year, cr_month, cr_day)
-      (start_date..end_date).each do |d|
-        year = d.strftime("%Y")
-        month = d.strftime("%m")
-        day = d.strftime("%d")
-        from = Time.new(year, month, day, 0, 0, 0).utc
-        to = Time.new(year, month, day, 23, 59, 59).utc
+        start_date = Date.new(2014, 1, 1)
+        end_date = Date.new(cr_year, cr_month, cr_day)
+        (start_date..end_date).each do |d|
+          year = d.strftime("%Y")
+          month = d.strftime("%m")
+          day = d.strftime("%d")
+          from = Time.new(year, month, day, 0, 0, 0).utc
+          to = Time.new(year, month, day, 23, 59, 59).utc
 
-        puts "From: #{from}"
-        puts "To: #{to}"
-        snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
-        total_snaps = snapshots.count
-        puts "Camera(#{camera.exid}) Total Snapshots: #{total_snaps}"
-        bucket_path = "#{camera.exid}/snapshots/"
-        if total_snaps > 0
-          puts "Start deletion from bucket"
-          snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
-          puts "Start deletion from table"
-          snapshots.delete
-        else
-          puts "No database records but have files in bucket"
-          snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
+          puts "From: #{from}"
+          puts "To: #{to}"
+          snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
+          total_snaps = snapshots.count
+          puts "Camera(#{camera.exid}) Total Snapshots: #{total_snaps}"
+          bucket_path = "#{camera.exid}/snapshots/"
+          if total_snaps > 0
+            puts "Start deletion from bucket"
+            snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
+            puts "Start deletion from table"
+            snapshots.delete
+          else
+            puts "No database records but have files in bucket"
+            snapshot_bucket.objects.with_prefix("#{bucket_path}#{from.to_i.to_s[0...4]}").delete_if {|o| o.key[bucket_path.length..o.key.length].delete(".jpg").to_i >= from.to_i && o.key[bucket_path.length..o.key.length].delete(".jpg").to_i <= to.to_i }
+          end
         end
       end
+      Evercam::Services.dalli_cache.flush_all
     end
-    Evercam::Services.dalli_cache.flush_all
   end
 end
 
