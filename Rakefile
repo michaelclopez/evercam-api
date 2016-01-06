@@ -1569,7 +1569,7 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
       snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
     end
     # Save last snapshot
-    camera_to_date = Time.utc
+    camera_to_date = Time.now.utc
     cr_year = camera_to_date.strftime("%Y").to_i
     cr_month = camera_to_date.strftime("%m").to_i
     cr_day = camera_to_date.strftime("%d").to_i
