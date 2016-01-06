@@ -1532,20 +1532,6 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
     puts "Start deletion on camera #{camera.name}(#{camera.exid})"
     cloud_recording = CloudRecording.where(camera_id: camera.id).first
 
-    to_date = Time.now.utc
-    from_date = to_date - 25.days
-    unless camera.is_online.nil? || camera.is_online
-      if camera.last_online_at.nil?
-        from_date = camera.created_at
-        to_date = camera.last_polled_at
-      else
-        from_date = camera.last_online_at - 25.days
-        to_date = camera.last_online_at
-      end
-    end
-
-    puts "From: #{from_date}---To: #{to_date}"
-
     # Save last snapshot
     if camera.thumbnail_url.blank?
       first_snap = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").first
@@ -1591,7 +1577,11 @@ task :delete_cameras_all_history_day, [:ids] do |_t, args|
       snapshots = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}"..."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").select
       puts "Camera(#{camera.exid}) Total Snapshots: #{snapshots.count}"
       puts "Delete from buckets"
-      snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
+      begin
+        snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
+      rescue
+
+      end
       puts "Delete snapshots"
       snapshots.delete
     end
