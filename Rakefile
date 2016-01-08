@@ -1735,6 +1735,91 @@ task :clean_bucket, [:ids] do |_t, args|
   end
 end
 
+task :clean_bucket_day, [:ids] do |_t, args|
+  require 'aws'
+  require 'dalli'
+  require_relative 'lib/services'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  Snapshot.db = Sequel.connect("#{ENV['SNAPSHOT_DATABASE_URL']}", max_connections: 25)
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+
+  ids = args[:ids].split(" ").inject([]) { |list, entry| list << entry.strip }
+  Camera.where(exid: ids).order(:exid).each do |camera|
+    puts "Start deletion on camera #{camera.name}(#{camera.exid})"
+    cloud_recording = CloudRecording.where(camera_id: camera.id).first
+
+    # Save last snapshot
+    if camera.thumbnail_url.blank?
+      first_snap = snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").first
+      if first_snap
+        snap_key = first_snap.key
+        snap_key = snap_key.gsub(camera.exid, '')
+        timestamp = snap_key.gsub(/[^\d]/, '').to_i
+
+        filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+        newpath = "#{camera.exid}/#{timestamp}.jpg"
+        puts "File path path: #{newpath}"
+        snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+      end
+    else
+      filepath = URI::parse(camera.thumbnail_url).path
+      filepath = filepath.gsub(camera.exid, '')
+      timestamp = filepath.gsub(/[^\d]/, '').to_i
+
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(newpath, snapshot_bucket.objects[filepath].read) if snapshot_bucket.objects[filepath].exists?
+    end
+    # Save last snapshot
+    camera_to_date = Time.now.utc
+    cr_year = camera_to_date.strftime("%Y").to_i
+    cr_month = camera_to_date.strftime("%m").to_i
+    cr_day = camera_to_date.strftime("%d").to_i
+
+    start_date = Date.new(2014, 1, 1)
+    end_date = Date.new(cr_year, cr_month, cr_day)
+    (start_date..end_date).each do |d|
+      year = d.strftime("%Y")
+      month = d.strftime("%m")
+      day = d.strftime("%d")
+      from = Time.new(year, month, day, 0, 0, 0).utc
+      to = Time.new(year, month, day, 23, 59, 59).utc
+      if year.eql?(cr_year) && month.eql?(cr_month)
+        to = camera_to_date.utc
+      end
+      puts "From: #{from}"
+      puts "To: #{to}"
+      puts "Delete from buckets"
+      begin
+        snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/#{from.to_i.to_s[0...4]}").delete_all
+      rescue
+
+      end
+    end
+
+    snapshot_bucket.objects.with_prefix("#{camera.exid}/snapshots/").delete_all
+    # Copy last snapshot back to snapshots folder
+    if timestamp.present?
+      filepath = "#{camera.exid}/snapshots/#{timestamp}.jpg"
+      newpath = "#{camera.exid}/#{timestamp}.jpg"
+      snapshot_bucket.objects.create(filepath, snapshot_bucket.objects[newpath].read) if snapshot_bucket.objects[newpath].exists?
+      snapshot_bucket.objects[newpath].delete if snapshot_bucket.objects[newpath].exists?
+      if camera.thumbnail_url.blank?
+        file = snapshot_bucket.objects[filepath]
+        camera.thumbnail_url = file.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+        camera.save
+      end
+    end
+    Evercam::Services.dalli_cache.flush_all
+  end
+end
+
 task :restore_data, [:ids] do |_t, args|
   require 'aws'
   require 'dalli'
