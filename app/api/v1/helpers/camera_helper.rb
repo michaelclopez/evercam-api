@@ -68,7 +68,7 @@ module Evercam
     end
 
     def auto_generate_camera_id(camera_name)
-      camera_name = camera_name.downcase.gsub(' ','')
+      camera_name = camera_name.delete("^a-zA-Z0-9").downcase
       chars = [('a'..'z'), (0..9)].flat_map { |i| i.to_a }
       random_string = (0...3).map { chars[rand(chars.length)] }.join
       "#{camera_name[0..5]}-#{random_string}"
