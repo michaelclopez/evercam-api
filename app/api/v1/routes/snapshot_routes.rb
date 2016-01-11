@@ -261,6 +261,9 @@ module Evercam
             response = conn.post
             status response.status
             JSON.parse response.body
+          rescue JSON::ParserError
+            status 500
+            {message: "Error parsing response from Evercam Media."}
           rescue Faraday::TimeoutError
             status 504
             {message: "Connecting to Evercam Media timed out."}
