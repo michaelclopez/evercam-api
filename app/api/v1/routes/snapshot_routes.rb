@@ -195,7 +195,7 @@ module Evercam
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
           if Evercam::Utils.is_num?(params["timestamp"])
-            timestamp = Time.at(params[:timestamp].to_i)
+            timestamp = Time.at(params[:timestamp].to_i).utc
           else
             timestamp = ActiveSupport::TimeZone.new('UTC').parse(params[:timestamp])
           end
