@@ -557,7 +557,7 @@ module Evercam
         desc 'Returns jpg from the camera'
         get 'recordings/snapshots/latest/jpg' do
           params[:id].downcase!
-          camera = ::Camera.by_exid!(params[:id])
+          camera = get_cam(params[:id])
 
           rights = requester_rights_for(camera)
           raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)

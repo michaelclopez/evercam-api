@@ -233,8 +233,7 @@ module Evercam
       end
       patch '/:id' do
         params[:id].downcase!
-        camera = Evercam::Services.dalli_cache.get(params[:id])
-        camera = ::Camera.by_exid!(params[:id]) if camera.nil?
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
