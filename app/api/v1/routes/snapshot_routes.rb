@@ -566,7 +566,14 @@ module Evercam
           raise NotFoundError.new if snapshot.nil?
 
           filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
-          Evercam::Services.snapshot_bucket.objects[filepath].read
+
+          snapshot_file = Evercam::Services.snapshot_bucket.objects[filepath]
+          if snapshot_file.exists?
+            snapshot_file.read
+          else
+            @body = nil
+            status 204
+          end
         end
       end
     end
