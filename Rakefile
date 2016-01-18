@@ -749,14 +749,14 @@ task :export_thumbnails_to_s3 do
     Camera.each do |camera|
       filepath = "#{camera.exid}/snapshots/latest.jpg"
 
-      unless camera.preview.blank?
-        Evercam::Services.snapshot_bucket.objects.create(filepath, camera.preview)
-        image = Evercam::Services.snapshot_bucket.objects[filepath]
-        camera.thumbnail_url = image.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
-        camera.save
-
-        puts "S3 export: Thumbnail for camera #{camera.exid} exported to S3"
-      end
+     # unless camera.preview.blank?
+     #   Evercam::Services.snapshot_bucket.objects.create(filepath, camera.preview)
+     #   image = Evercam::Services.snapshot_bucket.objects[filepath]
+     #   camera.thumbnail_url = image.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
+     #   camera.save
+     #
+     #   puts "S3 export: Thumbnail for camera #{camera.exid} exported to S3"
+     # end
     end
 
   rescue Exception => e
@@ -904,7 +904,6 @@ task :update_thumbnail_url do
   Camera.where(is_online: false).each do |camera|
     begin
       puts camera.exid
-      camera.preview = nil
       camera.thumbnail_url = nil
       camera.save
 

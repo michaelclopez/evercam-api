@@ -6,10 +6,6 @@ describe 'API routes/cameras' do
   let(:app) { Evercam::APIv1 }
 
   describe 'GET /public/cameras' do
-    let!(:public_camera_1) {
-      create(:camera, exid: 'exid_A_1', preview: 'aaa')
-    }
-
     let!(:public_camera_2) {
       create(:camera, exid: 'exid_A_2', discoverable: false)
     }
@@ -206,10 +202,6 @@ describe 'API routes/cameras' do
   end
 
   describe 'GET /public/cameras/nearest' do
-    let!(:public_camera_1) {
-      create(:camera, exid: 'exid_A_1', preview: 'aaa')
-    }
-
     let!(:public_camera_2) {
       create(:camera, exid: 'exid_A_2', discoverable: false)
     }
