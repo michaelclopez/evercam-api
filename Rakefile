@@ -619,58 +619,33 @@ task :fix_model, [:m, :jpg_url, :h264_url, :mjpg_url, :default_username, :defaul
 end
 
 task :fix_models_data do
-  VendorModel.all.each do |model|
-    updated = false
-    ## Upcase all model names except Default
-    if model.name.downcase != "default"
-      if model.name != model.name.upcase
-        model.name = model.name.upcase
-        updated = true
-      end
-    end
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
 
-    ## Remove None from model Urls
-    if !model.jpg_url.blank? && (model.jpg_url.downcase == "none" || model.jpg_url.downcase == "jpg" || model.jpg_url.length < 4)
-      model.jpg_url = ""
+  VendorModel.all.each do |model|
+    if model.jpg_url.nil? || model.jpg_url.blank?
       if model.values[:config].has_key?('snapshots')
         if model.values[:config]['snapshots'].has_key?('jpg')
-          model.values[:config]['snapshots']['jpg'] = ""
-          updated = true
-        else
-          model.values[:config]['snapshots'].merge!({:jpg => ""})
-          updated = true
+          model.jpg_url = model.values[:config]['snapshots']['jpg'] unless model.values[:config]['snapshots']['jpg'].blank?
         end
       end
     end
-    if !model.h264_url.blank? && (model.h264_url.downcase == "none" || model.h264_url.downcase == "h264" || model.h264_url.length < 4)
-      model.h264_url = ""
+    if model.h264_url.nil? || model.h264_url.blank?
       if model.values[:config].has_key?('snapshots')
         if model.values[:config]['snapshots'].has_key?('h264')
-          model.values[:config]['snapshots']['h264'] = ""
-          updated = true
-        else
-          model.values[:config]['snapshots'].merge!({:h264 => ""})
-          updated = true
+          model.h264_url = {model.values[:config]['snapshots']['h264'] unless model.values[:config]['snapshots']['h264'].blank?
         end
       end
     end
-    if !model.mjpg_url.blank? && (model.mjpg_url.downcase == "none" || model.mjpg_url.downcase == "mjpg" || model.mjpg_url.length < 4)
-      model.mjpg_url = ""
+    if model.mjpg_url.nil? ||  model.mjpg_url.blank?
       if model.values[:config].has_key?('snapshots')
         if model.values[:config]['snapshots'].has_key?('mjpg')
-          model.values[:config]['snapshots']['mjpg'] = ""
-          updated = true
-        else
-          model.values[:config]['snapshots'].merge!({:mjpg => ""})
-          updated = true
+          model.mjpg_url = model.values[:config]['snapshots']['mjpg'] unless model.values[:config]['snapshots']['mjpg'].blank?
         end
       end
     end
 
-    if updated
-      puts " - " + model.name + ", " + model.exid
-      model.save
-    end
+    model.save
   end
 end
 
