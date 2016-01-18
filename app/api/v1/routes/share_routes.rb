@@ -24,7 +24,7 @@ module Evercam
       get '/:id/shares' do
         params[:id].downcase!
         params[:user_id].downcase! if params[:user_id]
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         shares = []
 
@@ -65,7 +65,7 @@ module Evercam
       post '/:id/shares' do
         params[:id].downcase!
         params[:email].downcase!
-        camera = ::Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         if !rights.is_owner? && !rights.allow?(AccessRight::EDIT) &&
           # Quick hack to allow following public cameras
@@ -128,7 +128,7 @@ module Evercam
       delete '/:id/shares' do
         params[:id].downcase!
         params[:email].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         user = User.by_login(params[:email])
         raise NotFoundError.new if user.nil?
         share = CameraShare.where(camera_id: camera.id, user_id: user.id).first
@@ -167,7 +167,7 @@ module Evercam
       patch '/:id/shares' do
         params[:id].downcase!
         params[:email].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         user = User.by_login(params[:email])
         raise NotFoundError.new if user.nil?
         share = CameraShare.where(camera_id: camera.id, user_id: user.id).first
@@ -203,7 +203,7 @@ module Evercam
       end
       get '/:id/shares/requests' do
         params[:id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         list = []
         if rights.allow?(AccessRight::VIEW)
@@ -236,7 +236,7 @@ module Evercam
       delete '/:id/shares/requests' do
         params[:id].downcase!
         params[:email].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::EDIT)
 
@@ -263,7 +263,7 @@ module Evercam
       patch '/:id/shares/requests' do
         params[:id].downcase!
         params[:email].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
 
         share_request = CameraShareRequest.where(status: CameraShareRequest::PENDING,
           email: params[:email],

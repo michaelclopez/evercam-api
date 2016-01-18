@@ -20,7 +20,7 @@ module Evercam
       end
       get '/:id/archives' do
         params[:id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
           raise AuthorizationError.new if camera.is_public?
@@ -45,7 +45,7 @@ module Evercam
       get '/:id/archives/:archive_id' do
         params[:id].downcase!
         params[:archive_id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
           raise AuthorizationError.new if camera.is_public?
@@ -75,7 +75,7 @@ module Evercam
       end
       post '/:id/archives' do
         params[:id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
           raise AuthorizationError.new if camera.is_public?
@@ -107,7 +107,7 @@ module Evercam
       patch '/:id/archives/:archive_id' do
         params[:id].downcase!
         params[:archive_id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
           raise AuthorizationError.new if camera.is_public?
@@ -134,7 +134,7 @@ module Evercam
       delete '/:id/archives/:archive_id' do
         params[:id].downcase!
         params[:archive_id].downcase!
-        camera = Camera.by_exid!(params[:id])
+        camera = get_cam(params[:id])
         raise NotFoundError.new unless camera
         rights = requester_rights_for(camera)
         raise AuthorizationError.new if !rights.allow?(AccessRight::DELETE)
