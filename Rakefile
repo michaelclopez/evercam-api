@@ -633,7 +633,7 @@ task :fix_models_data do
     if model.h264_url.nil? || model.h264_url.blank?
       if model.values[:config].has_key?('snapshots')
         if model.values[:config]['snapshots'].has_key?('h264')
-          model.h264_url = {model.values[:config]['snapshots']['h264'] unless model.values[:config]['snapshots']['h264'].blank?
+          model.h264_url = model.values[:config]['snapshots']['h264'] unless model.values[:config]['snapshots']['h264'].blank?
         end
       end
     end
