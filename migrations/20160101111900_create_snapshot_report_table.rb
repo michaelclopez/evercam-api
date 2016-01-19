@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    create_table(:snapshot_report) do
+    create_table(:snapshot_reports) do
       primary_key :id
       foreign_key :camera_id, :cameras, null: false
       column :created_at, :timestamptz, null: false
@@ -9,6 +9,6 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:snapshot_report)
+    drop_table(:snapshot_reports)
   end
 end
