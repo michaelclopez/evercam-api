@@ -6,8 +6,8 @@ Sequel.migration do
   end
 
   down do
-  	alter_table(:snapshot_reports) do
-  		drop_column :snapshot_count
-  	end
+    alter_table(:snapshot_reports) do
+      drop_column :snapshot_count
+    end
   end
 end
