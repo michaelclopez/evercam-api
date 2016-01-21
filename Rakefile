@@ -712,24 +712,6 @@ task :export_snapshots_to_s3 do
   end
 end
 
-task :export_thumbnails_to_s3 do
-  Sequel.connect(Evercam::Config[:database])
-
-  require 'active_support'
-  require 'active_support/core_ext'
-  require 'evercam_models'
-  require 'aws-sdk'
-
-  begin
-    Camera.each do |camera|
-      filepath = "#{camera.exid}/snapshots/latest.jpg"
-    end
-
-  rescue Exception => e
-    log.warn(e)
-  end
-end
-
 task :send_camera_data_to_elixir_server, [:total, :paid_only] do |t, args|
   Sequel.connect(Evercam::Config[:database])
 
