@@ -7,7 +7,7 @@ describe 'API routes/cameras' do
 
   describe 'GET /public/cameras' do
     let!(:public_camera_1) {
-      create(:camera, exid: 'exid_A_1', preview: 'aaa')
+      create(:camera, exid: 'exid_A_1', thumbnail_url: 'aaa')
     }
 
     let!(:public_camera_2) {
@@ -207,7 +207,7 @@ describe 'API routes/cameras' do
 
   describe 'GET /public/cameras/nearest' do
     let!(:public_camera_1) {
-      create(:camera, exid: 'exid_A_1', preview: 'aaa')
+      create(:camera, exid: 'exid_A_1', thumbnail_url: 'aaa')
     }
 
     let!(:public_camera_2) {

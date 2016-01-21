@@ -120,7 +120,7 @@ module Evercam
                 :owner_id, :is_public, :config,
                 :name, :last_polled_at, :is_online,
                 :timezone, :last_online_at, :location,
-                :mac_address, :model_id, :discoverable, :preview, :thumbnail_url
+                :mac_address, :model_id, :discoverable, :thumbnail_url
               )
             end
 
