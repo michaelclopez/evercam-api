@@ -15,12 +15,7 @@ module Evercam
     end
 
     def get_cam(exid)
-      camera = Evercam::Services::dalli_cache.get(exid)
-      if camera.nil?
-        camera = Camera.by_exid!(exid)
-        Evercam::Services::dalli_cache.set(exid, camera)
-      end
-      camera
+      Camera.by_exid!(exid)
     end
 
 
