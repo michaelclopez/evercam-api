@@ -712,33 +712,6 @@ task :export_snapshots_to_s3 do
   end
 end
 
-task :export_thumbnails_to_s3 do
-  Sequel.connect(Evercam::Config[:database])
-
-  require 'active_support'
-  require 'active_support/core_ext'
-  require 'evercam_models'
-  require 'aws-sdk'
-
-  begin
-    Camera.each do |camera|
-      filepath = "#{camera.exid}/snapshots/latest.jpg"
-
-      unless camera.preview.blank?
-        Evercam::Services.snapshot_bucket.objects.create(filepath, camera.preview)
-        image = Evercam::Services.snapshot_bucket.objects[filepath]
-        camera.thumbnail_url = image.url_for(:get, {expires: 10.years.from_now, secure: true}).to_s
-        camera.save
-
-        puts "S3 export: Thumbnail for camera #{camera.exid} exported to S3"
-      end
-    end
-
-  rescue Exception => e
-    log.warn(e)
-  end
-end
-
 task :send_camera_data_to_elixir_server, [:total, :paid_only] do |t, args|
   Sequel.connect(Evercam::Config[:database])
 
@@ -879,7 +852,6 @@ task :update_thumbnail_url do
   Camera.where(is_online: false).each do |camera|
     begin
       puts camera.exid
-      camera.preview = nil
       camera.thumbnail_url = nil
       camera.save
 
