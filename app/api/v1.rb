@@ -75,7 +75,7 @@ module Evercam
     # end
 
     # Uncomment this to see sql the debug log
-    Sequel::Model.db.sql_log_level = :debug
-    Sequel::Model.db.logger = Logger.new($stdout)
+    # Sequel::Model.db.sql_log_level = :debug
+    # Sequel::Model.db.logger = Logger.new($stdout)
   end
 end
