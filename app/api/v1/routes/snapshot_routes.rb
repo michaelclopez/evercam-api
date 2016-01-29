@@ -220,36 +220,14 @@ module Evercam
         end
         post 'recordings/snapshots' do
           params[:id].downcase!
-          camera = get_cam(params[:id])
 
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
-
-          # TODO: extract token creation to a method
-          require 'openssl'
-          require 'base64'
-          cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
-          cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
-          cam_auth = "#{cam_username}:#{cam_password}"
-
+          id = params.fetch('id', '')
           api_id = params.fetch('api_id', '')
           api_key = params.fetch('api_key', '')
-          credentials = "#{api_id}:#{api_key}"
+          notes = params.fetch('notes', '')
+          with_data = params.fetch('with_data', '')
 
-          cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-          cipher.encrypt
-          cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-          cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-          cipher.padding = 0
-
-          message = camera.external_url
-          message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
-          message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-          message << ' ' until message.length % 16 == 0
-          token = cipher.update(message)
-          token << cipher.final
-
-          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/recordings/snapshots?notes=#{params[:notes]}&with_data=#{params[:with_data]}&token=#{Base64.urlsafe_encode64(token)}"
+          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/recordings/snapshots?api_id=#{api_id}&api_key=#{api_key}&notes=#{notes}&with_data=#{with_data}"
 
           conn = Faraday.new(url: url) do |faraday|
             faraday.adapter Faraday.default_adapter
