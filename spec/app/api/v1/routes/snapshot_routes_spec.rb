@@ -256,7 +256,7 @@ describe 'API routes/snapshots' do
       end
     end
 
-    let(:instant) { Time.now }
+    let(:instant) { Time.now.utc }
     let(:snap1) { create(:snapshot, camera_id: camera0.id, created_at: instant, snapshot_id: "#{camera0.id}_#{instant.strftime("%Y%m%d%H%M%S%L")}") }
     let(:snap2) { create(:snapshot, camera_id: camera0.id, created_at: instant - 1000, snapshot_id: "#{camera0.id}_#{(instant - 1000).strftime("%Y%m%d%H%M%S%L")}") }
     let(:snap3) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1000, snapshot_id: "#{camera0.id}_#{(instant + 1000).strftime("%Y%m%d%H%M%S%L")}") }
@@ -399,7 +399,7 @@ describe 'API routes/snapshots' do
 
   describe "GET /cameras/:id/recordings/snapshots/:timestamp" do
     context 'when snapshot request is correct' do
-      let(:instant) { Time.now }
+      let(:instant) { Time.now.utc }
       let(:s0) { create(:snapshot, camera_id: camera0.id, created_at: instant, snapshot_id: "#{camera0.id}_#{instant.strftime("%Y%m%d%H%M%S%L")}") }
       let(:s1) { create(:snapshot, camera_id: camera0.id, created_at: instant + 1, snapshot_id: "#{camera0.id}_#{(instant + 1).strftime("%Y%m%d%H%M%S%L")}") }
       let(:s2) { create(:snapshot, camera_id: camera0.id, created_at: instant + 2, snapshot_id: "#{camera0.id}_#{(instant + 2).strftime("%Y%m%d%H%M%S%L")}") }
