@@ -8,14 +8,7 @@ module Evercam
 
     sidekiq_options queue: :status
 
-    def perform(camera_id)
-      camera = Camera.by_exid!(camera_id)
-      cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
-      cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
-      cam_auth = "#{cam_username}:#{cam_password}"
-
-      credentials = ":"
-
+    def perform(camera_exid)
       cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
       cipher.encrypt
       cipher.key = "#{Evercam::Config[:snapshots][:key]}"
@@ -23,12 +16,12 @@ module Evercam
       cipher.padding = 0
 
       message = ""
-      message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
+      message << "#{camera_exid}|#{Time.now.utc.iso8601}|"
       message << ' ' until message.length % 16 == 0
       token = cipher.update(message)
       token << cipher.final
 
-      url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera_id}/touch?token=#{Base64.urlsafe_encode64(token)}"
+      url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera_exid}/touch?token=#{Base64.urlsafe_encode64(token)}"
 
       conn = Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
@@ -38,7 +31,7 @@ module Evercam
 
       conn.get
 
-      logger.info("Camera updated signal sent to evercam-media for camera '#{camera_id}'.")
+      logger.info("Camera updated signal sent to evercam-media for camera '#{camera_exid}'.")
     end
   end
 end
