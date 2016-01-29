@@ -344,52 +344,12 @@ module Evercam
         desc 'Returns jpg from the camera'
         get '/live/snapshot' do
           params[:id].downcase!
-          camera = get_cam(params[:id])
 
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new unless rights.allow?(AccessRight::SNAPSHOT)
+          id = params.fetch('id', '')
+          api_id = params.fetch('api_id', '')
+          api_key = params.fetch('api_key', '')
 
-          unless camera.external_url.nil?
-            require 'openssl'
-            require 'base64'
-            cam_username = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('username', '')
-            cam_password = camera.config.fetch('auth', {}).fetch('basic', {}).fetch('password', '')
-            cam_auth = "#{cam_username}:#{cam_password}"
-
-            api_id = params.fetch('api_id', '')
-            api_key = params.fetch('api_key', '')
-            credentials = "#{api_id}:#{api_key}"
-
-            cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
-            cipher.encrypt
-            cipher.key = "#{Evercam::Config[:snapshots][:key]}"
-            cipher.iv = "#{Evercam::Config[:snapshots][:iv]}"
-            cipher.padding = 0
-
-            message = camera.external_url
-            message << camera.res_url('jpg') unless camera.res_url('jpg').blank?
-            message << "|#{cam_auth}|#{credentials}|#{Time.now.utc.iso8601}|"
-            message << ' ' until message.length % 16 == 0
-            token = cipher.update(message)
-            token << cipher.final
-
-            name = nil
-            unless access_token.nil?
-              token_user = User.where(id: access_token.user_id).first
-              name = token_user.fullname unless token_user.nil?
-            end
-            CameraActivity.create(
-              camera_id: camera.id,
-              camera_exid: camera.exid,
-              access_token_id: (access_token.nil? ? nil : access_token.id),
-              name: (access_token.nil? ? nil : name),
-              action: 'viewed',
-              done_at: Time.now,
-              ip: request.ip
-            )
-
-            redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/live/snapshot?token=#{Base64.urlsafe_encode64(token)}"
-          end
+          redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}"
         end
       end
 
