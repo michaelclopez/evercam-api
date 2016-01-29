@@ -211,44 +211,6 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # POST /v1/cameras/:id/recordings/snapshots
-        #-------------------------------------------------------------------
-        desc 'Fetches a snapshot from the camera and stores it using the current timestamp'
-        params do
-          optional :notes, type: String, desc: "Optional text note for this snapshot"
-          optional :with_data, type: 'Boolean', desc: "Should it return image data?"
-        end
-        post 'recordings/snapshots' do
-          params[:id].downcase!
-
-          id = params.fetch('id', '')
-          api_id = params.fetch('api_id', '')
-          api_key = params.fetch('api_key', '')
-          notes = params.fetch('notes', '')
-          with_data = params.fetch('with_data', '')
-
-          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/recordings/snapshots?api_id=#{api_id}&api_key=#{api_key}&notes=#{notes}&with_data=#{with_data}"
-
-          conn = Faraday.new(url: url) do |faraday|
-            faraday.adapter Faraday.default_adapter
-            faraday.options.timeout = 10
-            faraday.options.open_timeout = 10
-          end
-
-          begin
-            response = conn.post
-            status response.status
-            JSON.parse response.body
-          rescue JSON::ParserError
-            status 500
-            {message: "Error parsing response from Evercam Media."}
-          rescue Faraday::TimeoutError
-            status 504
-            {message: "Connecting to Evercam Media timed out."}
-          end
-        end
-
-        #-------------------------------------------------------------------
         # POST /v1/cameras/:id/recordings/snapshots/:timestamp
         #-------------------------------------------------------------------
         desc 'Stores the supplied snapshot image data for the given timestamp'
@@ -331,17 +293,14 @@ module Evercam
         header "Access-Control-Allow-Origin", "*"
       end
 
-      params do
-        requires :id, type: String, desc: "Camera Id."
-      end
       #-------------------------------------------------------------------
       # GET /v1/cameras/:id/live/snapshot
       #-------------------------------------------------------------------
+      desc 'Returns jpg from the camera'
       params do
         requires :id, type: String, desc: "Camera Id."
       end
       route_param :id do
-        desc 'Returns jpg from the camera'
         get '/live/snapshot' do
           params[:id].downcase!
 
@@ -350,6 +309,47 @@ module Evercam
           api_key = params.fetch('api_key', '')
 
           redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}"
+        end
+      end
+
+      #-------------------------------------------------------------------
+      # POST /v1/cameras/:id/recordings/snapshots
+      #-------------------------------------------------------------------
+      desc 'Fetches a snapshot from the camera and stores it using the current timestamp'
+      params do
+        requires :id, type: String, desc: "Camera Id."
+        optional :notes, type: String, desc: "Optional text note for this snapshot"
+        optional :with_data, type: 'Boolean', desc: "Should it return image data?"
+      end
+      route_param :id do
+        post 'recordings/snapshots' do
+          params[:id].downcase!
+
+          id = params.fetch('id', '')
+          api_id = params.fetch('api_id', '')
+          api_key = params.fetch('api_key', '')
+          notes = params.fetch('notes', '')
+          with_data = params.fetch('with_data', '')
+
+          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/recordings/snapshots?api_id=#{api_id}&api_key=#{api_key}&notes=#{notes}&with_data=#{with_data}"
+
+          conn = Faraday.new(url: url) do |faraday|
+            faraday.adapter Faraday.default_adapter
+            faraday.options.timeout = 10
+            faraday.options.open_timeout = 10
+          end
+
+          begin
+            response = conn.post
+            status response.status
+            JSON.parse response.body
+          rescue JSON::ParserError
+            status 500
+            {message: "Error parsing response from Evercam Media."}
+          rescue Faraday::TimeoutError
+            status 504
+            {message: "Connecting to Evercam Media timed out."}
+          end
         end
       end
 
