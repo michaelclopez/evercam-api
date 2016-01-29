@@ -519,29 +519,6 @@ describe 'API routes/snapshots' do
         expect(res['notes']).to eq(params[:notes])
         expect(Time.at(res['created_at'])).to be_around_now
       end
-
-      context 'when unauthenticated' do
-        it 'returns an unauthenticated error' do
-          post("/cameras/#{camera0.exid}/recordings/snapshots", params)
-          expect(last_response.status).to eq(401)
-          data = JSON.parse(last_response.body)
-          expect(data.include?("message")).to eq(true)
-          expect(data["message"]).to eq("Unauthenticated")
-        end
-      end
-
-      context 'when unauthorized' do
-        let(:camera2) { create(:camera, is_public: false) }
-
-        it 'returns an unauthorized error' do
-          parameters = params.merge(api_id: other_user.api_id, api_key: other_user.api_key)
-          post("/cameras/#{camera2.exid}/recordings/snapshots", parameters)
-          expect(last_response.status).to eq(403)
-          data = JSON.parse(last_response.body)
-          expect(data.include?("message")).to eq(true)
-          expect(data["message"]).to eq("Unauthorized")
-        end
-      end
     end
   end
 
