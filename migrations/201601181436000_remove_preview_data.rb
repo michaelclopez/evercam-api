@@ -7,7 +7,7 @@ Sequel.migration do
 
   down do
     alter_table(:cameras) do
-      add_coloumn :preview, File
+      add_column :preview, File
     end
   end
 end
