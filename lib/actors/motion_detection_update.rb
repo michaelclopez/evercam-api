@@ -46,6 +46,7 @@ module Evercam
         end
 
         motion_detection = ::MotionDetection.where(camera_id: camera.id).first
+
         if motion_detection.nil?
           raise Evercam::NotFoundError.new("Camera does not have motion detection settings.",
                                            "motion_detection_not_exist_error", inputs[:id])
@@ -56,7 +57,7 @@ module Evercam
         motion_detection.step = step if step
         motion_detection.min = min if min
         motion_detection.threshold = threshold if threshold
-        motion_detection.enabled = enabled if enabled
+        motion_detection.enabled = enabled
 
         motion_detection.alert_email = alert_email if alert_email
         motion_detection.alert_interval_min = alert_interval_min if alert_interval_min
