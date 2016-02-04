@@ -329,6 +329,7 @@ DEPENDENCIES
   activesupport-json_encoder!
   airbrake
   aws-sdk
+  connection_pool
   curb
   dalli
   database_cleaner
