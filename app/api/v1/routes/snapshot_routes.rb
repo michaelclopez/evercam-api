@@ -340,7 +340,9 @@ module Evercam
           end
 
           begin
-            response = conn.post
+            response = conn.post do |req|
+              req.headers["Authorization"] = request.headers["Authorization"]
+            end
             status response.status
             JSON.parse response.body
           rescue JSON::ParserError
