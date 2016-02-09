@@ -307,8 +307,11 @@ module Evercam
           id = params.fetch('id', '')
           api_id = params.fetch('api_id', '')
           api_key = params.fetch('api_key', '')
+          authorization = request.headers["Authorization"]
+          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}"
+          url = "#{url}&authorization=#{authorization}" unless authorization.blank?
 
-          redirect "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}"
+          redirect url
         end
       end
 
