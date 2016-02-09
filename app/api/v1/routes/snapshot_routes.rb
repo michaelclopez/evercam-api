@@ -333,6 +333,7 @@ module Evercam
           api_key = params.fetch('api_key', '')
           notes = params.fetch('notes', '')
           with_data = params.fetch('with_data', '')
+          authorization = request.headers["Authorization"]
 
           url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{id}/recordings/snapshots?api_id=#{api_id}&api_key=#{api_key}&notes=#{notes}&with_data=#{with_data}"
 
@@ -343,8 +344,12 @@ module Evercam
           end
 
           begin
-            response = conn.post do |req|
-              req.headers["Authorization"] = request.headers["Authorization"]
+            if authorization.blank?
+              response = conn.post
+            else
+              response = conn.post do |req|
+                req.headers["Authorization"] = request.headers["Authorization"]
+              end
             end
             status response.status
             JSON.parse response.body
