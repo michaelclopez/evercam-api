@@ -57,7 +57,7 @@ module Evercam
         motion_detection.step = step if step
         motion_detection.min = min if min
         motion_detection.threshold = threshold if threshold
-        motion_detection.enabled = enabled if !enabled.nil?
+        motion_detection.enabled = enabled unless enabled.nil?
 
         motion_detection.alert_email = alert_email if alert_email
         motion_detection.alert_interval_min = alert_interval_min if alert_interval_min
