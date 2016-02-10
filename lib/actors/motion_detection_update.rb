@@ -59,7 +59,7 @@ module Evercam
         motion_detection.threshold = threshold if threshold
         motion_detection.enabled = enabled unless enabled.nil?
 
-        motion_detection.alert_email = alert_email if alert_email
+        motion_detection.alert_email = alert_email unless alert_email.nil?
         motion_detection.alert_interval_min = alert_interval_min if alert_interval_min
         motion_detection.sensitivity = sensitivity if sensitivity
         motion_detection.x1 = x1 if x1
