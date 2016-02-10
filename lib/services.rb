@@ -13,7 +13,9 @@ module Evercam
       :compress => true,
       :expires_in => 5.minutes,
       :value_max_bytes => 20000000,
-      :pool_size => 5
+      :pool_size => 5,
+      :socket_timeout => 1.5,
+      :socket_failure_delay => 0.2
     }
     if ENV["MEMCACHEDCLOUD_SERVERS"]
       options = options.merge({:username => ENV["MEMCACHEDCLOUD_USERNAME"], :password => ENV["MEMCACHEDCLOUD_PASSWORD"]})
