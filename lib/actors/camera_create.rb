@@ -143,8 +143,11 @@ module Evercam
 
         camera.discoverable = inputs[:discoverable] if inputs[:discoverable]
         camera.is_online_email_owner_notification = inputs[:is_online_email_owner_notification] if inputs[:is_online_email_owner_notification]
-        if inputs[:is_online]
+        if inputs[:is_online] && inputs[:is_online].present?
           camera.is_online = inputs[:is_online]
+          camera.last_online_at = Time.now
+        else
+          camera.is_online = true
           camera.last_online_at = Time.now
         end
 
