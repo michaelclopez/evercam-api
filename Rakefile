@@ -1832,3 +1832,44 @@ task :restore_data, [:ids] do |_t, args|
     end
   end
 end
+
+task :motion_settings_enabled do
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  cameras = Camera.all
+  cameras.each do |camera|
+    if camera.cloud_recording.present?
+      unless  camera.cloud_recording.status.equal?('off')
+        motions = ::MotionDetection.where(camera_id: camera.id).first
+        if motions.nil?
+          motion_detections =  MotionDetection.new(
+            camera: camera
+          )
+          motion_detections.enabled = 'on'
+          motion_detections.minPosition = 0
+          motion_detections.step = 2
+          motion_detections.frequency = 10
+          motion_detections.min = 30
+          motion_detections.threshold = 5
+          motion_detections.alert_interval_min = 10
+          motion_detections.x1 = 5
+          motion_detections.y1 = 5
+          motion_detections.x2 = 600
+          motion_detections.y2 = 450
+          motion_detections.schedule = {
+            "Monday":["00:00-23:59"],
+            "Tuesday":["00:00-23:59"],
+            "Wednesday":["00:00-23:59"],
+            "Thursday":["00:00-23:59"],
+            "Friday":["00:00-23:59"],
+            "Saturday":["00:00-23:59"],
+            "Sunday":["00:00-23:59"]
+          }
+          motion_detections.emails = ''
+          motion_detections.save
+          motion_detections
+        end
+      end
+    end
+  end
+end
