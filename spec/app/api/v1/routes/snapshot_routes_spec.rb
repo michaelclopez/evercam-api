@@ -522,62 +522,6 @@ describe 'API routes/snapshots' do
     end
   end
 
-  describe "POST /cameras/:id/recordings/snapshots/:timestamp" do
-    let(:params) do
-      {
-        notes: 'Snap note',
-        data: Rack::Test::UploadedFile.new('spec/resources/snapshot.jpg', 'image/jpeg')
-      }
-    end
-
-    context 'when snapshot request is correct' do
-      it 'snapshot is saved' do
-        skip
-        stub_request(:put, /.*evercam-camera-assets.s3.amazonaws.com.*/).
-          to_return(:status => 200, :body => "", :headers => {})
-
-        post("/cameras/#{camera0.exid}/recordings/snapshots/12345678",
-             params.merge(api_keys))
-        expect(last_response.status).to eq(201)
-        snap = Snapshot.first
-        expect(snap.notes).to eq('Snap note')
-        expect(snap.created_at).to be_around_now
-        expect(snap.camera.exid).to eq(camera0.exid)
-        expect(snap.data).not_to be_nil
-      end
-    end
-
-    context 'when data has incorrect file format' do
-      it 'error is returned' do
-        post("/cameras/#{camera0.exid}/recordings/snapshots/12345678",
-             params.merge(data: Rack::Test::UploadedFile.new('.gitignore', 'text/plain')).merge(api_keys))
-        expect(last_response.status).to eq(400)
-      end
-    end
-
-    context 'when unauthenticated' do
-      it 'returns an unauthenticated error' do
-        post("/cameras/#{camera0.exid}/recordings/snapshots/12345678", params)
-        expect(last_response.status).to eq(401)
-        data = JSON.parse(last_response.body)
-        expect(data.include?("message")).to eq(true)
-        expect(data["message"]).to eq("Unauthenticated")
-      end
-    end
-
-    context 'when unauthorized' do
-      let(:camera3) { create(:camera, is_public: false) }
-
-      it 'returns an unauthorized error' do
-        post("/cameras/#{camera3.exid}/recordings/snapshots/12345678", params.merge(alt_keys))
-        expect(last_response.status).to eq(403)
-        data = JSON.parse(last_response.body)
-        expect(data.include?("message")).to eq(true)
-        expect(data["message"]).to eq("Unauthorized")
-      end
-    end
-  end
-
   describe 'DELETE /cameras/:id/recordings/snapshots/:timestamp' do
     context 'when snapshot request is correct' do
       it 'snapshot is deleted' do
