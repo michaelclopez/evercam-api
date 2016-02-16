@@ -436,8 +436,12 @@ module Evercam
           if snapshot_file.exists?
             snapshot_file.read
           else
-            @body = nil
-            status 204
+            url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/recordings/snapshots/#{snapshot.snapshot_id}"
+            conn = Faraday.new(url: url) do |faraday|
+              faraday.adapter Faraday.default_adapter
+            end
+            response = conn.get
+            response.body
           end
         end
       end
