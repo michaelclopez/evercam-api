@@ -10,8 +10,8 @@ module Evercam
         type: 'integer',
         desc: 'Snapshot timestamp',
         required: false
-      } do |s,o|
-        s.created_at.to_i
+      } do |snapshot, _options|
+        snapshot.created_at.to_i
       end
 
       expose :notes, documentation: {
@@ -24,8 +24,8 @@ module Evercam
         type: 'integer',
         desc: 'Snapshot motion level',
         required: false
-      } do |s,o|
-        s.motionlevel
+      } do |snapshot, _options|
+        snapshot.motionlevel
       end
 
       expose :data, if: { with_data: true }, documentation: {
