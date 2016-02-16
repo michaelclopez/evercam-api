@@ -1845,7 +1845,7 @@ task :motion_settings_enabled do
           motion_detections =  MotionDetection.new(
             camera: camera
           )
-          motion_detections.enabled = 'on'
+          motion_detections.enabled = true
           motion_detections.minPosition = 0
           motion_detections.step = 2
           motion_detections.frequency = 10
@@ -1868,6 +1868,30 @@ task :motion_settings_enabled do
           motion_detections.emails = ''
           motion_detections.save
           motion_detections
+        else
+          motions.enabled = true if motions.enabled.equal?(false)
+          motions.minPosition = 0 if motions.minPosition.nil?
+          motions.step = 2 if motions.step.nil?
+          motions.frequency = 10 if motions.frequency.nil?
+          motions.min = 30 if motions.min.nil?
+          motions.threshold = 5 if motions.threshold.nil?
+          motions.alert_interval_min = 10 if motions.alert_interval_min.nil?
+          motions.x1 = 5 if motions.x1.nil?
+          motions.y1 = 5 if motions.y1.nil?
+          motions.x2 = 600 if motions.x2.nil?
+          motions.y2 = 450 if motions.y1.nil?
+          motions.schedule = {
+              "Monday":["00:00-23:59"],
+              "Tuesday":["00:00-23:59"],
+              "Wednesday":["00:00-23:59"],
+              "Thursday":["00:00-23:59"],
+              "Friday":["00:00-23:59"],
+              "Saturday":["00:00-23:59"],
+              "Sunday":["00:00-23:59"]
+          }
+          motions.emails = '' if motions.emails.nil?
+          motions.save
+          motions
         end
       end
     end
