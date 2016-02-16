@@ -1881,13 +1881,13 @@ task :motion_settings_enabled do
           motions.x2 = 600 if motions.x2.nil?
           motions.y2 = 450 if motions.y1.nil?
           motions.schedule = {
-              "Monday":["00:00-23:59"],
-              "Tuesday":["00:00-23:59"],
-              "Wednesday":["00:00-23:59"],
-              "Thursday":["00:00-23:59"],
-              "Friday":["00:00-23:59"],
-              "Saturday":["00:00-23:59"],
-              "Sunday":["00:00-23:59"]
+            "Monday":["00:00-23:59"],
+            "Tuesday":["00:00-23:59"],
+            "Wednesday":["00:00-23:59"],
+            "Thursday":["00:00-23:59"],
+            "Friday":["00:00-23:59"],
+            "Saturday":["00:00-23:59"],
+            "Sunday":["00:00-23:59"]
           }
           motions.emails = '' if motions.emails.nil?
           motions.save
