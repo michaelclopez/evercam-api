@@ -1897,3 +1897,17 @@ task :motion_settings_enabled do
     end
   end
 end
+
+task :motion_email_fix do
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  cameras = Camera.all
+  cameras.each do |camera|
+    motion_detection = ::MotionDetection.where(camera_id: camera.id).first
+    if motion_detection.present?
+      motion_detection.emails = [] if motion_detection.emails.nil?
+      motion_detection.save
+      motion_detection
+    end
+  end
+end
