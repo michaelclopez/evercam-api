@@ -34,9 +34,18 @@ module Evercam
         required: false
       } do |snapshot, options|
         filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
-        image = Evercam::Services.snapshot_bucket.objects[filepath].read
-        data = Base64.encode64(image).gsub("\n", '')
-        "data:image/jpeg;base64,#{data}"
+        s3_object = Evercam::Services.snapshot_bucket.objects[filepath]
+        if s3_object.exists?
+          data = Base64.encode64(s3_object.read).gsub("\n", '')
+          "data:image/jpeg;base64,#{data}"
+        else
+          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/#{snapshot.snapshot_id}/data"
+          conn = Faraday.new(url: url) do |faraday|
+            faraday.adapter Faraday.default_adapter
+          end
+          response = conn.get
+          response.body
+        end
       end
     end
   end
