@@ -211,46 +211,6 @@ module Evercam
         end
 
         #-------------------------------------------------------------------
-        # POST /v1/cameras/:id/recordings/snapshots/:timestamp
-        #-------------------------------------------------------------------
-        desc 'Stores the supplied snapshot image data for the given timestamp'
-        params do
-          requires :timestamp, type: Integer, desc: "Snapshot Unix timestamp."
-          requires :data, type: File, desc: "Image file."
-          optional :notes, type: String, desc: "Optional text note for this snapshot"
-          optional :with_data, type: 'Boolean', desc: "Should it return image data?"
-        end
-        post 'recordings/snapshots/:timestamp' do
-          params[:id].downcase!
-          camera = get_cam(params[:id])
-
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
-
-          outcome = Actors::SnapshotCreate.run(params)
-          unless outcome.success?
-            raise OutcomeError, outcome.to_json
-          end
-
-          name = nil
-          unless access_token.nil?
-            token_user = User.where(id: access_token.user_id).first
-            name = token_user.fullname unless token_user.nil?
-          end
-          CameraActivity.create(
-            camera_id: camera.id,
-            camera_exid: camera.exid,
-            access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : name),
-            action: 'captured',
-            done_at: Time.now,
-            ip: request.ip
-          )
-
-          present(Array(outcome.result), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
-        end
-
-        #-------------------------------------------------------------------
         # DELETE /v1/cameras/:id/recordings/snapshots/:timestamp
         #-------------------------------------------------------------------
         desc 'Deletes any snapshot for this camera which exactly matches the timestamp'
