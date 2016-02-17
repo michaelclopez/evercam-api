@@ -160,19 +160,19 @@ module Evercam
 
           offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
 
-          cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
-          hours = Evercam::Services.dalli_cache.get(cache_key)
-          if hours.nil?
-            hours = []
-            (0..23).each do |hour|
-              from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc
-              to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc
+          # cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
+          # hours = Evercam::Services.dalli_cache.get(cache_key)
+          # if hours.nil?
+          hours = []
+          (0..23).each do |hour|
+            from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc
+            to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc
 
-              if Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
-                hours << hour
-              end
+            if Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
+              hours << hour
             end
           end
+          # end
 
           { :hours => hours }
         end
