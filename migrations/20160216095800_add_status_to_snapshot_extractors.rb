@@ -1,5 +1,4 @@
 Sequel.migration do
-
   up do
     alter_table(:snapshot_extractors) do
       add_column :status, :integer, null: false, default: 0
