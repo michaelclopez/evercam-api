@@ -7,9 +7,10 @@ module Evercam
     def camera_for_mac(user, mac_address)
       camera = Camera.where(mac_address: mac_address, owner: user).first
       if camera.nil?
-        camera = CameraShare.join(:cameras,
-                                  :camera_id).where(camera_shares__sharer_id: user.id,
-                                                    cameras__mac_address: mac_address).first
+        camera = CameraShare
+                 .join(:cameras, :camera_id)
+                 .where(camera_shares__sharer_id: user.id, cameras__mac_address: mac_address)
+                 .first
       end
       camera
     end

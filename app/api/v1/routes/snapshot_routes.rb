@@ -160,19 +160,19 @@ module Evercam
 
           offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
 
-          cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
-          hours = Evercam::Services.dalli_cache.get(cache_key)
-          if hours.nil?
-            hours = []
-            (0..23).each do |hour|
-              from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc
-              to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc
+          # cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
+          # hours = Evercam::Services.dalli_cache.get(cache_key)
+          # if hours.nil?
+          hours = []
+          (0..23).each do |hour|
+            from = Time.new(params[:year], params[:month], params[:day], hour, 0, 0, offset).utc
+            to = Time.new(params[:year], params[:month], params[:day], hour, 59, 59, offset).utc
 
-              if Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
-                hours << hour
-              end
+            if Snapshot.db.select(Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").exists).first[:exists]
+              hours << hour
             end
           end
+          # end
 
           { :hours => hours }
         end
@@ -208,46 +208,6 @@ module Evercam
           snapshot = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}")
 
           present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
-        end
-
-        #-------------------------------------------------------------------
-        # POST /v1/cameras/:id/recordings/snapshots/:timestamp
-        #-------------------------------------------------------------------
-        desc 'Stores the supplied snapshot image data for the given timestamp'
-        params do
-          requires :timestamp, type: Integer, desc: "Snapshot Unix timestamp."
-          requires :data, type: File, desc: "Image file."
-          optional :notes, type: String, desc: "Optional text note for this snapshot"
-          optional :with_data, type: 'Boolean', desc: "Should it return image data?"
-        end
-        post 'recordings/snapshots/:timestamp' do
-          params[:id].downcase!
-          camera = get_cam(params[:id])
-
-          rights = requester_rights_for(camera)
-          raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
-
-          outcome = Actors::SnapshotCreate.run(params)
-          unless outcome.success?
-            raise OutcomeError, outcome.to_json
-          end
-
-          name = nil
-          unless access_token.nil?
-            token_user = User.where(id: access_token.user_id).first
-            name = token_user.fullname unless token_user.nil?
-          end
-          CameraActivity.create(
-            camera_id: camera.id,
-            camera_exid: camera.exid,
-            access_token_id: (access_token.nil? ? nil : access_token.id),
-            name: (access_token.nil? ? nil : name),
-            action: 'captured',
-            done_at: Time.now,
-            ip: request.ip
-          )
-
-          present(Array(outcome.result), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
@@ -476,8 +436,12 @@ module Evercam
           if snapshot_file.exists?
             snapshot_file.read
           else
-            @body = nil
-            status 204
+            url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/recordings/snapshots/#{snapshot.snapshot_id}"
+            conn = Faraday.new(url: url) do |faraday|
+              faraday.adapter Faraday.default_adapter
+            end
+            response = conn.get
+            response.body
           end
         end
       end

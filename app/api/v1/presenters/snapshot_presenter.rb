@@ -10,8 +10,8 @@ module Evercam
         type: 'integer',
         desc: 'Snapshot timestamp',
         required: false
-      } do |s,o|
-        s.created_at.to_i
+      } do |snapshot, _options|
+        snapshot.created_at.to_i
       end
 
       expose :notes, documentation: {
@@ -24,8 +24,8 @@ module Evercam
         type: 'integer',
         desc: 'Snapshot motion level',
         required: false
-      } do |s,o|
-        s.motionlevel
+      } do |snapshot, _options|
+        snapshot.motionlevel
       end
 
       expose :data, if: { with_data: true }, documentation: {
@@ -34,7 +34,17 @@ module Evercam
         required: false
       } do |snapshot, options|
         filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
-        image = Evercam::Services.snapshot_bucket.objects[filepath].read
+        s3_object = Evercam::Services.snapshot_bucket.objects[filepath]
+        if s3_object.exists?
+          image = s3_object.read
+        else
+          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/#{snapshot.snapshot_id}"
+          conn = Faraday.new(url: url) do |faraday|
+            faraday.adapter Faraday.default_adapter
+          end
+          response = conn.get
+          image = response.body
+        end
         data = Base64.encode64(image).gsub("\n", '')
         "data:image/jpeg;base64,#{data}"
       end
