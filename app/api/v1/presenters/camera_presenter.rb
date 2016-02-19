@@ -388,7 +388,7 @@ module Evercam
                type: 'String',
                desc: 'Latest recorded snapshot url'
              } do |camera, _options|
-        camera.thumbnail_url.blank? ? "" : camera.thumbnail_url
+        camera.thumbnail_url.blank? ? "" : "" # temprory solution to return empty thumbnail url
       end
     end
   end
