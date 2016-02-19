@@ -391,7 +391,7 @@ module Evercam
         if camera.thumbnail_url.blank?
         ""
         else
-          if camera.thumbnail_url <=> "s3"
+          if camera.thumbnail_url.include?("evercam-camera-assets.s3")
             camera.thumbnail_url
           else
             ""
