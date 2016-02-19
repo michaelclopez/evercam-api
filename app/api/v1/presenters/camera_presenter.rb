@@ -388,16 +388,7 @@ module Evercam
                type: 'String',
                desc: 'Latest recorded snapshot url'
              } do |camera, _options|
-        if camera.thumbnail_url.blank?
-        ""
-        else
-          if camera.thumbnail_url.include?("evercam-camera-assets.s3")
-            camera.thumbnail_url
-          else
-            ""
-          end
-        end
-        #camera.thumbnail_url.blank? ? "" : "" # temprory solution to return empty thumbnail url
+        camera.thumbnail_url.blank? ? "" : camera.thumbnail_url
       end
     end
   end
