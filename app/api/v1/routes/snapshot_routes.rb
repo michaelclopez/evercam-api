@@ -77,7 +77,7 @@ module Evercam
           params[:id].downcase!
           camera = get_cam(params[:id])
 
-          snapshot = Snapshot.where(snapshot_id: "#{camera.id.to_i - 1}_".."#{camera.id.to_i + 1}_").order(:snapshot_id).last
+          snapshot = Snapshot.where(snapshot_id: "#{camera.id.to_i}_2000".."#{camera.id.to_i}_2999").order(:snapshot_id).last
           if snapshot
             rights = requester_rights_for(camera)
             raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
@@ -414,7 +414,7 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new if !rights.allow?(AccessRight::SNAPSHOT)
 
-          snapshot = Snapshot.where(snapshot_id: "#{camera.id.to_i - 1}_".."#{camera.id.to_i + 1}_").order(:snapshot_id).last
+          snapshot = Snapshot.where(snapshot_id: "#{camera.id.to_i}_2000".."#{camera.id.to_i}_2999").order(:snapshot_id).last
           raise NotFoundError.new if snapshot.nil?
 
           filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
