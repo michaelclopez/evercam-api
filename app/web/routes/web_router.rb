@@ -74,4 +74,11 @@ module Evercam
     helpers Sinatra::Cookies
     helpers Sinatra::ContentFor
   end
+
+  if ENV["DEBUG_SQL"]
+    Camera.db.sql_log_level = :debug
+    Camera.db.logger = Logger.new($stdout)
+    Snapshot.db.sql_log_level = :debug
+    Snapshot.db.logger = Logger.new($stdout)
+  end
 end
