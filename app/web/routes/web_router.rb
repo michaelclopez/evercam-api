@@ -21,7 +21,7 @@ module Evercam
 
     # Assign separate database connections to Snapshot and CameraActivity.
     Snapshot.db = Sequel.connect(Evercam::Config[:snaps_database], max_connections: 100, pool_timeout: 10)
-    CameraActivity.db = Sequel.connect(Evercam::Config[:snaps_database], max_connections: 30, pool_timeout: 10)
+    CameraActivity.db = Snapshot.db
 
     # ensure cookies work across subdomains
     use Rack::Session::Cookie,
