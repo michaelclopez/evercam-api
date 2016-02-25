@@ -388,7 +388,11 @@ module Evercam
                type: 'String',
                desc: 'Latest recorded snapshot url'
              } do |camera, _options|
-        camera.thumbnail_url.blank? ? "" : camera.thumbnail_url
+        if camera.is_public
+          "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/thumbnail"
+        else
+          camera.thumbnail_url.blank? ? "" : camera.thumbnail_url
+        end
       end
     end
   end
