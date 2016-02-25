@@ -22,7 +22,7 @@ echo "Creating db schema dump from live database\n"
 pg_dump $DATABASE_URL -v -s -O -x -Fc > $SCHEMA_DUMP
 
 echo "Creating db data dump excluding unwanted tables"
-pg_dump $DATABASE_URL -v -Fc -T snapshots_old -T snapshots -T camera_activities > $DATA_DUMP
+pg_dump $DATABASE_URL -v -Fc -T snapshots_old > $DATA_DUMP
 
 echo "Restoring db schema"
 pg_restore -v -x -O -d evercam_live < migrations/live_schema.dump
@@ -30,4 +30,4 @@ pg_restore -v -x -O -d evercam_live < migrations/live_schema.dump
 echo "Restoring db data"
 pg_restore --disable-triggers -O -x -v -a -d evercam_live < migrations/live_data.dump
 
-echo "Hurray! You have now successfully setup your local evercam_live database with production data except camera_activities and snapshots data."
+echo "Hurray! You have now successfully setup your local evercam_live database with production data."
