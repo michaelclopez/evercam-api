@@ -37,6 +37,17 @@ module Evercam
       end
 
       #-------------------------------------------------------------------------
+      # GET /v1/cameras/archives/pending
+      #-------------------------------------------------------------------------
+      desc 'Returns available pending archive',{
+        entity: Evercam::Presenters::Archive
+      }
+      get '/archives/pending' do
+        archives = Archive.where(status: 0).first
+        present Array(archives), with: Presenters::Archive
+      end
+
+      #-------------------------------------------------------------------------
       # GET /v1/cameras/:id/archives/:archive_id
       #-------------------------------------------------------------------------
       desc 'Returns all data for a given archive',{
