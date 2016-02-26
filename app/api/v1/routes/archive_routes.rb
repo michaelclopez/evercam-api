@@ -28,7 +28,11 @@ module Evercam
             raise NotFoundError.new
           end
         end
-        archives = Archive.where(camera_id: camera.id)
+        if params[:status]
+          archives = Archive.where(camera_id: camera.id, status: params[:status])
+        else
+          archives = Archive.where(camera_id: camera.id)
+        end
         present Array(archives), with: Presenters::Archive
       end
 
