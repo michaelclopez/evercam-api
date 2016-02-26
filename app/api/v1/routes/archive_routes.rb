@@ -20,6 +20,7 @@ module Evercam
       end
       get '/:id/archives' do
         params[:id].downcase!
+        status = params[:status]
         camera = get_cam(params[:id])
         rights = requester_rights_for(camera)
         unless rights.allow?(AccessRight::LIST)
@@ -28,7 +29,7 @@ module Evercam
             raise NotFoundError.new
           end
         end
-        archives = Archive.where(camera_id: camera.id)
+        archives = Archive.where(camera_id: camera.id, status: status)
         present Array(archives), with: Presenters::Archive
       end
 
