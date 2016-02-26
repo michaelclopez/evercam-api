@@ -47,6 +47,22 @@ module Evercam
         }
       end
 
+      def create_success
+        {
+          to: archive.user.email,
+          subject: 'Archive created Successfully',
+          html_body: erb('templates/emails/user/archive_create_completed.html.erb')
+        }
+      end
+
+      def create_fail
+        {
+          to: archive.user.email,
+          subject: 'Archive creation Failed',
+          html_body: erb('archive_creation_failed.html.erb')
+        }
+      end
+
     end
   end
 end
