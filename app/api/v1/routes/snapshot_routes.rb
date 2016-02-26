@@ -54,7 +54,7 @@ module Evercam
           to = Time.new(to_time.year, to_time.month, to_time.day, to_time.hour, to_time.min, to_time.sec, off_set).utc
 
           query = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}")
-                    .select(:notes, :created_at, :motionlevel, :snapshot_id).order(:created_at)
+                    .select(:notes, :created_at, :motionlevel, :snapshot_id).order(:snapshot_id)
 
           count = query.count
           total_pages = count / limit
