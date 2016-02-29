@@ -15,21 +15,6 @@ module Evercam
         boolean :public
       end
 
-      def validate
-        if Time.now <= Time.at(from_date)
-          add_error(:from_date, :valid, 'From date cannot be greater than current time.')
-        end
-        if Time.now <= Time.at(to_date)
-          add_error(:to_date, :valid, 'To date cannot be greater than current time.')
-        end
-        if Time.at(to_date) < Time.at(from_date)
-          add_error(:to_date, :valid, 'To date cannot be less than from date.')
-        end
-        if Time.at(from_date).eql?(Time.at(to_date))
-          add_error(:to_date, :valid, 'To date and from date cannot be same.')
-        end
-      end
-
       def execute
         camera = Camera.by_exid!(inputs[:id])
         raise Evercam::ConflictError.new("A camera with the id '#{inputs[:id]}' does not exist.",
@@ -43,13 +28,18 @@ module Evercam
         chars = [('a'..'z'), (0..9)].flat_map { |i| i.to_a }
         random_string = (0...3).map { chars[rand(chars.length)] }.join
         clip_exid = "#{clip_exid[0..5]}-#{random_string}"
+        off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+        from = Time.at(from_date).utc
+        to = Time.at(to_date).utc
+        clip_from_date = Time.new(from.year, from.month, from.day, from.hour, from.min, from.sec, off_set).utc
+        clip_to_date = Time.new(to.year, to.month, to.day, to.hour, to.min, to.sec, off_set).utc
 
         archive = Archive.new(
           camera: camera,
           exid: clip_exid,
           title: title,
-          from_date: Time.at(from_date),
-          to_date: Time.at(to_date),
+          from_date: clip_from_date,
+          to_date: clip_to_date,
           status: Archive::PENDING,
           user: user
         )
