@@ -13,6 +13,32 @@ module Evercam
       optional do
         boolean :embed_time
         boolean :public
+        string :timezone
+      end
+
+      def validate
+        off_set = Time.now.in_time_zone(timezone).strftime("%:z")
+        from = Time.at(from_date).utc
+        to = Time.at(to_date).utc
+        clip_from_date = Time.new(from.year, from.month, from.day, from.hour, from.min, from.sec, off_set).utc
+        clip_to_date = Time.new(to.year, to.month, to.day, to.hour, to.min, to.sec, off_set).utc
+
+        if Time.now.utc <= clip_from_date
+          add_error(:from_date, :valid, 'From date cannot be greater than current time.')
+        end
+        if Time.now.utc <= clip_to_date
+          add_error(:to_date, :valid, 'To date cannot be greater than current time.')
+        end
+        if clip_to_date < clip_from_date
+          add_error(:to_date, :valid, 'To date cannot be less than from date.')
+        end
+        if clip_from_date.eql?(clip_to_date)
+          add_error(:to_date, :valid, 'To date and from date cannot be same.')
+        end
+        hours = ((clip_to_date - clip_from_date) / 0.hour).round
+        if hours > 2
+          add_error(:to_date, :valid, "Clip duration cannot be greater than 2 hours.")
+        end
       end
 
       def execute

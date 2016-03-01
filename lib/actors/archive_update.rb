@@ -36,9 +36,9 @@ module Evercam
         end
         archive.save
         if status && status.equal?(Archive::COMPLETED)
-          Mailers::UserMailer.create_success(archive: archive)
+          EmailWorker.perform_async({type: 'clip-completed', archive: archive, camera: archive.camera.exid})
         elsif status && status.equal?(Archive::FAILED)
-          Mailers::UserMailer.create_fail(archive: archive)
+          EmailWorker.perform_async({type: 'clip-failed', archive: archive, camera: archive.camera.exid})
         end
         archive
       end

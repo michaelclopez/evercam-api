@@ -50,16 +50,18 @@ module Evercam
       def create_success
         {
           to: archive.user.email,
-          subject: 'Archive #{archive.title} is ready.',
-          html_body: erb('templates/emails/user/archive_create_completed.html.erb')
+          subject: "Archive #{archive.title} is ready.",
+          html_body: erb('templates/emails/user/archive_create_completed.html.erb'),
+          attachments: attachments
         }
       end
 
       def create_fail
         {
           to: archive.user.email,
-          subject: 'Archive #{archive.title} failed.',
-          html_body: erb('archive_creation_failed.html.erb')
+          subject: "Archive #{archive.title} failed.",
+          html_body: erb('archive_creation_failed.html.erb'),
+          attachments: attachments
         }
       end
     end
