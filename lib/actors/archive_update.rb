@@ -11,6 +11,7 @@ module Evercam
         string :title
         integer :status
         boolean :public
+        integer :frames
       end
 
       def validate
@@ -23,6 +24,7 @@ module Evercam
         archive = ::Archive.where(exid: inputs[:archive_id]).first
         archive.title = title if title
         archive.public = public if public
+        archive.frames = frames if frames
         if status
           if status.eql? (Archive::PENDING)
             archive.status = Archive::PENDING
@@ -36,9 +38,9 @@ module Evercam
         end
         archive.save
         if status && status.equal?(Archive::COMPLETED)
-          Mailers::UserMailer.create_success(archive: archive)
+          EmailWorker.perform_async(type: 'clip-completed', archive: archive, camera: archive.camera.exid)
         elsif status && status.equal?(Archive::FAILED)
-          Mailers::UserMailer.create_fail(archive: archive)
+          EmailWorker.perform_async(type: 'clip-failed', archive: archive, camera: archive.camera.exid)
         end
         archive
       end

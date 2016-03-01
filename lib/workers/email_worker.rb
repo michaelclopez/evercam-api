@@ -14,13 +14,13 @@ module Evercam
 
     def perform(params)
       camera = Camera.by_exid(params['camera'])
-      user = User.by_login(params['user'])
+      user = User.by_login(params['user']) if params['user']
       response = nil
       add_snap = false
       snap = nil
 
       # Get image if needed
-      if ['share_request', 'share'].include?(params['type']) and !camera.nil? && !camera.external_url.nil?
+      if ['share_request', 'share', 'clip-completed', 'clip-failed'].include?(params['type']) && !camera.nil? && !camera.external_url.nil?
         begin
           conn = Faraday.new(:url => camera.external_url) do |faraday|
             faraday.request :basic_auth, camera.cam_username, camera.cam_password
@@ -67,6 +67,12 @@ module Evercam
         Mailers::UserMailer.share(user: user, email: params['email'], message: params['message'], camera: camera,
                                   attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
                                   socket: Socket.gethostname)
+      elsif params['type'] == 'clip-completed'
+        Mailers::UserMailer.create_success(archive: archive, attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
+                                           socket: Socket.gethostname)
+      elsif params['type'] == 'clip-failed'
+        Mailers::UserMailer.create_fail(archive: archive, attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
+                                        socket: Socket.gethostname)
       end
     end
 

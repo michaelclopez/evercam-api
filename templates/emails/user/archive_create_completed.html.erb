@@ -59,7 +59,13 @@
             <p style="line-height: 1.6; margin: 0 0 10px; padding: 0;">To access this clip, you will need to click on the link below.</p>
             <!-- Callout Panel -->
             <p class="callout" style="color:#428bca; line-height: 1.6; background: #f5f5f5;  margin: 0 0 15px; padding: 15px;">
-              <a style="color:#428bca; text-decoration:none;" href="https://dash.evercam.io/v1/cameras/#{archive.camera.exid}/archives">Clip</a>
+              <a style="color:#428bca; text-decoration:none;" href="https://dash.evercam.io/v1/cameras/<%= archive.camera.exid %>/archives">
+                <% if add_snap %>
+                  <img src="cid:snapshot.jpg@<%= socket %>" alt='Camera Preview' style="max-width: 550px; display:block; margin:0 auto;" >
+                <% else %>
+                  https://dash.evercam.io/v1/cameras/<%= archive.camera.exid %>/archives
+                <% end %>
+              </a>
             </p><!-- /Callout Panel -->
             <br>
             <p style="line-height: 1.6; margin: 0 0 10px; padding: 0;">We greatly appreciate any feedback, so if you have any suggestions or if there is anything we can do to improve your Evercam experience, please let us know.</p>

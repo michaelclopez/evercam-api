@@ -83,9 +83,16 @@ module Evercam
         desc: 'Whether or not timestamp overlay of archive',
         required: false
       }
+
       expose :public, documentation: {
         type: 'boolean',
         desc: 'Available archive public',
+        required: false
+      }
+
+      expose :frames, documentation: {
+        type: 'integer',
+        desc: 'Total frames in archive',
         required: false
       }
     end
