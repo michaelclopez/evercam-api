@@ -35,7 +35,7 @@ module Evercam
         if clip_from_date.eql?(clip_to_date)
           add_error(:to_date, :valid, 'To date and from date cannot be same.')
         end
-        hours = ((clip_to_date - clip_from_date) / 0.hour).round
+        hours = ((clip_to_date - clip_from_date) / 1.hour).round
         if hours > 2
           add_error(:to_date, :valid, "Clip duration cannot be greater than 2 hours.")
         end
