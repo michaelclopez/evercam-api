@@ -20,7 +20,7 @@ module Evercam
       end
 
       def validate
-        if (/^.+@.+\..+$/ =~ inputs[:email]).nil?
+        if !(/\A([\w+\-]\.?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i =~ inputs[:email])
           add_error(:email, :invalid, 'Not a valid email address.')
         end
 
