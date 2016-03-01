@@ -11,6 +11,7 @@ module Evercam
         string :title
         integer :status
         boolean :public
+        integer :frames
       end
 
       def validate
@@ -23,6 +24,7 @@ module Evercam
         archive = ::Archive.where(exid: inputs[:archive_id]).first
         archive.title = title if title
         archive.public = public if public
+        archive.frames = frames if frames
         if status
           if status.eql? (Archive::PENDING)
             archive.status = Archive::PENDING
