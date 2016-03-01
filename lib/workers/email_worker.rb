@@ -68,9 +68,11 @@ module Evercam
                                   attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
                                   socket: Socket.gethostname)
       elsif params['type'] == 'clip-completed'
+        archive = archive = ::Archive.where(exid: params['archive']).first
         Mailers::UserMailer.create_success(archive: archive, attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
                                            socket: Socket.gethostname)
       elsif params['type'] == 'clip-failed'
+        archive = archive = ::Archive.where(exid: params['archive']).first
         Mailers::UserMailer.create_fail(archive: archive, attachments: {'snapshot.jpg' => snap}, add_snap: add_snap,
                                         socket: Socket.gethostname)
       end
