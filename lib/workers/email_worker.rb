@@ -20,7 +20,7 @@ module Evercam
       snap = nil
 
       # Get image if needed
-      if ['share_request', 'share', 'clip-completed', 'clip-failed'].include?(params['type']) and !camera.nil? && !camera.external_url.nil?
+      if ['share_request', 'share', 'clip-completed', 'clip-failed'].include?(params['type']) && !camera.nil? && !camera.external_url.nil?
         begin
           conn = Faraday.new(:url => camera.external_url) do |faraday|
             faraday.request :basic_auth, camera.cam_username, camera.cam_password
