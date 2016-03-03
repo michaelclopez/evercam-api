@@ -37,14 +37,14 @@ module Evercam
       rtsp_url = rtsp_url_for_camera(camera)
       token = "#{camera.cam_username}|#{camera.cam_password}|#{rtsp_url}|"
       token = encrypt(token) unless rtsp_url.blank?
-      Evercam::Config[:streams][:hls_path] + "/live/" + camera.exid + "/index.m3u8?token=" + token unless rtsp_url.blank?
+      Evercam::Config[:streams][:hls_path] + "/live/" + token + "/index.m3u8?camera_id=" + camera.exid unless rtsp_url.blank?
     end
 
     def rtmp_url_for_camera(camera)
       rtsp_url = rtsp_url_for_camera(camera)
       token = "#{camera.cam_username}|#{camera.cam_password}|#{rtsp_url}|"
       token = encrypt(token) unless rtsp_url.blank?
-      Evercam::Config[:streams][:rtmp_path] + "/live/" + camera.exid + "?token=" + token unless rtsp_url.blank?
+      Evercam::Config[:streams][:rtmp_path] + "/live/" + token + "?camera_id=" + camera.exid unless rtsp_url.blank?
     end
 
     def encrypt(message)
