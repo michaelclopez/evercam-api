@@ -319,7 +319,7 @@ module Evercam
           type: 'String',
           desc: 'HLS url'
         } do |camera, _options|
-          camera.is_public ? hls_url_for_camera(camera).to_s : ""
+          hls_url_for_camera(camera).to_s
         end
 
         expose :rtmp, documentation: {
