@@ -325,11 +325,9 @@ module Evercam
         expose :rtmp, documentation: {
           type: 'String',
           desc: 'RTMP url'
-        } do |c,o|
-          host = rtmp_url_for_camera(c)
-          host.to_s
+        } do |camera, _options|
+          rtmp_url_for_camera(camera).to_s
         end
-
       end
 
       expose :rights, if: lambda {|instance, options| !options[:user].nil?},
