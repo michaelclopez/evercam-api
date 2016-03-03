@@ -19,7 +19,6 @@ module Evercam
       Camera.by_exid!(exid)
     end
 
-
     def rtsp_url_for_camera(camera)
       port = camera.config['external_rtsp_port']
       port = "554" if port == ""
