@@ -51,7 +51,7 @@ module Evercam
         outcome = Actors::UserSignup.run(parameters)
         if !outcome.success?
           raise_error(400, "invalid_parameters",
-                      "Invalid parameters specified to request.",
+                      outcome.errors.message_list.join(" "),
                       *(outcome.errors.keys))
         end
 
