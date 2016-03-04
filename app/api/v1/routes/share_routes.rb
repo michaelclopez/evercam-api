@@ -86,9 +86,7 @@ module Evercam
 
         outcome = Actors::ShareCreate.run(params)
         unless outcome.success?
-          raise_error(400, "invalid_parameters",
-            "Invalid parameters specified to request.",
-            *(outcome.errors.keys))
+          raise OutcomeError, outcome.to_json
         end
 
         CameraActivity.create(
@@ -142,9 +140,7 @@ module Evercam
         outcome = Actors::ShareDelete.run(params.merge!({id: camera.id, user_id: user.id, ip: request.ip}))
 
         unless outcome.success?
-          raise_error(400, "invalid_parameters",
-            "Invalid parameters specified for request.",
-            *(outcome.errors.keys))
+          raise OutcomeError, outcome.to_json
         end
 
         # Invalidate cache
