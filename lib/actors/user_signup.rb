@@ -28,6 +28,10 @@ module Evercam
           add_error(:email, :invalid, 'Email is too short.')
         end
 
+        if !(/^[a-z]+[\w-]+$/i =~ inputs[:username])
+          add_error(:username, :invalid, 'Username can consist of lower case letters then numbers, dashes & underscores.')
+        end
+
         if (inputs[:username] || "").length < 3
           add_error(:username, :invalid, 'User name is too short.')
         end
