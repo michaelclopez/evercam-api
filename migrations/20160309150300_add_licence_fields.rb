@@ -9,9 +9,9 @@ Sequel.migration do
 
   down do
     alter_table(:licences) do
-      drop_column :notes
-      drop_column :created_at
-      drop_column :update_at
+      drop_column :subscription_id
+      drop_column :auto_renew
+      drop_column :auto_renew_at
     end
   end
 end
