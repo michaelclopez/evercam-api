@@ -102,7 +102,7 @@ module Evercam
         IntercomEventsWorker.perform_async('shared-camera', caller.email, caller.username)
         if outcome.result.class == CameraShare
           # Send email to user
-          EmailWorker.perform_async({type: 'share', user: caller.username, email: target_user.email, message: params['message'], camera: camera.exid}) unless caller.email == params[:email]
+          EmailWorker.perform_async(type: 'share', user: caller.username, email: target_user.email, sharer: caller.email, message: params['message'], camera: camera.exid) unless caller.email == params[:email]
           # Invalidate cache
           key = "camera-rights|#{camera.exid}|#{target_user.username}"
           CacheInvalidationWorker.perform_async(camera.exid)
@@ -110,7 +110,7 @@ module Evercam
           present [outcome.result], with: Presenters::CameraShare
         else
           # Send email to email
-          EmailWorker.perform_async({type: 'share_request', user: caller.username, email: params[:email], message: params['message'], camera: camera.exid, key: outcome.result.key}) unless caller.email == params[:email]
+          EmailWorker.perform_async(type: 'share_request', user: caller.username, email: params[:email], sharer: caller.email, message: params['message'], camera: camera.exid, key: outcome.result.key) unless caller.email == params[:email]
           present [outcome.result], with: Presenters::CameraShareRequest
         end
       end
