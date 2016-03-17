@@ -98,6 +98,10 @@ module Evercam
                                            "model_not_found_error", inputs[:model]) if model.nil?
         end
 
+        unless inputs[:vendor] && inputs[:model]
+          model = VendorModel.where(Sequel.ilike(:exid, "other_default")).or(Sequel.ilike(:name, "other")).first
+        end
+
         if Camera.where(exid: inputs[:id]).count != 0
           raise Evercam::ConflictError.new("A camera with the id '#{inputs[:id]}' already exists.",
                                            "duplicate_camera_id_error", inputs[:id])
