@@ -10,6 +10,7 @@ module Evercam
       raise NotFoundError, 'camera does not exist' unless camera
 
       CloudRecording.where(camera_id: camera.id).destroy
+      SnapshotReport.where(camera_id: camera.id).destroy
       invalidate_for_camera(camera.exid)
       camera.destroy
 
