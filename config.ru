@@ -1,7 +1,6 @@
 require 'bundler'
 require 'rack/rewrite'
 require 'dalli'
-require 'pusher'
 require 'evercam_misc'
 require 'sequel'
 require 'sidekiq/web'
@@ -43,11 +42,6 @@ Geocoder.configure(
   :timeout => 5,
   :ip_lookup => :telize
 )
-
-Pusher.app_id = ENV['PUSHER_APP']
-Pusher.key = ENV['PUSHER_KEY']
-Pusher.secret = ENV['PUSHER_SECRET']
-Pusher.encrypted = true
 
 map '/v1' do
   # setup ssl requirements

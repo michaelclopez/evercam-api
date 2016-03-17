@@ -171,7 +171,6 @@ GEM
     hashie (3.4.3)
     hitimes (1.2.3)
     http_parser.rb (0.6.0)
-    httpclient (2.6.0.1)
     i18n (0.7.0)
     ice_nine (0.11.1)
     interception (0.5)
@@ -229,10 +228,6 @@ GEM
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
     puma (2.13.4)
-    pusher (0.14.5)
-      httpclient (~> 2.5)
-      multi_json (~> 1.0)
-      signature (~> 0.1.8)
     rack (1.6.4)
     rack-accept (0.4.5)
       rack (>= 0.4)
@@ -277,7 +272,6 @@ GEM
       json (~> 1.0)
       redis (~> 3.2, >= 3.2.1)
       redis-namespace (~> 1.5, >= 1.5.2)
-    signature (0.1.8)
     simplecov (0.10.0)
       docile (~> 1.1.0)
       json (~> 1.8)
@@ -362,7 +356,6 @@ DEPENDENCIES
   pry-rescue
   pry-stack_explorer
   puma
-  pusher
   rack
   rack-cors
   rack-rewrite
