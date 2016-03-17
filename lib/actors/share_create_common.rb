@@ -56,7 +56,6 @@ module Evercam
 
          access_rights = AccessRightSet.for(camera, sharee)
          rights_list   = to_rights_list(rights)
-         rights_list.delete_if {|r| CameraRightSet::PUBLIC_RIGHTS.include?(r)} if camera.is_public?
          share         = nil
          Sequel::Model.db.transaction do
            share = CameraShare.create(
