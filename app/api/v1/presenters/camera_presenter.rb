@@ -214,7 +214,7 @@ module Evercam
               desc: 'External mpeg url'
           } do |c,o|
             host = c.external_url('rtsp')
-            (c.res_url('mpeg').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('mpeg')
+            (c.res_url('mpeg').blank? or c.config['external_rtsp_port'] == nil or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('mpeg')
           end
 
           expose :audio, documentation: {
@@ -222,7 +222,7 @@ module Evercam
               desc: 'External audio url'
           } do |c,o|
             host = c.external_url('rtsp')
-            (c.res_url('audio').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('audio')
+            (c.res_url('audio').blank? or c.config['external_rtsp_port'] == nil or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('audio')
           end
 
           expose :h264, documentation: {
@@ -230,7 +230,7 @@ module Evercam
               desc: 'External h264 url'
           } do |c,o|
             host = c.external_url('rtsp')
-            (c.res_url('h264').blank? or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('h264')
+            (c.res_url('h264').blank? or c.config['external_rtsp_port'] == nil or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('h264')
           end
 
         end
