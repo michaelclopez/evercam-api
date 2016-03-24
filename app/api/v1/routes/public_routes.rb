@@ -1,5 +1,6 @@
 require_relative '../presenters/camera_presenter'
 require_relative '../presenters/camera_share_presenter'
+require 'pry'
 
 module Evercam
   class V1PublicRoutes < Grape::API
@@ -12,6 +13,54 @@ module Evercam
 
     resource :public do
       resource :cameras do
+
+        #-------------------------------------------------------------------
+        # GET /v1/public/cameras.geojson
+        #-------------------------------------------------------------------
+        desc "Fetch a list of publicly discoverable cameras from within the Evercam system but in geojson format."
+        get "geojson" do
+          query = Camera.where(is_public: true, discoverable: true)
+          query = query.select(
+            Sequel.qualify(:cameras, :id),
+            Sequel.qualify(:cameras, :created_at),
+            Sequel.qualify(:cameras, :updated_at),
+            :exid,
+            :owner_id, :is_public, :config,
+            :name, :last_polled_at, :is_online,
+            :timezone, :last_online_at, :location,
+            :mac_address, :model_id, :discoverable, :thumbnail_url
+          )
+          point = []
+          query_result = query.all.to_a
+          query_result.each do |camera|
+            unless camera.location.nil?
+              point[point.length] = [
+                  {
+                    "type": "Feature",
+                    "properties": {
+                      "marker-color": "#DC4C3F",
+                      "name": camera.name,
+                      "marker-symbol": ""
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        camera.location.x,
+                        camera.location.y
+                      ]
+                    }
+                  }
+              ]
+            end
+          end
+          points = point.collect { |c| c.count() ==  1 ? c[0] : c }
+          data = {
+            "type": "FeatureCollection",
+            "features": points
+          }
+          data
+        end
+
         #-------------------------------------------------------------------
         # GET /v1/public/cameras
         #-------------------------------------------------------------------
