@@ -23,7 +23,7 @@ module Evercam
       h264_url = camera.res_url('h264')
       ext_url = camera.config['external_host']
       port = camera.config['external_rtsp_port']
-      if h264_url.blank? || ext_url.blank? || port == "" || port == "0"
+      if h264_url.blank? || ext_url.blank? || port.blank? || port.to_s == "0"
         nil
       else
         "rtsp://#{camera.cam_username}:#{camera.cam_password}@#{ext_url}:#{port}#{h264_url}"
