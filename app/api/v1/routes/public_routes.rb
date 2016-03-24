@@ -1,6 +1,5 @@
 require_relative '../presenters/camera_presenter'
 require_relative '../presenters/camera_share_presenter'
-require 'pry'
 
 module Evercam
   class V1PublicRoutes < Grape::API
@@ -13,7 +12,6 @@ module Evercam
 
     resource :public do
       resource :cameras do
-
         #-------------------------------------------------------------------
         # GET /v1/public/cameras.geojson
         #-------------------------------------------------------------------
@@ -52,10 +50,10 @@ module Evercam
                       ]
                     }
                   }
-              ]
+                ]
             end
           end
-          points = point.collect { |c| c.count() ==  1 ? c[0] : c }
+          points = point.map{|c| c.count == 1 ? c[0] : c}
           data = {
             "type": "FeatureCollection",
             "features": points
