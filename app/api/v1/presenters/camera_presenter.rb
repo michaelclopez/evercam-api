@@ -228,11 +228,9 @@ module Evercam
           expose :h264, documentation: {
               type: 'String',
               desc: 'External h264 url'
-          } do |c,o|
-            host = c.external_url('rtsp')
-            (c.res_url('h264').blank? or c.config['external_rtsp_port'] == nil or c.config['external_rtsp_port'] == 0 or host.blank?) ? "" : host << c.res_url('h264')
+          } do |camera, _options|
+            rtsp_url_for_camera(camera).blank? ? "" : camera.external_url('rtsp') << camera.res_url('h264')
           end
-
         end
       end
 
