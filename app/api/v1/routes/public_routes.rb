@@ -33,24 +33,24 @@ module Evercam
           query_result.each do |camera|
             unless camera.location.nil?
               point[point.length] = [
-                                      {
-                                        "type": "Feature",
-                                        "properties": {
-                                          "marker-color": "#DC4C3F",
-                                          "name": camera.name,
-                                          "online": camera.is_online,
-                                          "public": camera.is_public,
-                                          "marker-symbol": ""
-                                        },
-                                        "geometry": {
-                                          "type": "Point",
-                                          "coordinates": [
-                                            camera.location.x,
-                                            camera.location.y
-                                          ]
-                                        }
-                                      }
-                                    ]
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "marker-color": "#DC4C3F",
+                    "name": camera.name,
+                    "online": camera.is_online,
+                    "public": camera.is_public,
+                    "marker-symbol": ""
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      camera.location.x,
+                      camera.location.y
+                    ]
+                  }
+                }
+              ]
             end
           end
           points = point.map { |c| c.count == 1 ? c[0] : c }
