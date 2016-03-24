@@ -40,6 +40,8 @@ module Evercam
                     "properties": {
                       "marker-color": "#DC4C3F",
                       "name": camera.name,
+                      "online": camera.is_online,
+                      "public": camera.is_public,
                       "marker-symbol": ""
                     },
                     "geometry": {
