@@ -36,12 +36,12 @@ module Evercam
           point = []
           query_result = query.all.to_a
           query_result.each do |camera|
-            if camera.vendor_model.present?
+            if camera.vendor_model
               vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
             else
               vendor_model = ""
             end
-            if camera.thumbnail_url.present?
+            if camera.thumbnail_url
               thumbnail_url = "<a target='_blank' href='#{camera.thumbnail_url}'>#{camera.name}</a>"
             else
               thumbnail_url = ""
@@ -72,7 +72,6 @@ module Evercam
             end
           end
           points = point.map { |c| c.count == 1 ? c[0] : c }
-          points
           data = {
             "type": "FeatureCollection",
             "features": points
