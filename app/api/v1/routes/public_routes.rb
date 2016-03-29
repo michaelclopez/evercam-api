@@ -16,8 +16,13 @@ module Evercam
         # GET /v1/public/cameras.geojson
         #-------------------------------------------------------------------
         desc "Fetch a list of publicly discoverable cameras from within the Evercam system but in geojson format."
+        params do
+          optional :is_near_to, type: String, desc: "Search for cameras within #{DEFAULT_DISTANCE} meters of a given address or latitude longitude point."
+          optional :within_distance, type: Float, desc: "Search for cameras within a specific range, in meters, of the is_near_to point."
+        end
         get "geojson" do
           query = Camera.where(is_public: true, discoverable: true)
+          query = query.by_distance(params[:is_near_to], params[:within_distance] || DEFAULT_DISTANCE) if params[:is_near_to]
           query = query.select(
             Sequel.qualify(:cameras, :id),
             Sequel.qualify(:cameras, :created_at),
@@ -31,15 +36,28 @@ module Evercam
           point = []
           query_result = query.all.to_a
           query_result.each do |camera|
+            if camera.vendor_model.present?
+              vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
+            else
+              vendor_model = ""
+            end
+            if camera.thumbnail_url.present?
+              thumbnail_url = "<a target='_blank' href='#{camera.thumbnail_url}'>#{camera.name}</a>"
+            else
+              thumbnail_url = ""
+            end
             unless camera.location.nil?
               point[point.length] = [
                 {
                   "type": "Feature",
                   "properties": {
                     "marker-color": "#DC4C3F",
-                    "name": camera.name,
-                    "online": camera.is_online,
-                    "public": camera.is_public,
+                    "Current Thumbnail": thumbnail_url,
+                    "Data Processor": "Camba.tv Ltd\n\n01-5383333",
+                    "Data Controller": camera.owner.username,
+                    "Online ?": camera.is_online,
+                    "Public ?": camera.is_public,
+                    "Vendor/Model": vendor_model,
                     "marker-symbol": "circle"
                   },
                   "geometry": {
@@ -54,6 +72,7 @@ module Evercam
             end
           end
           points = point.map { |c| c.count == 1 ? c[0] : c }
+          points
           data = {
             "type": "FeatureCollection",
             "features": points
