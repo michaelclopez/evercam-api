@@ -47,7 +47,7 @@ module Evercam
                   "type": "Feature",
                   "properties": {
                     "marker-color": "#DC4C3F",
-                    "Current Thumbnail": "<img width='180' src='https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?' />",
+                    "Current Thumbnail": "<img width='140' src='https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?' />",
                     "Camera": "<a href='http://dash.evercam.io/v1/cameras/#{camera.exid}/live'>#{camera.name}</a>",
                     "Data Processor": "Camba.tv Ltd\n\n01-5383333",
                     "Data Controller": camera.owner.username,
