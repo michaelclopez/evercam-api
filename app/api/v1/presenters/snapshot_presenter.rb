@@ -33,20 +33,24 @@ module Evercam
         desc: 'Image data',
         required: false
       } do |snapshot, options|
-        filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
-        s3_object = Evercam::Services.snapshot_bucket.objects[filepath]
-        if s3_object.exists?
-          image = s3_object.read
+        if options[:image]
+          options[:image]
         else
-          url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/#{snapshot.snapshot_id}?notes=#{snapshot.notes}"
-          conn = Faraday.new(url: url) do |faraday|
-            faraday.adapter Faraday.default_adapter
+          filepath = "#{options[:exid]}/snapshots/#{snapshot.created_at.to_i}.jpg"
+          s3_object = Evercam::Services.snapshot_bucket.objects[filepath]
+          if s3_object.exists?
+            image = s3_object.read
+          else
+            url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/#{snapshot.snapshot_id}?notes=#{snapshot.notes}"
+            conn = Faraday.new(url: url) do |faraday|
+              faraday.adapter Faraday.default_adapter
+            end
+            response = conn.get
+            image = response.body
           end
-          response = conn.get
-          image = response.body
+          data = Base64.encode64(image).gsub("\n", '')
+          "data:image/jpeg;base64,#{data}"
         end
-        data = Base64.encode64(image).gsub("\n", '')
-        "data:image/jpeg;base64,#{data}"
       end
     end
   end

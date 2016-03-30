@@ -192,9 +192,26 @@ module Evercam
           end
           from = timestamp - range + 1
           to = timestamp + range
-          snapshot = Snapshot.where(:snapshot_id => "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}")
+          snapshot = Snapshot.where(snapshot_id: "#{camera.id}_#{from.strftime("%Y%m%d%H%M%S%L")}".."#{camera.id}_#{to.strftime("%Y%m%d%H%M%S%L")}").first
+          if params[:with_data]
+            filepath = "#{camera.exid}/snapshots/#{snapshot.created_at.to_i}.jpg"
+            s3_object = Evercam::Services.snapshot_bucket.objects[filepath]
+            if s3_object.exists?
+              image = s3_object.read
+            else
+              url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{camera.exid}/recordings/snapshots/#{snapshot.snapshot_id}?notes=#{snapshot.notes}"
+              conn = Faraday.new(url: url) do |faraday|
+                faraday.adapter Faraday.default_adapter
+              end
+              response = conn.get
+              image = response.body
+              status 203 if response.status != 200
+            end
+            data = Base64.encode64(image).gsub("\n", '')
+            image = "data:image/jpeg;base64,#{data}"
+          end
 
-          present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], exid: camera.exid)
+          present(Array(snapshot), with: Presenters::Snapshot, with_data: params[:with_data], image: image, exid: camera.exid)
         end
 
         #-------------------------------------------------------------------
