@@ -10,11 +10,95 @@ module Evercam
   class V1CameraRoutes < Grape::API
 
     TIMEOUT = 5
+    DEFAULT_DISTANCE = 1000
 
     include WebErrors
     include Evercam::CacheHelper
 
     resource :cameras do
+      #---------------------------------------------------------------------------
+      # GET /v1/cameras/geojson
+      #---------------------------------------------------------------------------
+      desc "Returns data of cameras of authenticated user in geojson."
+      params do
+        optional :is_near_to, type: String, desc: "Search for cameras within #{DEFAULT_DISTANCE} meters of a given address or latitude longitude point."
+        optional :within_distance, type: Float, desc: "Search for cameras within a specific range, in meters, of the is_near_to point."
+        optional :exclude_public_cameras, type: Boolean, desc: "Search for cameras but not the public ones."
+      end
+      get "geojson" do
+        authorize!
+        exclude_public = false
+        if params[:exclude_public_cameras].present? && params[:exclude_public_cameras] == true
+          exclude_public = true
+        end
+        user = ::User.where(api_id: params[:api_id], api_key: params[:api_key]).first
+        query = Camera.where(owner: user, is_public: false)
+        query = query.by_distance(params[:is_near_to], params[:within_distance] || DEFAULT_DISTANCE) if params[:is_near_to]
+        query = query.association_left_join(:shares).or(Sequel.qualify(:shares, :user_id) => user.id)
+        query = query.group(Sequel.qualify(:cameras, :id))
+        query = query.select(
+          Sequel.qualify(:cameras, :id),
+          Sequel.qualify(:cameras, :created_at),
+          Sequel.qualify(:cameras, :updated_at),
+          :exid,
+          :owner_id, :is_public, :config,
+          :name, :last_polled_at, :is_online,
+          :timezone, :last_online_at, :location,
+          :mac_address, :model_id, :discoverable, :thumbnail_url
+        )
+        point = []
+        query_result = query.all.to_a
+        query_result.each do |camera|
+          next if exclude_public && camera.is_public
+          unless camera.location.nil?
+            if camera.vendor_model.present?
+              vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
+            else
+              vendor_model = ""
+            end
+            if camera.is_public
+              thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?"
+            else
+              thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?api_id=#{camera.owner.api_id}&api_key=#{camera.owner.api_key}"
+            end
+            if camera.is_online
+              marker = "#DC4C3F"
+            else
+              marker = "#808080"
+            end
+            point[point.length] = [
+              {
+                "type": "Feature",
+                "properties": {
+                  "marker-color": marker,
+                  "Current Thumbnail": "<img width='140' src='#{thumbnail}' />",
+                  "Camera": "<a href='http://dash.evercam.io/v1/cameras/#{camera.exid}/live'>#{camera.name}</a>",
+                  "Data Processor": "Camba.tv Ltd\n\n01-5383333",
+                  "Data Controller": camera.owner.username,
+                  "Online ?": camera.is_online,
+                  "Public ?": camera.is_public,
+                  "Vendor/Model": vendor_model,
+                  "marker-symbol": "circle"
+                },
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    camera.location.x,
+                    camera.location.y
+                  ]
+                }
+              }
+            ]
+          end
+        end
+        points = point.map { |c| c.count == 1 ? c[0] : c }
+        data = {
+          "type": "FeatureCollection",
+          "features": points
+        }
+        data
+      end
+
       #---------------------------------------------------------------------------
       # GET /v1/cameras/:id
       #---------------------------------------------------------------------------
