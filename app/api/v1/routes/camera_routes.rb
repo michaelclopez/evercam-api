@@ -50,22 +50,22 @@ module Evercam
         query_result = query.all.to_a
         query_result.each do |camera|
           next if exclude_public && camera.is_public
-          if camera.vendor_model
-            vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
-          else
-            vendor_model = ""
-          end
-          if camera.is_public
-            thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?"
-          else
-            thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?api_id=#{camera.owner.api_id}&api_key=#{camera.owner.api_key}"
-          end
-          if camera.is_online
-            marker = "#DC4C3F"
-          else
-            marker = "#808080"
-          end
           unless camera.location.nil?
+            if camera.vendor_model.present?
+              vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
+            else
+              vendor_model = ""
+            end
+            if camera.is_public
+              thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?"
+            else
+              thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?api_id=#{camera.owner.api_id}&api_key=#{camera.owner.api_key}"
+            end
+            if camera.is_online
+              marker = "#DC4C3F"
+            else
+              marker = "#808080"
+            end
             point[point.length] = [
               {
                 "type": "Feature",
