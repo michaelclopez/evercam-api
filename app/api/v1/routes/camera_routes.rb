@@ -34,8 +34,7 @@ module Evercam
         user = ::User.where(api_id: params[:api_id], api_key: params[:api_key]).first
         query = Camera.where(owner: user, is_public: false)
         query = query.by_distance(params[:is_near_to], params[:within_distance] || DEFAULT_DISTANCE) if params[:is_near_to]
-        query = query.association_left_join(:shares)
-                  .or(Sequel.qualify(:shares, :user_id) => user.id)
+        query = query.association_left_join(:shares).or(Sequel.qualify(:shares, :user_id) => user.id)
         query = query.group(Sequel.qualify(:cameras, :id))
         query = query.select(
           Sequel.qualify(:cameras, :id),
@@ -50,15 +49,15 @@ module Evercam
         point = []
         query_result = query.all.to_a
         query_result.each do |camera|
-          next if exclude_public == true && camera.is_public == true
+          next if exclude_public && camera.is_public
           if camera.vendor_model
             vendor_model = "#{camera.vendor_model.vendor.name} / #{camera.vendor_model.name}"
           else
             vendor_model = ""
           end
-          if camera.is_public == true
+          if camera.is_public
             thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?"
-          elsif camera.is_public == false
+          else
             thumbnail = "https://media.evercam.io/v1/cameras/#{camera.exid}/thumbnail?api_id=#{camera.owner.api_id}&api_key=#{camera.owner.api_key}"
           end
           if camera.is_online
