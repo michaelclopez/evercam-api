@@ -373,6 +373,7 @@ DEPENDENCIES
   sinatra-partial
   smarter_csv
   stringex
+  timezone (= 0.6.0)
   webmock (~> 1.21.0)
 
 BUNDLED WITH
