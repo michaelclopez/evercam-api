@@ -38,14 +38,22 @@ module Evercam
               requester.username != params[:user_id])
             raise AuthorizationError.new
           end
-
           shares = CameraShare.where(camera_id: camera.id, user_id: user.id).to_a
         else
           if rights.allow?(AccessRight::VIEW)
             shares = CameraShare.eager(:camera, :user, :sharer).where(camera_id: camera.id).all.to_a
           end
         end
-        present shares, with: Presenters::CameraShare
+        owner = {
+          "email": camera.owner.email,
+          "username": camera.owner.username,
+          "fullname": camera.owner.fullname
+        }
+        if rights.allow?(AccessRight::EDIT)
+          present(shares, with: Presenters::CameraShare).merge!(owner: owner)
+        else
+          present shares, with: Presenters::CameraShare
+        end
       end
 
       #-------------------------------------------------------------------
