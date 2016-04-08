@@ -44,12 +44,12 @@ module Evercam
             shares = CameraShare.eager(:camera, :user, :sharer).where(camera_id: camera.id).all.to_a
           end
         end
-        owner = {
-          "email": camera.owner.email,
-          "username": camera.owner.username,
-          "fullname": camera.owner.fullname
-        }
         if rights.allow?(AccessRight::EDIT)
+          owner = {
+            "email": camera.owner.email,
+            "username": camera.owner.username,
+            "fullname": camera.owner.fullname
+          }
           present(shares, with: Presenters::CameraShare).merge!(owner: owner)
         else
           present shares, with: Presenters::CameraShare
