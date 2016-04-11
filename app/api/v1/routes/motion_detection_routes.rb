@@ -53,6 +53,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        CameraTouchWorker.perform_async(camera.exid)
         present Array(outcome.result), with: Presenters::MotionDetection
       end
 
@@ -88,6 +89,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        CameraTouchWorker.perform_async(camera.exid)
         present Array(outcome.result), with: Presenters::MotionDetection
       end
 
@@ -111,6 +113,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        CameraTouchWorker.perform_async(camera.exid)
         present Array(outcome.result), with: Presenters::MotionDetection
       end
 
@@ -133,6 +136,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        CameraTouchWorker.perform_async(camera.exid)
         {}
       end
 
@@ -152,6 +156,7 @@ module Evercam
 
         motion_detection = MotionDetection.where(camera_id: camera.id).first
         motion_detection.delete
+        CameraTouchWorker.perform_async(camera.exid)
 
         {}
       end
