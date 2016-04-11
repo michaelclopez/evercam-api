@@ -240,7 +240,7 @@ module Evercam
         share_request = CameraShareRequest.where(camera_id: camera.id, email: params[:email]).first
         raise NotFoundError.new if share_request.nil?
         EmailWorker.perform_async(type: 'share_request', user: caller.username, email: params[:email], sharer: caller.email, message: share_request.message, camera: camera.exid)
-        message = "Share Request has been resent!"
+        message = "A notification email has been re-sent to the specified email address."
         { "message": message }
       end
 
