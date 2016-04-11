@@ -230,7 +230,7 @@ module Evercam
       #-------------------------------------------------------------------
       # POST /v1/cameras/:id/shares/requests
       #-------------------------------------------------------------------
-      desc 'Resend a camera share request for a given camera.'
+      desc 'Resend an existing camera share request for a given camera.'
       params do
         requires :id, type: String, desc: "The unique identifier for a camera."
         requires :email, type: String, desc: "Email address or user name of the user to share the camera with."
@@ -238,22 +238,10 @@ module Evercam
       post '/:id/shares/requests' do
         camera = get_cam(params[:id])
         share_request = CameraShareRequest.where(camera_id: camera.id, email: params[:email]).first
-        if share_request
-          if caller.email == params[:email]
-            {
-              "message": "You can't share camera with yourself!"
-            }
-          else
-            EmailWorker.perform_async(type: 'share_request', user: caller.username, email: params[:email], sharer: caller.email, message: share_request.message, camera: camera.exid)
-            {
-              "message": "Share Request has been resent!"
-            }
-          end
-        else
-          {
-            "message": "No Share Request has been present for this camera!"
-          }
-        end
+        raise NotFoundError.new if share_request.nil?
+        EmailWorker.perform_async(type: 'share_request', user: caller.username, email: params[:email], sharer: caller.email, message: share_request.message, camera: camera.exid)
+        message = "Share Request has been resent!"
+        { "message": message }
       end
 
       #-------------------------------------------------------------------
