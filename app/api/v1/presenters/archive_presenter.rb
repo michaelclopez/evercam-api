@@ -87,9 +87,9 @@ module Evercam
       end
 
       expose :requester_email, documentation: {
-          type: 'string',
-          desc: 'Evercam username who requested archive',
-          required: true
+        type: 'string',
+        desc: 'Evercam username who requested archive',
+        required: true
       } do |a, _o|
         a.user.email
       end
