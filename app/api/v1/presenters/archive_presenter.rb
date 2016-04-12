@@ -80,7 +80,7 @@ module Evercam
 
       expose :requester_name, documentation: {
         type: 'string',
-        desc: 'Evercam username who requested archive',
+        desc: 'Evercam fullname who requested archive',
         required: true
       } do |a, _o|
         a.user.fullname
@@ -88,7 +88,7 @@ module Evercam
 
       expose :requester_email, documentation: {
         type: 'string',
-        desc: 'Evercam username who requested archive',
+        desc: 'Evercam email who requested archive',
         required: true
       } do |a, _o|
         a.user.email
