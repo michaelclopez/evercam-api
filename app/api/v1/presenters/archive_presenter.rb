@@ -86,6 +86,14 @@ module Evercam
         a.user.fullname
       end
 
+      expose :requester_email, documentation: {
+          type: 'string',
+          desc: 'Evercam username who requested archive',
+          required: true
+      } do |a, _o|
+        a.user.email
+      end
+
       expose :embed_time, documentation: {
         type: 'boolean',
         desc: 'Whether or not timestamp overlay of archive',
