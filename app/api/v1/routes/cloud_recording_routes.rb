@@ -44,6 +44,7 @@ module Evercam
         unless outcome.success?
           raise OutcomeError, outcome.to_json
         end
+        CameraTouchWorker.perform_async(camera.exid)
         present Array(outcome.result), with: Presenters::CloudRecording
       end
     end
