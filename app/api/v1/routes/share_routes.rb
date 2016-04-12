@@ -231,6 +231,22 @@ module Evercam
       end
 
       #-------------------------------------------------------------------
+      # POST /v1/cameras/:id/shares/requests
+      #-------------------------------------------------------------------
+      desc 'Resend an existing camera share request for a given camera.'
+      params do
+        requires :id, type: String, desc: "The unique identifier for a camera."
+        requires :email, type: String, desc: "Email address of the user to share the camera with."
+      end
+      post '/:id/shares/requests' do
+        camera = get_cam(params[:id])
+        share_request = CameraShareRequest.where(camera_id: camera.id, email: params[:email]).first
+        raise NotFoundError.new if share_request.nil?
+        EmailWorker.perform_async(type: 'share_request', user: caller.username, email: params[:email], sharer: caller.email, message: share_request.message, camera: camera.exid)
+        { "message": "A notification email has been re-sent to the specified email address." }
+      end
+
+      #-------------------------------------------------------------------
       # DELETE /v1/cameras/:id/shares/requests
       #-------------------------------------------------------------------
       desc 'Cancels a pending camera share request for a given camera', {
