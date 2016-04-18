@@ -302,7 +302,7 @@ GEM
     tilt (2.0.1)
     timers (4.1.1)
       hitimes
-    timezone (0.6.0)
+    timezone (0.99.2)
     typhoeus (0.7.3)
       ethon (>= 0.7.4)
     tzinfo (1.2.2)
@@ -373,8 +373,8 @@ DEPENDENCIES
   sinatra-partial
   smarter_csv
   stringex
-  timezone (= 0.6.0)
+  timezone (~> 0.99.2)
   webmock (~> 1.21.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

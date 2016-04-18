@@ -67,7 +67,7 @@ gem 'racksh'
 
 gem 'em-http-request'
 
-gem 'timezone', '= 0.6.0'
+gem 'timezone', '~> 0.99.2'
 
 group :development do
   gem 'fakes3'
