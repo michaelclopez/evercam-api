@@ -6,9 +6,5 @@ module Evercam
       headers 'Access-Control-Allow-Origin' => '*'
       "It works!"
     end
-
-    get %r{/oauth2*} do
-      redirect request.url.sub(/api\./, 'dashboard.'), 301
-    end
   end
 end

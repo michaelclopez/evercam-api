@@ -76,47 +76,7 @@ module Evercam
       end
 
     end
-
-    context 'when an oauth access token is provided' do
-
-      let(:token) { create(:access_token) }
-
-      let(:env) { { 'HTTP_AUTHORIZATION' => "Bearer #{token.request}" } }
-
-      context 'when the token does not exist' do
-
-        before(:each) { token.delete }
-
-        describe '#access_token' do
-          it 'raises an AuthenticationError' do
-            expect{ subject.access_token }.to raise_error(AuthenticationError)
-          end
-        end
-
-      end
-
-      context 'when the token is invalid' do
-
-        before(:each) { token.update(is_revoked: true) }
-
-        describe '#access_token' do
-          it 'raises an AuthenticationError' do
-            expect{ subject.access_token }.to raise_error(AuthenticationError)
-          end
-        end
-
-      end
-
-      context 'when the token is valid' do
-        describe '#access_token' do
-          it 'it returns the temporary access token' do
-            expect(subject.access_token).to eq(token)
-          end
-        end
-      end
-
-    end
-
+    
     describe '#demand' do
 
       context 'when no auth is provided' do
