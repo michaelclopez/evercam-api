@@ -1159,6 +1159,37 @@ task :delete_useless_s3_folders do
   end
 end
 
+task :clean_s3_except_given_cameras, [:camera_ids] do |_t, args|
+  require 'aws'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  ids = args[:camera_ids].split(" ").inject([]) { |list, entry| list << entry.strip }
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+  tree = snapshot_bucket.as_tree
+  directories = tree.children.select(&:branch?).collect(&:prefix)
+  puts directories.count
+
+  directories.each do |directory|
+    camera_id = directory.delete('/')
+    unless ids.include?(camera_id)
+      camera = Camera.where(exid: camera_id).first
+      cr = CloudRecording.where(camera_id: camera.id).first unless camera.nil?
+      storage = 0
+      storage = cr.storage_duration unless cr.nil?
+      puts "#{camera_id}: storage: #{storage}"
+      snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
+      snapshot_bucket.objects[camera_id].delete
+      puts "Deletion completed for Camera (#{camera_id})"
+    end
+  end
+
+end
+
 task :delete_history_offline_cameras, [:offline_from] do |_t, args|
   require 'active_support'
   require 'active_support/core_ext'
