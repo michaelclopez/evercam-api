@@ -55,7 +55,7 @@ module Evercam
           add_error(:internal_host, :valid, 'Internal url is invalid')
         end
 
-        if timezone && false == Timezone::Zone.names.include?(timezone)
+        if timezone && false == Timezone::names.include?(timezone)
           add_error(:timezone, :valid, 'Timezone does not exist or is invalid')
         end
 

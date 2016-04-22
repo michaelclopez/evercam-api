@@ -401,7 +401,7 @@ describe 'API routes/cameras' do
         expect(cam.name).to eq(params[:name])
         expect(cam.vendor_model).to eq(model)
         expect(cam.mac_address).to eq(params[:mac_address])
-        expect(cam.timezone.zone).to eq('Etc/GMT+1')
+        expect(cam.timezone.name).to eq('Etc/GMT+1')
         expect(cam.res_url('jpg')).to eq(params[:jpg_url])
         expect(cam.cam_username).to eq(params[:cam_username])
         expect(cam.cam_password).to eq(params[:cam_password])

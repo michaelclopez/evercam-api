@@ -96,7 +96,7 @@ module Evercam
         desc: 'Name of the <a href="http://en.wikipedia.org/wiki/List_of_tz_database_time_zones">IANA/tz</a> timezone where this camera is located',
         required: true
       } do |s,o|
-        s.timezone.zone
+        s.timezone.name
       end
 
       expose :is_online_email_owner_notification, documentation: {

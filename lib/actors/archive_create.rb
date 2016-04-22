@@ -54,7 +54,7 @@ module Evercam
         chars = [('a'..'z'), (0..9)].flat_map { |i| i.to_a }
         random_string = (0...3).map { chars[rand(chars.length)] }.join
         clip_exid = "#{clip_exid[0..5]}-#{random_string}"
-        off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+        off_set = Time.now.in_time_zone(camera.timezone.name).strftime("%:z")
         from = Time.at(from_date).utc
         to = Time.at(to_date).utc
         clip_from_date = Time.new(from.year, from.month, from.day, from.hour, from.min, from.sec, off_set).utc

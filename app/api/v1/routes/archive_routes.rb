@@ -98,7 +98,7 @@ module Evercam
             raise NotFoundError.new
           end
         end
-        parameters = {}.merge(params).merge(timezone: camera.timezone.zone)
+        parameters = {}.merge(params).merge(timezone: camera.timezone.name)
         outcome = Actors::ArchiveCreate.run(parameters)
         unless outcome.success?
           raise OutcomeError, outcome.to_json

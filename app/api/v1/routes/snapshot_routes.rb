@@ -49,7 +49,7 @@ module Evercam
           to_time = Time.at(params[:to].to_i).utc
           to_time = Time.now.utc if params[:to].blank?
 
-          off_set = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+          off_set = Time.now.in_time_zone(camera.timezone.name).strftime("%:z")
           from = Time.new(from_time.year, from_time.month, from_time.day, from_time.hour, from_time.min, from_time.sec, off_set).utc
           to = Time.new(to_time.year, to_time.month, to_time.day, to_time.hour, to_time.min, to_time.sec, off_set).utc
 
@@ -105,7 +105,7 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+          offset = Time.now.in_time_zone(camera.timezone.name).strftime("%:z")
 
           cache_key = "snapshots|days|#{params.slice(:id, :year, :month).flatten.join('|')}"
           days = Evercam::Services.dalli_cache.get(cache_key)
@@ -145,7 +145,7 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+          offset = Time.now.in_time_zone(camera.timezone.name).strftime("%:z")
 
           # cache_key = "snapshots|days|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
           # hours = Evercam::Services.dalli_cache.get(cache_key)
@@ -354,7 +354,7 @@ module Evercam
           rights = requester_rights_for(camera)
           raise AuthorizationError.new unless rights.allow?(AccessRight::LIST)
 
-          offset = Time.now.in_time_zone(camera.timezone.zone).strftime("%:z")
+          offset = Time.now.in_time_zone(camera.timezone.name).strftime("%:z")
 
           cache_key = "snapshots|day|#{params.slice(:id, :year, :month, :day).flatten.join('|')}"
           exists = Evercam::Services.dalli_cache.get(cache_key)
