@@ -1177,14 +1177,18 @@ task :clean_s3_except_given_cameras, [:camera_ids] do |_t, args|
   directories.each do |directory|
     camera_id = directory.delete('/')
     unless ids.include?(camera_id)
-      camera = Camera.where(exid: camera_id).first
-      cr = CloudRecording.where(camera_id: camera.id).first unless camera.nil?
-      storage = 0
-      storage = cr.storage_duration unless cr.nil?
-      puts "#{camera_id}: storage: #{storage}"
-      snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
-      snapshot_bucket.objects[camera_id].delete
-      puts "Deletion completed for Camera (#{camera_id})"
+      begin
+        camera = Camera.where(exid: camera_id).first
+        cr = CloudRecording.where(camera_id: camera.id).first unless camera.nil?
+        storage = 0
+        storage = cr.storage_duration unless cr.nil?
+        puts "#{camera_id}: storage: #{storage}"
+        snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
+        snapshot_bucket.objects[camera_id].delete
+        puts "Deletion completed for Camera (#{camera_id})"
+      rescue => error
+        puts "S3 cleanup for camera(#{camera_id}): #{error.message}"
+      end
     end
   end
 
