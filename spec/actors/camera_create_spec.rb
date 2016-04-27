@@ -187,7 +187,7 @@ module Evercam
       describe 'optional params' do
 
         it 'sets the timezone value when provided' do
-          timezone = Timezone::Zone.new 'America/Chicago'
+          timezone = Timezone::lookup 'America/Chicago'
           params = valid.merge(timezone: timezone.name)
 
           outcome = subject.run(params)
