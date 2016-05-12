@@ -294,7 +294,7 @@ module Evercam
         raise NotFoundError.new if share_request.nil?
 
         rights = requester_rights_for(camera)
-        if !(rights.is_public? && share_request.camera.discoverable?) && !rights.is_owner?
+        if !rights.allow?(AccessRight::EDIT)
           raise AuthorizationError.new
         end
 
