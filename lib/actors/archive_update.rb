@@ -37,11 +37,11 @@ module Evercam
           end
         end
         archive.save
-        # if status && status.equal?(Archive::COMPLETED)
-        #   EmailWorker.perform_async(type: 'clip-completed', archive: inputs[:archive_id], camera: archive.camera.exid)
-        # elsif status && status.equal?(Archive::FAILED)
-        #   EmailWorker.perform_async(type: 'clip-failed', archive: inputs[:archive_id], camera: archive.camera.exid)
-        # end
+        if status && status.equal?(Archive::COMPLETED)
+          EmailWorker.perform_async(type: 'clip-completed', archive: inputs[:archive_id], camera: archive.camera.exid)
+        elsif status && status.equal?(Archive::FAILED)
+          EmailWorker.perform_async(type: 'clip-failed', archive: inputs[:archive_id], camera: archive.camera.exid)
+        end
         archive
       end
     end
