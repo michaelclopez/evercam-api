@@ -1159,6 +1159,29 @@ task :delete_useless_s3_folders do
   end
 end
 
+task :delete_given_s3_folders, [:camera_ids] do |_t, args|
+  require 'aws'
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+
+  s3 = AWS::S3.new(
+      :access_key_id => Evercam::Config[:amazon][:access_key_id],
+      :secret_access_key => Evercam::Config[:amazon][:secret_access_key]
+  )
+  ids = args[:camera_ids].split(" ").inject([]) { |list, entry| list << entry.strip }
+  snapshot_bucket = s3.buckets['evercam-camera-assets']
+  ids.each do |camera_id|
+    begin
+      puts "Start deletion of #{camera_id}"
+      # snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
+      # snapshot_bucket.objects[camera_id].delete
+      puts "Deletion completed for Camera (#{camera_id})"
+    rescue => error
+      puts "S3 cleanup for camera(#{camera_id}): #{error.message}"
+    end
+  end
+end
+
 task :clean_s3_except_given_cameras, [:camera_ids] do |_t, args|
   require 'aws'
   Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
@@ -1191,7 +1214,6 @@ task :clean_s3_except_given_cameras, [:camera_ids] do |_t, args|
       end
     end
   end
-
 end
 
 task :delete_history_offline_cameras, [:offline_from] do |_t, args|
