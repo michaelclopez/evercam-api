@@ -1173,8 +1173,8 @@ task :delete_given_s3_folders, [:camera_ids] do |_t, args|
   ids.each do |camera_id|
     begin
       puts "Start deletion of #{camera_id}"
-      # snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
-      # snapshot_bucket.objects[camera_id].delete
+      snapshot_bucket.objects.with_prefix("#{camera_id}/").delete_all
+      snapshot_bucket.objects[camera_id].delete
       puts "Deletion completed for Camera (#{camera_id})"
     rescue => error
       puts "S3 cleanup for camera(#{camera_id}): #{error.message}"
