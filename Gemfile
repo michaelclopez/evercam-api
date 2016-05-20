@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.2.2'
+ruby '2.3.0'
 
 gem 'puma'
 gem 'rack'
@@ -16,15 +16,15 @@ gem 'dalli'
 gem 'connection_pool'
 gem 'kgio'
 gem 'pony'
-gem 'aws-sdk'
-gem 'sidekiq'
+gem 'aws-sdk','~>1.59.0'
+gem 'sidekiq','~>3.5.3'
 gem 'mini_magick'
 gem 'stringex'
 gem 'smarter_csv'
 gem 'curb'
 
-gem 'grape'
-gem 'grape-entity'
+gem 'grape','~>0.13.0'
+gem 'grape-entity','~>0.4.8'
 gem 'grape-swagger', '= 0.10.2'
 gem 'grape_logging',
   github: 'mosic/grape_logging'
@@ -61,7 +61,7 @@ gem 'evercam_misc', '~> 0.0.11'
 gem 'evercam_models',
   github: 'evercam/evercam-models'
 
-gem 'airbrake'
+gem 'airbrake','~>4.3.1'
 
 gem 'racksh'
 
