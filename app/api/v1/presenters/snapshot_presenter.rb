@@ -41,7 +41,7 @@ module Evercam
           if s3_object.exists?
             image = s3_object.read
           else
-            url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/#{snapshot.snapshot_id}?notes=#{snapshot.notes}"
+            url = "#{Evercam::Config[:snapshots][:url]}v1/cameras/#{options[:exid]}/recordings/snapshots/data/#{snapshot.snapshot_id}?notes=#{snapshot.notes}"
             conn = Faraday.new(url: url) do |faraday|
               faraday.adapter Faraday.default_adapter
             end
