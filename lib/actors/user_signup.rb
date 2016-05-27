@@ -24,6 +24,14 @@ module Evercam
           add_error(:email, :invalid, 'Not a valid email address.')
         end
 
+        if !(/^[A-Za-z\/\s\']+$/i =~ inputs[:firstname])
+          add_error(:firstname, :invalid, 'First names can consist of alphabetical characters and spaces only.')
+        end
+
+        if !(/^[A-Za-z\/\s\']+$/i =~ inputs[:lastname])
+          add_error(:lastname, :invalid, 'Last names can consist of alphabetical characters and spaces only.')
+        end
+
         if (inputs[:email] || "").length < 6
           add_error(:email, :invalid, 'Email is too short.')
         end
