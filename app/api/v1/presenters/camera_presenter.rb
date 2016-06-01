@@ -333,51 +333,41 @@ module Evercam
                         type: 'String',
                         desc: 'A comma separated list of the users rights on the camera'
                       } do |camera, options|
+        list   = []
+        grants = []
         if options[:user].respond_to?('username')
-          key = "camera-rights/#{camera.exid}/#{options[:user].username}"
-        else
-          key = "camera-rights/#{camera.exid}/#{options[:user].name}"
-        end
-        rights_string = Evercam::Services::dalli_cache.get(key)
-        if rights_string.nil?
-          list   = []
-          grants = []
-          if options[:user].respond_to?('username')
-            if options[:user] == camera.owner
-              AccessRight::BASE_RIGHTS.each do |right|
-                list << right
-                grants << "#{AccessRight::GRANT}~#{right}"
-              end
-            else
-              options[:tokens] = AccessToken.where(user_id: options[:user].id).all if options[:tokens].nil?
-              rights = AccessRight.where(
-                token: options[:tokens],
-                camera_id: camera.id,
-                status: AccessRight::ACTIVE
-              ).select(:right).all
-              if rights.blank?
-                list = ["snapshot,list"]
-                grants = []
-              else
-                rights = rights.map { |right| right.to_s.gsub("::", "") }
-                rights.each do |right|
-                  list << right
-                  grants << right
-                end
-              end
+          if options[:user] == camera.owner
+            AccessRight::BASE_RIGHTS.each do |right|
+              list << right
+              grants << "#{AccessRight::GRANT}~#{right}"
             end
           else
-            rights = AccessRightSet.for(camera, options[:user])
-            AccessRight::BASE_RIGHTS.each do |right|
-              list << right if rights.allow?(right)
-              grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+            options[:tokens] = AccessToken.where(user_id: options[:user].id).all if options[:tokens].nil?
+            rights = AccessRight.where(
+              token: options[:tokens],
+              camera_id: camera.id,
+              status: AccessRight::ACTIVE
+            ).select(:right).all
+            if rights.blank?
+              list = ["snapshot,list"]
+              grants = []
+            else
+              rights = rights.map { |right| right.to_s.gsub("::", "") }
+              rights.each do |right|
+                list << right
+                grants << right
+              end
             end
           end
-          list.concat(grants) unless grants.empty?
-          rights_string = list.uniq.join(",")
-          Evercam::Services::dalli_cache.set(key, rights_string)
+        else
+          rights = AccessRightSet.for(camera, options[:user])
+          AccessRight::BASE_RIGHTS.each do |right|
+            list << right if rights.allow?(right)
+            grants << "#{AccessRight::GRANT}~#{right}" if rights.allow?("#{AccessRight::GRANT}~#{right}")
+          end
         end
-        rights_string
+        list.concat(grants) unless grants.empty?
+        list.uniq.join(",")
       end
 
       expose :thumbnail_url, documentation: {
