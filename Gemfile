@@ -22,6 +22,7 @@ gem 'mini_magick'
 gem 'stringex'
 gem 'smarter_csv'
 gem 'curb'
+gem 'namecase', '~> 2.0'
 
 gem 'grape','~>0.13.0'
 gem 'grape-entity','~>0.4.8'
