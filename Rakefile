@@ -1975,15 +1975,13 @@ task :namespace_users do
   require 'evercam_models'
   users = User.all
   users.each do |user|
-    if (/^[a-z]+[\w-]+$/i =~ user.username)
-      if (/\A([\w+\-]\.?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i =~ user.email)
-        if (/^[A-Za-z\/\s\']+$/i =~ user.lastname)
-          if (/^[A-Za-z\/\s\']+$/i =~ user.firstname)
-            user.firstname = NameCase(user.firstname)
-            user.lastname = NameCase(user.lastname)
-            user.save
-          end
-        end
+    if (/^[a-z]+[\w-]+$/i =~ user.username) &&
+    (/\A([\w+\-]\.?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i =~ user.email)
+      if (/^[A-Za-z\/\s\']+$/i =~ user.lastname) &&
+      (/^[A-Za-z\/\s\']+$/i =~ user.firstname)
+        user.firstname = NameCase(user.firstname)
+        user.lastname = NameCase(user.lastname)
+        user.save
       end
     end
   end
