@@ -2,6 +2,7 @@ require 'rake'
 require 'logjam'
 require 'evercam_misc'
 require 'active_support/core_ext/numeric/time'
+require 'namecase'
 
 if :development == Evercam::Config.env
   require 'rspec/core/rake_task'
@@ -1965,6 +1966,23 @@ task :motion_email_fix do
       motion_detection.emails = [] if motion_detection.emails.nil?
       motion_detection.save
       motion_detection
+    end
+  end
+end
+
+task :namespace_users do
+  Sequel::Model.db = Sequel.connect("#{ENV['DATABASE_URL']}", max_connections: 25)
+  require 'evercam_models'
+  users = User.all
+  users.each do |user|
+    if (/^[a-z]+[\w-]+$/i =~ user.username) &&
+    (/\A([\w+\-]\.?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i =~ user.email)
+      if (/^[A-Za-z\/\s\']+$/i =~ user.lastname) &&
+      (/^[A-Za-z\/\s\']+$/i =~ user.firstname)
+        user.firstname = NameCase(user.firstname)
+        user.lastname = NameCase(user.lastname)
+        user.save
+      end
     end
   end
 end

@@ -199,6 +199,7 @@ GEM
     multipart-post (2.0.0)
     mutations (0.7.2)
       activesupport
+    namecase (2.0.0)
     nenv (0.3.0)
     net-http-digest_auth (1.4)
     newrelic-grape (2.1.0)
@@ -348,6 +349,7 @@ DEPENDENCIES
   minitest
   mocha
   mutations
+  namecase (~> 2.0)
   newrelic-grape
   newrelic_rpm
   nokogiri (~> 1.6.7.1)
@@ -376,5 +378,8 @@ DEPENDENCIES
   timezone (= 0.6.0)
   webmock (~> 1.21.0)
 
+RUBY VERSION
+   ruby 2.3.0p0
+
 BUNDLED WITH
-   1.11.2
+   1.12.4
